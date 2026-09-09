@@ -1,24 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'presentation/router/app_router.dart';
+import 'presentation/theme/app_theme.dart';
 
 void main() {
-  runApp(const ProviderScope(child: MyApp()));
+  WidgetsFlutterBinding.ensureInitialized();
+  // Lock to portrait for now; remove when tablet layout is added.
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  runApp(const ProviderScope(child: FitTrackApp()));
 }
 
-class MyApp extends ConsumerWidget {
-  const MyApp({super.key});
+class FitTrackApp extends ConsumerWidget {
+  const FitTrackApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
-    
+
     return MaterialApp.router(
       title: 'FitTrack',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      debugShowCheckedModeBanner: false,
+      theme: buildAppTheme(),
       routerConfig: router,
     );
   }

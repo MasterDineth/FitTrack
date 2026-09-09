@@ -1,5 +1,5 @@
-import '../../domain/entities/user.dart';
-import '../../domain/repositories/i_auth_repository.dart';
+import '../../../domain/entities/user.dart';
+import '../../../domain/repositories/i_auth_repository.dart';
 
 class MockAuthRepository implements IAuthRepository {
   User? _currentUser;
