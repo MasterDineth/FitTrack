@@ -8,6 +8,8 @@ part 'auth_provider.g.dart';
 class AuthNotifier extends _$AuthNotifier {
   @override
   FutureOr<User?> build() async {
+    // Artificial delay to let the splash screen animations play out
+    await Future.delayed(const Duration(seconds: 3));
     final authRepo = ref.watch(authRepositoryProvider);
     return await authRepo.getCurrentUser();
   }

@@ -19,7 +19,7 @@ class UserProfileState {
 class UserProfileNotifier extends _$UserProfileNotifier {
   @override
   FutureOr<UserProfileState> build() async {
-    final userAsync = ref.watch(authNotifierProvider);
+    final userAsync = ref.watch(authProvider);
     
     if (userAsync.isLoading || userAsync.hasError || userAsync.value == null) {
       return UserProfileState();

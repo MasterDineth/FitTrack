@@ -23,8 +23,8 @@ class GoRouterNotifier extends ChangeNotifier {
   final Ref _ref;
 
   GoRouterNotifier(this._ref) {
-    _ref.listen(authNotifierProvider, (_, __) => notifyListeners());
-    _ref.listen(userProfileNotifierProvider, (_, __) => notifyListeners());
+    _ref.listen(authProvider, (_, __) => notifyListeners());
+    _ref.listen(userProfileProvider, (_, __) => notifyListeners());
   }
 }
 
@@ -37,8 +37,8 @@ GoRouter router(Ref ref) {
     initialLocation: '/splash',
     refreshListenable: notifier,
     redirect: (context, state) {
-      final authState = ref.read(authNotifierProvider);
-      final userProfileState = ref.read(userProfileNotifierProvider);
+      final authState = ref.read(authProvider);
+      final userProfileState = ref.read(userProfileProvider);
 
       final isAuthLoading = authState.isLoading;
       final user = authState.value;
@@ -55,7 +55,7 @@ GoRouter router(Ref ref) {
       }
 
       if (!isAuthenticated) {
-        if (isSplash || isWelcome || isAuth || isReset) {
+        if (isWelcome || isAuth || isReset) {
           return null; 
         }
         return '/welcome';

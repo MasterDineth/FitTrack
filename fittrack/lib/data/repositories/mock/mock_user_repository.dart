@@ -1,6 +1,6 @@
-import '../../domain/entities/body_telemetry.dart';
-import '../../domain/entities/fitness_profile.dart';
-import '../../domain/repositories/i_user_repository.dart';
+import '../../../domain/entities/body_telemetry.dart';
+import '../../../domain/entities/fitness_profile.dart';
+import '../../../domain/repositories/i_user_repository.dart';
 
 class MockUserRepository implements IUserRepository {
   BodyTelemetry? _telemetry;
