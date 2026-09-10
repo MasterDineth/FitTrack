@@ -4,7 +4,9 @@ part 'exercise_log.freezed.dart';
 part 'exercise_log.g.dart';
 
 @freezed
-class ExerciseLog with _$ExerciseLog {
+abstract class ExerciseLog with _$ExerciseLog {
+  const ExerciseLog._();
+
   const factory ExerciseLog({
     required String id,
     required String sessionId,

@@ -221,8 +221,8 @@ return $default(_that.id,_that.name,_that.equipment,_that.movementClassification
 /// @nodoc
 @JsonSerializable()
 
-class _Exercise implements Exercise {
-  const _Exercise({required this.id, required this.name, required this.equipment, required this.movementClassification, this.mediaUrl, this.youtubeUrl, this.biomechanicsNotes, this.isCustom = false});
+class _Exercise extends Exercise {
+  const _Exercise({required this.id, required this.name, required this.equipment, required this.movementClassification, this.mediaUrl, this.youtubeUrl, this.biomechanicsNotes, this.isCustom = false}): super._();
   factory _Exercise.fromJson(Map<String, dynamic> json) => _$ExerciseFromJson(json);
 
 @override final  String id;

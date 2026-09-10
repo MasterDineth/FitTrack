@@ -220,8 +220,8 @@ return $default(_that.id,_that.name,_that.description,_that.targetMuscles,_that.
 /// @nodoc
 @JsonSerializable()
 
-class _Schedule implements Schedule {
-  const _Schedule({required this.id, required this.name, required this.description, required  List<String> targetMuscles, required  List<int> assignedWeekdays, required this.orderIndex, this.isArchived = false}): _targetMuscles = targetMuscles,_assignedWeekdays = assignedWeekdays;
+class _Schedule extends Schedule {
+  const _Schedule({required this.id, required this.name, required this.description, required  List<String> targetMuscles, required  List<int> assignedWeekdays, required this.orderIndex, this.isArchived = false}): _targetMuscles = targetMuscles,_assignedWeekdays = assignedWeekdays,super._();
   factory _Schedule.fromJson(Map<String, dynamic> json) => _$ScheduleFromJson(json);
 
 @override final  String id;

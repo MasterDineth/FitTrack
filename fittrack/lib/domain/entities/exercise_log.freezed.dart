@@ -218,8 +218,8 @@ return $default(_that.id,_that.sessionId,_that.exerciseId,_that.orderIndex,_that
 /// @nodoc
 @JsonSerializable()
 
-class _ExerciseLog implements ExerciseLog {
-  const _ExerciseLog({required this.id, required this.sessionId, required this.exerciseId, required this.orderIndex, this.isSkipped = false});
+class _ExerciseLog extends ExerciseLog {
+  const _ExerciseLog({required this.id, required this.sessionId, required this.exerciseId, required this.orderIndex, this.isSkipped = false}): super._();
   factory _ExerciseLog.fromJson(Map<String, dynamic> json) => _$ExerciseLogFromJson(json);
 
 @override final  String id;

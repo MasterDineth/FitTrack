@@ -222,8 +222,8 @@ return $default(_that.id,_that.exerciseLogId,_that.setNumber,_that.actualReps,_t
 /// @nodoc
 @JsonSerializable()
 
-class _SetLog implements SetLog {
-  const _SetLog({required this.id, required this.exerciseLogId, required this.setNumber, required this.actualReps, required this.targetReps, required this.actualWeightKg, required this.targetWeightKg, this.isCompleted = false, required this.restDurationSeconds});
+class _SetLog extends SetLog {
+  const _SetLog({required this.id, required this.exerciseLogId, required this.setNumber, required this.actualReps, required this.targetReps, required this.actualWeightKg, required this.targetWeightKg, this.isCompleted = false, required this.restDurationSeconds}): super._();
   factory _SetLog.fromJson(Map<String, dynamic> json) => _$SetLogFromJson(json);
 
 @override final  String id;

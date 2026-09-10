@@ -10,7 +10,9 @@ enum MuscleRole {
 }
 
 @freezed
-class MuscleActivation with _$MuscleActivation {
+abstract class MuscleActivation with _$MuscleActivation {
+  const MuscleActivation._();
+
   const factory MuscleActivation({
     required String id,
     required String exerciseId,

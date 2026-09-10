@@ -218,8 +218,8 @@ return $default(_that.id,_that.exerciseId,_that.stepNumber,_that.title,_that.ins
 /// @nodoc
 @JsonSerializable()
 
-class _ExecutionStep implements ExecutionStep {
-  const _ExecutionStep({required this.id, required this.exerciseId, required this.stepNumber, required this.title, required this.instructions});
+class _ExecutionStep extends ExecutionStep {
+  const _ExecutionStep({required this.id, required this.exerciseId, required this.stepNumber, required this.title, required this.instructions}): super._();
   factory _ExecutionStep.fromJson(Map<String, dynamic> json) => _$ExecutionStepFromJson(json);
 
 @override final  String id;

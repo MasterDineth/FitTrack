@@ -218,8 +218,8 @@ return $default(_that.id,_that.exerciseId,_that.muscleName,_that.role,_that.inte
 /// @nodoc
 @JsonSerializable()
 
-class _MuscleActivation implements MuscleActivation {
-  const _MuscleActivation({required this.id, required this.exerciseId, required this.muscleName, required this.role, required this.intensityPercentage});
+class _MuscleActivation extends MuscleActivation {
+  const _MuscleActivation({required this.id, required this.exerciseId, required this.muscleName, required this.role, required this.intensityPercentage}): super._();
   factory _MuscleActivation.fromJson(Map<String, dynamic> json) => _$MuscleActivationFromJson(json);
 
 @override final  String id;

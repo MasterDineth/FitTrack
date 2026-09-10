@@ -21,7 +21,9 @@ enum MovementClassification {
 }
 
 @freezed
-class Exercise with _$Exercise {
+abstract class Exercise with _$Exercise {
+  const Exercise._();
+
   const factory Exercise({
     required String id,
     required String name,

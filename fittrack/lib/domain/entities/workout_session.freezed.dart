@@ -220,8 +220,8 @@ return $default(_that.id,_that.scheduleId,_that.startTime,_that.endTime,_that.du
 /// @nodoc
 @JsonSerializable()
 
-class _WorkoutSession implements WorkoutSession {
-  const _WorkoutSession({required this.id, required this.scheduleId, required this.startTime, this.endTime, this.durationSeconds, this.totalCalories, this.notes});
+class _WorkoutSession extends WorkoutSession {
+  const _WorkoutSession({required this.id, required this.scheduleId, required this.startTime, this.endTime, this.durationSeconds, this.totalCalories, this.notes}): super._();
   factory _WorkoutSession.fromJson(Map<String, dynamic> json) => _$WorkoutSessionFromJson(json);
 
 @override final  String id;

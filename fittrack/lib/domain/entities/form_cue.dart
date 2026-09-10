@@ -4,7 +4,9 @@ part 'form_cue.freezed.dart';
 part 'form_cue.g.dart';
 
 @freezed
-class FormCue with _$FormCue {
+abstract class FormCue with _$FormCue {
+  const FormCue._();
+
   const factory FormCue({
     required String id,
     required String exerciseId,

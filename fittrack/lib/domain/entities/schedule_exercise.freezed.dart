@@ -221,8 +221,8 @@ return $default(_that.id,_that.scheduleId,_that.exerciseId,_that.sortOrder,_that
 /// @nodoc
 @JsonSerializable()
 
-class _ScheduleExercise implements ScheduleExercise {
-  const _ScheduleExercise({required this.id, required this.scheduleId, required this.exerciseId, required this.sortOrder, required this.targetSets, required this.targetReps, required this.targetWeightKg, required this.restDurationSeconds});
+class _ScheduleExercise extends ScheduleExercise {
+  const _ScheduleExercise({required this.id, required this.scheduleId, required this.exerciseId, required this.sortOrder, required this.targetSets, required this.targetReps, required this.targetWeightKg, required this.restDurationSeconds}): super._();
   factory _ScheduleExercise.fromJson(Map<String, dynamic> json) => _$ScheduleExerciseFromJson(json);
 
 @override final  String id;

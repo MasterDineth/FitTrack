@@ -4,7 +4,9 @@ part 'set_log.freezed.dart';
 part 'set_log.g.dart';
 
 @freezed
-class SetLog with _$SetLog {
+abstract class SetLog with _$SetLog {
+  const SetLog._();
+
   const factory SetLog({
     required String id,
     required String exerciseLogId,

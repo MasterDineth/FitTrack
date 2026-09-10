@@ -4,7 +4,9 @@ part 'execution_step.freezed.dart';
 part 'execution_step.g.dart';
 
 @freezed
-class ExecutionStep with _$ExecutionStep {
+abstract class ExecutionStep with _$ExecutionStep {
+  const ExecutionStep._();
+
   const factory ExecutionStep({
     required String id,
     required String exerciseId,

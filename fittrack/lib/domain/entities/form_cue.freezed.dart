@@ -217,8 +217,8 @@ return $default(_that.id,_that.exerciseId,_that.isPositive,_that.description);ca
 /// @nodoc
 @JsonSerializable()
 
-class _FormCue implements FormCue {
-  const _FormCue({required this.id, required this.exerciseId, required this.isPositive, required this.description});
+class _FormCue extends FormCue {
+  const _FormCue({required this.id, required this.exerciseId, required this.isPositive, required this.description}): super._();
   factory _FormCue.fromJson(Map<String, dynamic> json) => _$FormCueFromJson(json);
 
 @override final  String id;
