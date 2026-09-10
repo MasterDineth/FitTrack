@@ -5,7 +5,7 @@ import '../theme/app_colors.dart';
 import '../widgets/ft_primary_button.dart';
 import '../widgets/ft_text_field.dart';
 import '../providers/auth_provider.dart';
-
+import '../widgets/ft_exit_confirmation.dart';
 /// FitTrack Auth – Sign In & Sign Up Screen.
 ///
 /// Uses a segmented tab switcher to toggle between Create Account and Sign In.
@@ -84,9 +84,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     final authState = ref.watch(authProvider);
     final isLoading = authState.isLoading;
 
-    return Scaffold(
-      backgroundColor: AppColors.cardWhite,
-      body: SafeArea(
+    return FtExitConfirmation(
+      child: Scaffold(
+        backgroundColor: AppColors.cardWhite,
+        body: SafeArea(
         child: Column(
           children: [
             // ── Navigation Bar ─────────────────────────────────────────────
@@ -425,7 +426,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           ],
         ),
       ),
-    );
+    ));
   }
 }
 
