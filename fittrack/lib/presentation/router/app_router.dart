@@ -14,10 +14,16 @@ import '../screens/set_new_password_screen.dart';
 import '../screens/telemetry_setup_screen.dart';
 import '../screens/fitness_profile_setup_screen.dart';
 import '../screens/dashboard_screen.dart';
+import '../screens/placeholder_screen.dart';
+import '../widgets/main_scaffold.dart';
 
 part 'app_router.g.dart';
 
-final rootNavigatorKey = GlobalKey<NavigatorState>();
+final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+final shellNavigatorDashboardKey = GlobalKey<NavigatorState>(debugLabel: 'shellDashboard');
+final shellNavigatorWorkoutsKey = GlobalKey<NavigatorState>(debugLabel: 'shellWorkouts');
+final shellNavigatorHistoryKey = GlobalKey<NavigatorState>(debugLabel: 'shellHistory');
+final shellNavigatorSettingsKey = GlobalKey<NavigatorState>(debugLabel: 'shellSettings');
 
 class GoRouterNotifier extends ChangeNotifier {
   final Ref _ref;
@@ -107,9 +113,62 @@ GoRouter router(Ref ref) {
         path: '/onboarding/fitness',
         builder: (context, state) => const FitnessProfileSetupScreen(),
       ),
-      GoRoute(
-        path: '/dashboard',
-        builder: (context, state) => const DashboardScreen(),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return MainScaffold(navigationShell: navigationShell);
+        },
+        branches: [
+          StatefulShellBranch(
+            navigatorKey: shellNavigatorDashboardKey,
+            routes: [
+              GoRoute(
+                path: '/dashboard',
+                builder: (context, state) => const DashboardScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: shellNavigatorWorkoutsKey,
+            routes: [
+              GoRoute(
+                path: '/workouts',
+                builder: (context, state) => const PlaceholderScreen(title: 'Workouts'),
+                routes: [
+                  GoRoute(
+                    path: 'detail/:scheduleId',
+                    builder: (context, state) => PlaceholderScreen(title: 'Workout Detail: \${state.pathParameters["scheduleId"]}'),
+                  ),
+                  GoRoute(
+                    path: 'create-schedule',
+                    builder: (context, state) => const PlaceholderScreen(title: 'Create Schedule'),
+                  ),
+                ]
+              ),
+              GoRoute(
+                path: '/exercises/create-custom',
+                builder: (context, state) => const PlaceholderScreen(title: 'Create Custom Exercise'),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: shellNavigatorHistoryKey,
+            routes: [
+              GoRoute(
+                path: '/history',
+                builder: (context, state) => const PlaceholderScreen(title: 'History'),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: shellNavigatorSettingsKey,
+            routes: [
+              GoRoute(
+                path: '/settings',
+                builder: (context, state) => const PlaceholderScreen(title: 'Settings'),
+              ),
+            ],
+          ),
+        ],
       ),
     ],
   );
