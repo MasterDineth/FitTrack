@@ -4,6 +4,8 @@ import '../theme/app_colors.dart';
 import '../widgets/ft_primary_button.dart';
 import '../widgets/ft_step_indicator.dart';
 
+import '../widgets/ft_exit_confirmation.dart';
+
 /// FitTrack Onboarding – Welcome Screen.
 ///
 /// Shows feature value propositions and navigates to the auth flow.
@@ -12,8 +14,9 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.surface,
+    return FtExitConfirmation(
+      child: Scaffold(
+        backgroundColor: AppColors.surface,
       body: Stack(
         children: [
           // Ambient glow
@@ -247,7 +250,7 @@ class WelcomeScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }
 

@@ -11,6 +11,8 @@ class FtPrimaryButton extends StatefulWidget {
     this.trailingIcon,
     this.width = double.infinity,
     this.height = 54,
+    this.backgroundColor,
+    this.textColor,
   });
 
   final String label;
@@ -19,6 +21,8 @@ class FtPrimaryButton extends StatefulWidget {
   final Widget? trailingIcon;
   final double width;
   final double height;
+  final Color? backgroundColor;
+  final Color? textColor;
 
   @override
   State<FtPrimaryButton> createState() => _FtPrimaryButtonState();
@@ -67,15 +71,19 @@ class _FtPrimaryButtonState extends State<FtPrimaryButton>
           width: widget.width,
           height: widget.height,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.kineticMint, Color(0xFF00F0A0)],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
+            color: widget.backgroundColor,
+            gradient: widget.backgroundColor == null
+                ? const LinearGradient(
+                    colors: [AppColors.kineticMint, Color(0xFF00F0A0)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  )
+                : null,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: AppColors.kineticMint.withValues(alpha: 0.38),
+                color: (widget.backgroundColor ?? AppColors.kineticMint)
+                    .withValues(alpha: 0.38),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
                 spreadRadius: -4,
@@ -99,8 +107,8 @@ class _FtPrimaryButtonState extends State<FtPrimaryButton>
                   children: [
                     Text(
                       widget.label,
-                      style: const TextStyle(
-                        color: AppColors.slateDark,
+                      style: TextStyle(
+                        color: widget.textColor ?? AppColors.slateDark,
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.2,

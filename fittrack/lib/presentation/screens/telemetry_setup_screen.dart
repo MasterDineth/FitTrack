@@ -54,11 +54,19 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
   }
 
   int get _bmr {
-    // Mifflin-St Jeor for Male
-    return (10 * _weight + 6.25 * _height - 5 * _age + 5).round();
+    final base = 10 * _weight + 6.25 * _height - 5 * _age;
+    if (_sex == BiologicalSex.female) {
+      return (base - 161).round();
+    } else {
+      return (base + 5).round(); // Male / Other
+    }
   }
 
-  double get _hydration => (_weight * 0.035);
+  double get _hydration {
+    final bmrWater = _bmr / 1000.0; // 1L per 1000 kcal
+    final bmiFactor = _bmi > 22 ? (_bmi - 22) * 0.05 : 0; // Extra water for higher BMI
+    return bmrWater + bmiFactor;
+  }
 
   // Display helpers
   String get _weightDisplay =>
@@ -90,7 +98,7 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
         .saveTelemetry(telemetry);
 
     setState(() => _isSaving = false);
-    if (mounted) context.go('/onboarding/fitness');
+    if (mounted) context.push('/onboarding/fitness');
   }
 
   @override
