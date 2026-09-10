@@ -8,13 +8,23 @@ part of 'workout_logic_providers.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Estimates the total duration (in seconds) for a workout given its exercises.
+///
+/// Uses: sets * 60s + (sets - 1) * restSeconds + 90s transition buffer.
 
 @ProviderFor(durationCalculation)
 final durationCalculationProvider = DurationCalculationFamily._();
 
+/// Estimates the total duration (in seconds) for a workout given its exercises.
+///
+/// Uses: sets * 60s + (sets - 1) * restSeconds + 90s transition buffer.
+
 final class DurationCalculationProvider
     extends $FunctionalProvider<int, int, int>
     with $Provider<int> {
+  /// Estimates the total duration (in seconds) for a workout given its exercises.
+  ///
+  /// Uses: sets * 60s + (sets - 1) * restSeconds + 90s transition buffer.
   DurationCalculationProvider._({
     required DurationCalculationFamily super.from,
     required List<ScheduleExercise> super.argument,
@@ -67,7 +77,11 @@ final class DurationCalculationProvider
 }
 
 String _$durationCalculationHash() =>
-    r'74d9a9ec3d842c7a23c048e422a0d77c7bdba00c';
+    r'fcf089f0a35a7ea351f0e7edd87f2cfacaf79498';
+
+/// Estimates the total duration (in seconds) for a workout given its exercises.
+///
+/// Uses: sets * 60s + (sets - 1) * restSeconds + 90s transition buffer.
 
 final class DurationCalculationFamily extends $Family
     with $FunctionalFamilyOverride<int, List<ScheduleExercise>> {
@@ -80,6 +94,10 @@ final class DurationCalculationFamily extends $Family
         isAutoDispose: true,
       );
 
+  /// Estimates the total duration (in seconds) for a workout given its exercises.
+  ///
+  /// Uses: sets * 60s + (sets - 1) * restSeconds + 90s transition buffer.
+
   DurationCalculationProvider call(List<ScheduleExercise> exercises) =>
       DurationCalculationProvider._(argument: exercises, from: this);
 
@@ -87,8 +105,20 @@ final class DurationCalculationFamily extends $Family
   String toString() => r'durationCalculationProvider';
 }
 
+/// Recommends the next [Schedule] to perform based on sessions completed
+/// so far this week.
+///
+/// Returns `null` when all scheduled workouts have been completed
+/// (i.e. a rest state).
+
 @ProviderFor(splitRecommendation)
 final splitRecommendationProvider = SplitRecommendationFamily._();
+
+/// Recommends the next [Schedule] to perform based on sessions completed
+/// so far this week.
+///
+/// Returns `null` when all scheduled workouts have been completed
+/// (i.e. a rest state).
 
 final class SplitRecommendationProvider
     extends
@@ -98,6 +128,11 @@ final class SplitRecommendationProvider
           FutureOr<Schedule?>
         >
     with $FutureModifier<Schedule?>, $FutureProvider<Schedule?> {
+  /// Recommends the next [Schedule] to perform based on sessions completed
+  /// so far this week.
+  ///
+  /// Returns `null` when all scheduled workouts have been completed
+  /// (i.e. a rest state).
   SplitRecommendationProvider._({
     required SplitRecommendationFamily super.from,
     required (IScheduleRepository, IWorkoutSessionRepository) super.argument,
@@ -143,7 +178,13 @@ final class SplitRecommendationProvider
 }
 
 String _$splitRecommendationHash() =>
-    r'f5385cbfea4bd8eb1db616ce88d162d9c6e5613a';
+    r'017a30130bbdf704dcdb326b0ab9d038016964be';
+
+/// Recommends the next [Schedule] to perform based on sessions completed
+/// so far this week.
+///
+/// Returns `null` when all scheduled workouts have been completed
+/// (i.e. a rest state).
 
 final class SplitRecommendationFamily extends $Family
     with
@@ -160,6 +201,12 @@ final class SplitRecommendationFamily extends $Family
         isAutoDispose: true,
       );
 
+  /// Recommends the next [Schedule] to perform based on sessions completed
+  /// so far this week.
+  ///
+  /// Returns `null` when all scheduled workouts have been completed
+  /// (i.e. a rest state).
+
   SplitRecommendationProvider call(
     IScheduleRepository scheduleRepo,
     IWorkoutSessionRepository sessionRepo,
@@ -172,8 +219,22 @@ final class SplitRecommendationFamily extends $Family
   String toString() => r'splitRecommendationProvider';
 }
 
+/// Aggregates dashboard metrics for the current week and all-time.
+///
+/// Returns a map with keys:
+/// - `daysTrainedThisWeek` ([int])
+/// - `totalWorkoutsCompleted` ([int])
+/// - `totalCaloriesBurned` ([int])
+
 @ProviderFor(dashboardMetrics)
 final dashboardMetricsProvider = DashboardMetricsFamily._();
+
+/// Aggregates dashboard metrics for the current week and all-time.
+///
+/// Returns a map with keys:
+/// - `daysTrainedThisWeek` ([int])
+/// - `totalWorkoutsCompleted` ([int])
+/// - `totalCaloriesBurned` ([int])
 
 final class DashboardMetricsProvider
     extends
@@ -185,6 +246,12 @@ final class DashboardMetricsProvider
     with
         $FutureModifier<Map<String, dynamic>>,
         $FutureProvider<Map<String, dynamic>> {
+  /// Aggregates dashboard metrics for the current week and all-time.
+  ///
+  /// Returns a map with keys:
+  /// - `daysTrainedThisWeek` ([int])
+  /// - `totalWorkoutsCompleted` ([int])
+  /// - `totalCaloriesBurned` ([int])
   DashboardMetricsProvider._({
     required DashboardMetricsFamily super.from,
     required IWorkoutSessionRepository super.argument,
@@ -229,7 +296,14 @@ final class DashboardMetricsProvider
   }
 }
 
-String _$dashboardMetricsHash() => r'fd49bd772c749883b87ec49cdf7b29a7f3de22f2';
+String _$dashboardMetricsHash() => r'75a08aa3554566bc95228ccf6324fac6d8911a3f';
+
+/// Aggregates dashboard metrics for the current week and all-time.
+///
+/// Returns a map with keys:
+/// - `daysTrainedThisWeek` ([int])
+/// - `totalWorkoutsCompleted` ([int])
+/// - `totalCaloriesBurned` ([int])
 
 final class DashboardMetricsFamily extends $Family
     with
@@ -246,6 +320,13 @@ final class DashboardMetricsFamily extends $Family
         isAutoDispose: true,
       );
 
+  /// Aggregates dashboard metrics for the current week and all-time.
+  ///
+  /// Returns a map with keys:
+  /// - `daysTrainedThisWeek` ([int])
+  /// - `totalWorkoutsCompleted` ([int])
+  /// - `totalCaloriesBurned` ([int])
+
   DashboardMetricsProvider call(IWorkoutSessionRepository sessionRepo) =>
       DashboardMetricsProvider._(argument: sessionRepo, from: this);
 
@@ -253,8 +334,14 @@ final class DashboardMetricsFamily extends $Family
   String toString() => r'dashboardMetricsProvider';
 }
 
+/// Returns the set of [DateTime]s in [month] on which a workout session
+/// was started, for rendering the monthly activity calendar.
+
 @ProviderFor(calendarActivity)
 final calendarActivityProvider = CalendarActivityFamily._();
+
+/// Returns the set of [DateTime]s in [month] on which a workout session
+/// was started, for rendering the monthly activity calendar.
 
 final class CalendarActivityProvider
     extends
@@ -264,6 +351,8 @@ final class CalendarActivityProvider
           FutureOr<List<DateTime>>
         >
     with $FutureModifier<List<DateTime>>, $FutureProvider<List<DateTime>> {
+  /// Returns the set of [DateTime]s in [month] on which a workout session
+  /// was started, for rendering the monthly activity calendar.
   CalendarActivityProvider._({
     required CalendarActivityFamily super.from,
     required (IWorkoutSessionRepository, DateTime) super.argument,
@@ -308,7 +397,10 @@ final class CalendarActivityProvider
   }
 }
 
-String _$calendarActivityHash() => r'c56abaa092b8e150c700f0b3365ef7b665ef67e9';
+String _$calendarActivityHash() => r'73743bb822d96c99c4490cad03f609e6825717bb';
+
+/// Returns the set of [DateTime]s in [month] on which a workout session
+/// was started, for rendering the monthly activity calendar.
 
 final class CalendarActivityFamily extends $Family
     with
@@ -324,6 +416,9 @@ final class CalendarActivityFamily extends $Family
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
+
+  /// Returns the set of [DateTime]s in [month] on which a workout session
+  /// was started, for rendering the monthly activity calendar.
 
   CalendarActivityProvider call(
     IWorkoutSessionRepository sessionRepo,

@@ -14,8 +14,10 @@ import '../screens/set_new_password_screen.dart';
 import '../screens/telemetry_setup_screen.dart';
 import '../screens/fitness_profile_setup_screen.dart';
 import '../screens/dashboard_screen.dart';
+import '../screens/workout_schedules_screen.dart';
+import '../screens/workout_detail_screen.dart';
 import '../screens/placeholder_screen.dart';
-import '../widgets/main_scaffold.dart';
+import '../widgets/bottom_nav_shell.dart';
 
 part 'app_router.g.dart';
 
@@ -115,7 +117,7 @@ GoRouter router(Ref ref) {
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
-          return MainScaffold(navigationShell: navigationShell);
+          return BottomNavShell(navigationShell: navigationShell);
         },
         branches: [
           StatefulShellBranch(
@@ -132,17 +134,19 @@ GoRouter router(Ref ref) {
             routes: [
               GoRoute(
                 path: '/workouts',
-                builder: (context, state) => const PlaceholderScreen(title: 'Workouts'),
+                builder: (context, state) => const WorkoutSchedulesScreen(),
                 routes: [
                   GoRoute(
                     path: 'detail/:scheduleId',
-                    builder: (context, state) => PlaceholderScreen(title: 'Workout Detail: \${state.pathParameters["scheduleId"]}'),
+                    builder: (context, state) => WorkoutDetailScreen(
+                      scheduleId: state.pathParameters['scheduleId']!,
+                    ),
                   ),
                   GoRoute(
                     path: 'create-schedule',
                     builder: (context, state) => const PlaceholderScreen(title: 'Create Schedule'),
                   ),
-                ]
+                ],
               ),
               GoRoute(
                 path: '/exercises/create-custom',
