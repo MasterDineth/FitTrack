@@ -21,11 +21,9 @@ class WorkoutDetailScreen extends ConsumerWidget {
 
   // ── Brand colours ──────────────────────────────────────────────────────
   static const Color _mint = Color(0xFF00d68f);
-  static const Color _mintDark = Color(0xFF00b779);
   static const Color _dark = Color(0xFF0f172a);
   static const Color _bg = Color(0xFFf7f9fb);
   static const Color _cardBg = Colors.white;
-  static const Color _muted = Color(0xFF64748b);
   static const Color _softBorder = Color(0xFFe2e8f0);
 
   @override
@@ -85,7 +83,8 @@ class WorkoutDetailScreen extends ConsumerWidget {
 
 final _scheduleByIdProvider = FutureProvider.family(
   (ref, (dynamic repo, String id) args) async {
-    return args.$1.getScheduleById(args.$2) as Schedule?;
+    final schedule = await args.$1.getScheduleById(args.$2);
+    return schedule as Schedule?;
   },
 );
 
@@ -452,9 +451,7 @@ class _MetricsBar extends StatelessWidget {
   final int estimatedMinutes;
   final int estimatedCalories;
 
-  static const Color _mintDark = Color(0xFF00b779);
   static const Color _dark = Color(0xFF0f172a);
-  static const Color _muted = Color(0xFF64748b);
   static const Color _softBorder = Color(0xFFe2e8f0);
 
   @override
@@ -592,20 +589,8 @@ class _ExerciseCard extends StatelessWidget {
   static const Color _muted = Color(0xFF64748b);
   static const Color _softBorder = Color(0xFFe2e8f0);
 
-  // Simple static map of exerciseId -> display metadata
-  static const _exerciseMeta = {
-    // (In a real app these come from IExerciseRepository via a join)
-    'default': (
-      name: 'Exercise',
-      muscle: 'General',
-      badgeBg: Color(0xFFf1f5f9),
-      badgeText: Color(0xFF64748b),
-    ),
-  };
-
   @override
   Widget build(BuildContext context) {
-    final isEven = index % 2 == 0;
     // First exercise gets a dark badge per Stitch design
     final badgeBg = isFirst ? const Color(0xFF1e293b) : const Color(0xFFf1f5f9);
     final badgeFg = isFirst ? Colors.white : const Color(0xFF475569);

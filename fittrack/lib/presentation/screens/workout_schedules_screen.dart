@@ -137,27 +137,35 @@ class _WorkoutSchedulesScreenState
             ],
           ),
           const Spacer(),
-          // Filter button
-          _AppBarIconBtn(
-            icon: Icons.tune_rounded,
-            onTap: () {},
-          ),
-          const SizedBox(width: 6),
-          // Notifications with badge
+          // Notification bell
           Stack(
             children: [
-              _AppBarIconBtn(
-                icon: Icons.notifications_outlined,
-                onTap: () {},
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: const Color(0xFFe2e8f0)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _dark.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    )
+                  ],
+                ),
+                child: const Icon(Icons.notifications_outlined,
+                    color: Color(0xFF64748b), size: 18),
               ),
               Positioned(
-                top: 6,
-                right: 6,
+                top: 7,
+                right: 7,
                 child: Container(
                   width: 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: Colors.red,
+                    color: _mint,
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 1.5),
                   ),
@@ -165,26 +173,47 @@ class _WorkoutSchedulesScreenState
               ),
             ],
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 10),
           // User avatar
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: const Color(0xFFdae2fd),
-              shape: BoxShape.circle,
-              border: Border.all(color: _mint.withOpacity(0.3), width: 1.5),
-            ),
-            child: const Center(
-              child: Text(
-                'D',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF006c46),
+          Stack(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF1e293b), Color(0xFF334155)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: const Center(
+                  child: Text(
+                    'D',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
+                  ),
                 ),
               ),
-            ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: _mint,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 1.5),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -647,81 +676,79 @@ class _HeroCard extends StatelessWidget {
                         .map((m) => _MuscleChip(muscle: m))
                         .toList(),
                   ),
-                  const SizedBox(height: 20),
-
-                  // Footer
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: -20),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 14),
-                    color: const Color(0xFFf2f4f6),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.fitness_center_rounded,
-                                size: 16, color: _dark),
-                            SizedBox(width: 6),
-                            Text(
-                              '7 Exercises',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: _dark,
-                              ),
-                            ),
-                            SizedBox(width: 16),
-                            Icon(Icons.access_time_rounded,
-                                size: 16, color: _dark),
-                            SizedBox(width: 6),
-                            Text(
-                              '45 min',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: _dark,
-                              ),
-                            ),
-                          ],
+                ],
+              ),
+            ),
+            
+            // Footer
+            Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 20, vertical: 14),
+              color: const Color(0xFFf2f4f6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.fitness_center_rounded,
+                          size: 16, color: _dark),
+                      SizedBox(width: 6),
+                      Text(
+                        '7 Exercises',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: _dark,
                         ),
-                        GestureDetector(
-                          onTap: () => context
-                              .push('/workouts/detail/${schedule.id}'),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF006c46),
-                              borderRadius: BorderRadius.circular(14),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF006c46)
-                                      .withOpacity(0.25),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'Start',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                SizedBox(width: 4),
-                                Icon(Icons.play_arrow_rounded,
-                                    size: 16, color: Colors.white),
-                              ],
+                      ),
+                      SizedBox(width: 16),
+                      Icon(Icons.access_time_rounded,
+                          size: 16, color: _dark),
+                      SizedBox(width: 6),
+                      Text(
+                        '45 min',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: _dark,
+                        ),
+                      ),
+                    ],
+                  ),
+                  GestureDetector(
+                    onTap: () => context
+                        .push('/workouts/detail/${schedule.id}'),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF006c46),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF006c46)
+                                .withOpacity(0.25),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Start',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
                             ),
                           ),
-                        ),
-                      ],
+                          SizedBox(width: 4),
+                          Icon(Icons.play_arrow_rounded,
+                              size: 16, color: Colors.white),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -1259,27 +1286,7 @@ class _MuscleChip extends StatelessWidget {
 }
 
 // ── Shared small icon buttons ─────────────────────────────────────────────────
-class _AppBarIconBtn extends StatelessWidget {
-  const _AppBarIconBtn({required this.icon, required this.onTap});
-  final IconData icon;
-  final VoidCallback onTap;
 
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: const Color(0xFFe6e8ea),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, size: 20, color: const Color(0xFF3c4a41)),
-      ),
-    );
-  }
-}
 
 class _IconActionBtn extends StatelessWidget {
   const _IconActionBtn({required this.icon, required this.onTap});
