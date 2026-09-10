@@ -8,7 +8,7 @@ import 'package:go_router/go_router.dart';
 /// with four navigation tabs: Dashboard, Workouts, History, and Settings. The
 /// active tab is highlighted with a mint-green ([Color(0xFF00d68f)]) accent pill
 /// and smooth [AnimatedContainer] transitions.
-class BottomNavShell extends StatelessWidget {
+class BottomNavShell extends StatefulWidget {
   const BottomNavShell({
     super.key,
     required this.navigationShell,
@@ -16,22 +16,58 @@ class BottomNavShell extends StatelessWidget {
 
   final StatefulNavigationShell navigationShell;
 
+  @override
+  State<BottomNavShell> createState() => _BottomNavShellState();
+}
+
+class _BottomNavShellState extends State<BottomNavShell> {
+  DateTime? _lastPressedAt;
+
   void _goBranch(int index) {
     HapticFeedback.lightImpact();
-    navigationShell.goBranch(
+    widget.navigationShell.goBranch(
       index,
-      initialLocation: index == navigationShell.currentIndex,
+      initialLocation: index == widget.navigationShell.currentIndex,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFf7f9fb),
-      body: navigationShell,
-      bottomNavigationBar: _FloatingDock(
-        currentIndex: navigationShell.currentIndex,
-        onTap: _goBranch,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+
+        final now = DateTime.now();
+        final maxDuration = const Duration(seconds: 2);
+        final isWarning = _lastPressedAt == null ||
+            now.difference(_lastPressedAt!) > maxDuration;
+
+        if (isWarning) {
+          _lastPressedAt = now;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Press back again to exit'),
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              backgroundColor: const Color(0xFF0f172a),
+            ),
+          );
+          return;
+        }
+
+        SystemNavigator.pop();
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFf7f9fb),
+        body: widget.navigationShell,
+        bottomNavigationBar: _FloatingDock(
+          currentIndex: widget.navigationShell.currentIndex,
+          onTap: _goBranch,
+        ),
       ),
     );
   }

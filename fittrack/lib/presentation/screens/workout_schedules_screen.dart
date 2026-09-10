@@ -111,7 +111,7 @@ class _WorkoutSchedulesScreenState
   // ── App Bar ──────────────────────────────────────────────────────────────
   Widget _buildAppBar(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 16, 4),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
       child: Row(
         children: [
           Row(
@@ -223,7 +223,7 @@ class _WorkoutSchedulesScreenState
   // ── Pill FAB ─────────────────────────────────────────────────────────────
   Widget _buildFAB(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 88),
+      padding: const EdgeInsets.only(bottom: 72),
       child: GestureDetector(
         onTap: () {
           HapticFeedback.mediumImpact();
