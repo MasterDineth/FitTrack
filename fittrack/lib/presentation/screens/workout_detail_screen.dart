@@ -108,10 +108,6 @@ class _DetailBody extends StatelessWidget {
   final WidgetRef ref;
 
   static const Color _mint = Color(0xFF00d68f);
-  static const Color _mintDark = Color(0xFF00b779);
-  static const Color _dark = Color(0xFF0f172a);
-  static const Color _muted = Color(0xFF64748b);
-  static const Color _softBorder = Color(0xFFe2e8f0);
 
   int get _totalSets =>
       exercises.fold(0, (sum, e) => sum + e.targetSets);

@@ -223,7 +223,7 @@ class _WorkoutSchedulesScreenState
   // ── Pill FAB ─────────────────────────────────────────────────────────────
   Widget _buildFAB(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 72),
+      padding: const EdgeInsets.only(bottom: 12),
       child: GestureDetector(
         onTap: () {
           HapticFeedback.mediumImpact();

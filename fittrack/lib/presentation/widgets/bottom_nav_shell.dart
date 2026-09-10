@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import 'ft_exit_confirmation.dart';
+
 /// Glassmorphic floating bottom navigation dock.
 ///
 /// Renders a pill-shaped translucent dock fixed above the bottom of the screen
@@ -35,8 +37,14 @@ class _BottomNavShellState extends State<BottomNavShell> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
+      onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
+
+        // If we are not on the dashboard (index 0), pop back to the dashboard.
+        if (widget.navigationShell.currentIndex != 0) {
+          _goBranch(0);
+          return;
+        }
 
         final now = DateTime.now();
         final maxDuration = const Duration(seconds: 2);
@@ -59,7 +67,10 @@ class _BottomNavShellState extends State<BottomNavShell> {
           return;
         }
 
-        SystemNavigator.pop();
+        final confirmExit = await FtExitConfirmation.show(context);
+        if (confirmExit) {
+          SystemNavigator.pop();
+        }
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFf7f9fb),
