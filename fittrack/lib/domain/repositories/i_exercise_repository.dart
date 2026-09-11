@@ -9,4 +9,22 @@ abstract class IExerciseRepository {
   Future<List<MuscleActivation>> getMuscleActivations(String exerciseId);
   Future<List<ExecutionStep>> getExecutionSteps(String exerciseId);
   Future<List<FormCue>> getFormCues(String exerciseId);
+
+  /// Persists an [Exercise] (insert-or-replace).
+  Future<void> saveExercise(Exercise exercise);
+
+  /// Replaces all [MuscleActivation] records for [exerciseId].
+  Future<void> saveMuscleActivations(
+    String exerciseId,
+    List<MuscleActivation> activations,
+  );
+
+  /// Replaces all [ExecutionStep] records for [exerciseId].
+  Future<void> saveExecutionSteps(
+    String exerciseId,
+    List<ExecutionStep> steps,
+  );
+
+  /// Replaces all [FormCue] records for [exerciseId].
+  Future<void> saveFormCues(String exerciseId, List<FormCue> cues);
 }

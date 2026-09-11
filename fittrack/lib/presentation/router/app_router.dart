@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -16,6 +16,8 @@ import '../screens/fitness_profile_setup_screen.dart';
 import '../screens/dashboard_screen.dart';
 import '../screens/workout_schedules_screen.dart';
 import '../screens/workout_detail_screen.dart';
+import '../screens/create_schedule_screen.dart';
+import '../screens/create_custom_exercise_screen.dart';
 import '../screens/placeholder_screen.dart';
 import '../widgets/bottom_nav_shell.dart';
 
@@ -31,8 +33,8 @@ class GoRouterNotifier extends ChangeNotifier {
   final Ref _ref;
 
   GoRouterNotifier(this._ref) {
-    _ref.listen(authProvider, (_, __) => notifyListeners());
-    _ref.listen(userProfileProvider, (_, __) => notifyListeners());
+    _ref.listen(authProvider, (_, _) => notifyListeners());
+    _ref.listen(userProfileProvider, (_, _) => notifyListeners());
   }
 }
 
@@ -115,6 +117,23 @@ GoRouter router(Ref ref) {
         path: '/onboarding/fitness',
         builder: (context, state) => const FitnessProfileSetupScreen(),
       ),
+      GoRoute(
+        path: '/workouts/detail/:scheduleId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => WorkoutDetailScreen(
+          scheduleId: state.pathParameters['scheduleId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/workouts/create-schedule',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const CreateScheduleScreen(),
+      ),
+      GoRoute(
+        path: '/exercises/create-custom',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const CreateCustomExerciseScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return BottomNavShell(navigationShell: navigationShell);
@@ -135,22 +154,6 @@ GoRouter router(Ref ref) {
               GoRoute(
                 path: '/workouts',
                 builder: (context, state) => const WorkoutSchedulesScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'detail/:scheduleId',
-                    builder: (context, state) => WorkoutDetailScreen(
-                      scheduleId: state.pathParameters['scheduleId']!,
-                    ),
-                  ),
-                  GoRoute(
-                    path: 'create-schedule',
-                    builder: (context, state) => const PlaceholderScreen(title: 'Create Schedule'),
-                  ),
-                ],
-              ),
-              GoRoute(
-                path: '/exercises/create-custom',
-                builder: (context, state) => const PlaceholderScreen(title: 'Create Custom Exercise'),
               ),
             ],
           ),

@@ -188,3 +188,51 @@ final class WorkoutSessionRepositoryProvider
 
 String _$workoutSessionRepositoryHash() =>
     r'9bd2e78bdc7f5efa09b43ff26e6a52b73ec74a1d';
+
+@ProviderFor(exerciseRepository)
+final exerciseRepositoryProvider = ExerciseRepositoryProvider._();
+
+final class ExerciseRepositoryProvider
+    extends
+        $FunctionalProvider<
+          IExerciseRepository,
+          IExerciseRepository,
+          IExerciseRepository
+        >
+    with $Provider<IExerciseRepository> {
+  ExerciseRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'exerciseRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$exerciseRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<IExerciseRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  IExerciseRepository create(Ref ref) {
+    return exerciseRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(IExerciseRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<IExerciseRepository>(value),
+    );
+  }
+}
+
+String _$exerciseRepositoryHash() =>
+    r'a484562bb533b2e343472675ab332a13a7426327';
