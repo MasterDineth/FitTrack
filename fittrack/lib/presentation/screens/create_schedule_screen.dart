@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -371,13 +372,17 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => AddExerciseBottomSheet(
-        onExercisesAdded: (entries) {
-          for (final e in entries) {
-            notifier.addExercise(e);
-          }
-        },
-        onCreateNew: () => context.push('/exercises/create-custom'),
+      barrierColor: const Color(0x660F172A),
+      builder: (_) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+        child: AddExerciseBottomSheet(
+          onExercisesAdded: (entries) {
+            for (final e in entries) {
+              notifier.addExercise(e);
+            }
+          },
+          onCreateNew: () => context.push('/exercises/create-custom'),
+        ),
       ),
     );
   }
@@ -477,9 +482,6 @@ class _SummaryBar extends StatelessWidget {
   final String durationLabel;
   final int totalSets;
   final int calories;
-
-  static const Color _mint = Color(0xFF00d68f);
-  static const Color _dark = Color(0xFF0f172a);
 
   @override
   Widget build(BuildContext context) {
@@ -691,57 +693,112 @@ class _ExerciseCard extends StatelessWidget {
 
           const Divider(height: 1, indent: 16, endIndent: 16),
 
-          // Steppers grid
+          // Steppers grid (2x2)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-            child: Row(
+            child: Column(
               children: [
-                _StepperCell(
-                  label: 'Sets',
-                  value: entry.targetSets,
-                  onMinus: () =>
-                      onChangeSets((entry.targetSets - 1).clamp(1, 99)),
-                  onPlus: () =>
-                      onChangeSets((entry.targetSets + 1).clamp(1, 99)),
-                  display: '${entry.targetSets}',
+                Row(
+                  children: [
+                    _StepperCell(
+                      label: 'Sets',
+                      value: entry.targetSets,
+                      onMinus: () =>
+                          onChangeSets((entry.targetSets - 1).clamp(1, 99)),
+                      onPlus: () =>
+                          onChangeSets((entry.targetSets + 1).clamp(1, 99)),
+                      display: '${entry.targetSets}',
+                      onEdit: () => _showEditDialog(context, 'Sets', entry.targetSets.toDouble(), (v) => onChangeSets(v.toInt())),
+                    ),
+                    const SizedBox(width: 12),
+                    _StepperCell(
+                      label: 'Reps',
+                      value: entry.targetReps,
+                      onMinus: () =>
+                          onChangeReps((entry.targetReps - 1).clamp(1, 999)),
+                      onPlus: () =>
+                          onChangeReps((entry.targetReps + 1).clamp(1, 999)),
+                      display: '${entry.targetReps}',
+                      onEdit: () => _showEditDialog(context, 'Reps', entry.targetReps.toDouble(), (v) => onChangeReps(v.toInt())),
+                    ),
+                  ],
                 ),
-                _StepperCell(
-                  label: 'Reps',
-                  value: entry.targetReps,
-                  onMinus: () =>
-                      onChangeReps((entry.targetReps - 1).clamp(1, 999)),
-                  onPlus: () =>
-                      onChangeReps((entry.targetReps + 1).clamp(1, 999)),
-                  display: '${entry.targetReps}',
-                ),
-                _StepperCell(
-                  label: 'Wt. kg',
-                  value: entry.targetWeightKg.toInt(),
-                  onMinus: () =>
-                      onChangeWeight((entry.targetWeightKg - 2.5)
-                          .clamp(0, 999)
-                          .toDouble()),
-                  onPlus: () =>
-                      onChangeWeight((entry.targetWeightKg + 2.5)
-                          .clamp(0, 999)
-                          .toDouble()),
-                  display: entry.targetWeightKg == 0
-                      ? 'BW'
-                      : '${entry.targetWeightKg.toStringAsFixed(entry.targetWeightKg % 1 == 0 ? 0 : 1)}',
-                ),
-                _StepperCell(
-                  label: 'Rest',
-                  value: entry.restDurationSeconds,
-                  onMinus: () =>
-                      onChangeRest((entry.restDurationSeconds - 15)
-                          .clamp(0, 600)),
-                  onPlus: () =>
-                      onChangeRest((entry.restDurationSeconds + 15)
-                          .clamp(0, 600)),
-                  display: '${entry.restDurationSeconds ~/ 60}:${(entry.restDurationSeconds % 60).toString().padLeft(2, '0')}',
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    _StepperCell(
+                      label: 'Wt. kg',
+                      value: entry.targetWeightKg.toInt(),
+                      onMinus: () =>
+                          onChangeWeight((entry.targetWeightKg - 0.5)
+                              .clamp(0, 999)
+                              .toDouble()),
+                      onPlus: () =>
+                          onChangeWeight((entry.targetWeightKg + 0.5)
+                              .clamp(0, 999)
+                              .toDouble()),
+                      display: entry.targetWeightKg == 0
+                          ? 'BW'
+                          : '${entry.targetWeightKg.toStringAsFixed(entry.targetWeightKg % 1 == 0 ? 0 : 1)}',
+                      onEdit: () => _showEditDialog(context, 'Weight (kg)', entry.targetWeightKg, onChangeWeight, isDouble: true),
+                    ),
+                    const SizedBox(width: 12),
+                    _StepperCell(
+                      label: 'Rest',
+                      value: entry.restDurationSeconds,
+                      onMinus: () =>
+                          onChangeRest((entry.restDurationSeconds - 15)
+                              .clamp(0, 600)),
+                      onPlus: () =>
+                          onChangeRest((entry.restDurationSeconds + 15)
+                              .clamp(0, 600)),
+                      display: '${entry.restDurationSeconds ~/ 60}:${(entry.restDurationSeconds % 60).toString().padLeft(2, '0')}',
+                      onEdit: () => _showEditDialog(context, 'Rest (sec)', entry.restDurationSeconds.toDouble(), (v) => onChangeRest(v.toInt())),
+                    ),
+                  ],
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditDialog(BuildContext context, String title, double initial, ValueChanged<double> onSave, {bool isDouble = false}) {
+    final controller = TextEditingController(text: isDouble ? initial.toString() : initial.toInt().toString());
+    showDialog(
+      context: context,
+      barrierColor: const Color(0x660F172A),
+      builder: (ctx) => AlertDialog(
+        title: Text('Edit $title', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.numberWithOptions(decimal: isDouble),
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: 'Enter value',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748b))),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final val = double.tryParse(controller.text);
+              if (val != null) onSave(val);
+              Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _mint,
+              foregroundColor: _dark,
+              elevation: 0,
+            ),
+            child: const Text('Save'),
           ),
         ],
       ),
@@ -756,6 +813,7 @@ class _StepperCell extends StatelessWidget {
     required this.onMinus,
     required this.onPlus,
     required this.display,
+    this.onEdit,
   });
 
   final String label;
@@ -763,6 +821,7 @@ class _StepperCell extends StatelessWidget {
   final VoidCallback onMinus;
   final VoidCallback onPlus;
   final String display;
+  final VoidCallback? onEdit;
 
   static const Color _dark = Color(0xFF0f172a);
   static const Color _mint = Color(0xFF00d68f);
@@ -770,35 +829,50 @@ class _StepperCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF64748b),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _MiniBtn(Icons.remove_rounded, onMinus),
-              const SizedBox(width: 4),
-              Text(
-                display,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 13,
-                  color: _dark,
-                ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFf8fafc),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFf1f5f9)),
+        ),
+        child: Column(
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF64748b),
               ),
-              const SizedBox(width: 4),
-              _MiniBtn(Icons.add_rounded, onPlus),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _MiniBtn(Icons.remove_rounded, onMinus),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: onEdit,
+                  child: Container(
+                    constraints: const BoxConstraints(minWidth: 40),
+                    alignment: Alignment.center,
+                    child: Text(
+                      display,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                        color: _dark,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                _MiniBtn(Icons.add_rounded, onPlus),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../providers/repository_providers.dart';
 import '../providers/workout_logic_providers.dart';
 import '../providers/user_profile_provider.dart';
-import '../providers/auth_provider.dart';
 import '../../domain/entities/schedule.dart';
 
 /// Dashboard – the home hub screen shown after onboarding.
@@ -191,7 +190,7 @@ class DashboardScreen extends ConsumerWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: const Color(0xFF00d68f).withOpacity(0.12),
+              color: const Color(0xFF00d68f).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.fitness_center_rounded,
@@ -227,7 +226,7 @@ class DashboardScreen extends ConsumerWidget {
                   border: Border.all(color: _softBorder),
                   boxShadow: [
                     BoxShadow(
-                      color: _dark.withOpacity(0.04),
+                      color: _dark.withValues(alpha: 0.04),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     )
@@ -412,7 +411,7 @@ class _LiveClockPillState extends State<_LiveClockPill> {
         color: const Color(0xFFecfdf5),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFF00d68f).withOpacity(0.3),
+          color: const Color(0xFF00d68f).withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -467,10 +466,10 @@ class _MetricsBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _softBorder.withOpacity(0.7)),
+        border: Border.all(color: _softBorder.withValues(alpha: 0.7)),
         boxShadow: [
           BoxShadow(
-            color: _dark.withOpacity(0.04),
+            color: _dark.withValues(alpha: 0.04),
             blurRadius: 24,
             spreadRadius: -4,
             offset: const Offset(0, 4),
@@ -669,10 +668,10 @@ class _ActivityCalendar extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: _softBorder.withOpacity(0.7)),
+            border: Border.all(color: _softBorder.withValues(alpha: 0.7)),
             boxShadow: [
               BoxShadow(
-                color: _dark.withOpacity(0.04),
+                color: _dark.withValues(alpha: 0.04),
                 blurRadius: 24,
                 spreadRadius: -4,
                 offset: const Offset(0, 4),
@@ -786,7 +785,7 @@ class _CalendarNavBtn extends StatelessWidget {
         border: Border.all(color: const Color(0xFFe2e8f0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 4,
             offset: const Offset(0, 1),
           )
@@ -845,7 +844,7 @@ class _TodayRecommendationCard extends ConsumerWidget {
                 color: const Color(0xFFecfdf5),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: _mint.withOpacity(0.3),
+                  color: _mint.withValues(alpha: 0.3),
                 ),
               ),
               child: const Text(
@@ -891,10 +890,10 @@ class _ScheduleHeroCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: _softBorder.withOpacity(0.7)),
+        border: Border.all(color: _softBorder.withValues(alpha: 0.7)),
         boxShadow: [
           BoxShadow(
-            color: _dark.withOpacity(0.04),
+            color: _dark.withValues(alpha: 0.04),
             blurRadius: 24,
             spreadRadius: -4,
             offset: const Offset(0, 4),
@@ -1059,7 +1058,7 @@ class _ScheduleHeroCard extends ConsumerWidget {
                             boxShadow: [
                               BoxShadow(
                                 color:
-                                    const Color(0xFF00d68f).withOpacity(0.35),
+                                    const Color(0xFF00d68f).withValues(alpha: 0.35),
                                 blurRadius: 20,
                                 spreadRadius: -2,
                                 offset: const Offset(0, 4),
@@ -1119,7 +1118,7 @@ class _RestDayCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFe2e8f0).withOpacity(0.7)),
+        border: Border.all(color: const Color(0xFFe2e8f0).withValues(alpha: 0.7)),
       ),
       child: const Row(
         children: [
@@ -1165,7 +1164,7 @@ class _RecommendationLoading extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFe2e8f0).withOpacity(0.7)),
+        border: Border.all(color: const Color(0xFFe2e8f0).withValues(alpha: 0.7)),
       ),
       child: const Center(
         child: CircularProgressIndicator(
@@ -1206,7 +1205,7 @@ class _MusclePill extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors[0],
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colors[1].withOpacity(0.3)),
+        border: Border.all(color: colors[1].withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1261,10 +1260,10 @@ class _RecentWorkoutCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _softBorder.withOpacity(0.7)),
+        border: Border.all(color: _softBorder.withValues(alpha: 0.7)),
         boxShadow: [
           BoxShadow(
-            color: _dark.withOpacity(0.03),
+            color: _dark.withValues(alpha: 0.03),
             blurRadius: 16,
             spreadRadius: -4,
             offset: const Offset(0, 4),
@@ -1277,9 +1276,9 @@ class _RecentWorkoutCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: accentColor.withOpacity(0.1),
+              color: accentColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: accentColor.withOpacity(0.2)),
+              border: Border.all(color: accentColor.withValues(alpha: 0.2)),
             ),
             child: Icon(Icons.fitness_center_rounded,
                 color: accentColor, size: 20),
@@ -1380,10 +1379,10 @@ class _TutorialCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _softBorder.withOpacity(0.7)),
+        border: Border.all(color: _softBorder.withValues(alpha: 0.7)),
         boxShadow: [
           BoxShadow(
-            color: _dark.withOpacity(0.03),
+            color: _dark.withValues(alpha: 0.03),
             blurRadius: 16,
             spreadRadius: -4,
             offset: const Offset(0, 4),
@@ -1399,7 +1398,7 @@ class _TutorialCard extends StatelessWidget {
               color: iconColor,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                  color: badgeColor.withOpacity(0.2)),
+                  color: badgeColor.withValues(alpha: 0.2)),
             ),
             child: Icon(Icons.play_circle_outline_rounded,
                 color: badgeColor, size: 22),
@@ -1426,10 +1425,10 @@ class _TutorialCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: badgeColor.withOpacity(0.1),
+                        color: badgeColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                         border:
-                            Border.all(color: badgeColor.withOpacity(0.3)),
+                            Border.all(color: badgeColor.withValues(alpha: 0.3)),
                       ),
                       child: Text(
                         badge.toUpperCase(),

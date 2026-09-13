@@ -23,6 +23,10 @@ class AddExerciseBottomSheet extends ConsumerStatefulWidget {
       _AddExerciseBottomSheetState();
 }
 
+final _exercisesProvider = FutureProvider.autoDispose((ref) {
+  return ref.watch(exerciseRepositoryProvider).getAllExercises();
+});
+
 class _AddExerciseBottomSheetState
     extends ConsumerState<AddExerciseBottomSheet> {
   static const Color _mint = Color(0xFF00d68f);
@@ -39,10 +43,7 @@ class _AddExerciseBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    final exercisesAsync = ref.watch(
-      FutureProvider.autoDispose((r) =>
-          r.watch(exerciseRepositoryProvider).getAllExercises()),
-    );
+    final exercisesAsync = ref.watch(_exercisesProvider);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.9,
@@ -131,7 +132,7 @@ class _AddExerciseBottomSheetState
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: _muscleFilters.length,
-                        separatorBuilder: (_, __) =>
+                        separatorBuilder: (_, _) =>
                             const SizedBox(width: 8),
                         itemBuilder: (context, i) {
                           final cat = _muscleFilters[i];
@@ -195,7 +196,7 @@ class _AddExerciseBottomSheetState
                       controller: scrollController,
                       padding: const EdgeInsets.fromLTRB(20, 12, 20, 120),
                       itemCount: filtered.length,
-                      separatorBuilder: (_, __) =>
+                      separatorBuilder: (_, _) =>
                           const SizedBox(height: 8),
                       itemBuilder: (context, i) =>
                           _ExerciseTile(
@@ -224,9 +225,14 @@ class _AddExerciseBottomSheetState
               // ── Sticky bottom tray ────────────────────────────────────────
               _BottomTray(
                 selectedCount: _selectedIds.length,
-                exercises: _getSelectedEntries(),
+                exercises: exercisesAsync.hasValue
+                    ? _getSelectedEntries(exercisesAsync.value!)
+                    : [],
                 onAddSelected: () {
-                  widget.onExercisesAdded(_getSelectedEntries());
+                  if (exercisesAsync.hasValue) {
+                    widget.onExercisesAdded(
+                        _getSelectedEntries(exercisesAsync.value!));
+                  }
                   Navigator.of(context).pop();
                 },
                 onCreateNew: () {
@@ -252,13 +258,12 @@ class _AddExerciseBottomSheetState
     }).toList();
   }
 
-  List<ScheduleExerciseEntry> _getSelectedEntries() {
-    // We only have ids here; the names are retrieved from the exercise list
-    // in a real scenario we'd read from the async result. For now build entries.
+  List<ScheduleExerciseEntry> _getSelectedEntries(List<Exercise> allExercises) {
     return _selectedIds.map((id) {
+      final ex = allExercises.firstWhere((e) => e.id == id, orElse: () => Exercise(id: id, name: id, equipment: Equipment.other, movementClassification: MovementClassification.other, isCustom: false));
       return ScheduleExerciseEntry(
         exerciseId: id,
-        exerciseName: id, // placeholder; real name shown via exercise entity
+        exerciseName: ex.name,
       );
     }).toList();
   }

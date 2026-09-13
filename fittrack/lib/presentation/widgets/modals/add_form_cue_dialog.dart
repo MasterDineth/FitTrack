@@ -27,34 +27,20 @@ class _AddFormCueDialogState extends State<AddFormCueDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
       ),
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
         child: Form(
           key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Grab handle
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFe2e8f0),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
 
               const Text(
                 'Add Form Cue',

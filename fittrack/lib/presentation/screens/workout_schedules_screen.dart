@@ -149,7 +149,7 @@ class _WorkoutSchedulesScreenState
                   border: Border.all(color: const Color(0xFFe2e8f0)),
                   boxShadow: [
                     BoxShadow(
-                      color: _dark.withOpacity(0.04),
+                      color: _dark.withValues(alpha: 0.04),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     )
@@ -255,13 +255,13 @@ class _WorkoutSchedulesScreenState
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
-                color: _mint.withOpacity(0.45),
+                color: _mint.withValues(alpha: 0.45),
                 blurRadius: 24,
                 spreadRadius: -4,
                 offset: const Offset(0, 12),
               ),
               BoxShadow(
-                color: _dark.withOpacity(0.08),
+                color: _dark.withValues(alpha: 0.08),
                 blurRadius: 12,
                 spreadRadius: -2,
                 offset: const Offset(0, 4),
@@ -387,7 +387,7 @@ class _CycleProgressSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: _dark.withOpacity(0.04),
+                color: _dark.withValues(alpha: 0.04),
                 blurRadius: 12,
                 offset: const Offset(0, 2),
               ),
@@ -559,13 +559,13 @@ class _HeroCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF00d68f).withOpacity(0.22),
+              color: const Color(0xFF00d68f).withValues(alpha: 0.22),
               blurRadius: 28,
               spreadRadius: -6,
               offset: const Offset(0, 10),
             ),
             BoxShadow(
-              color: _dark.withOpacity(0.04),
+              color: _dark.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -727,7 +727,7 @@ class _HeroCard extends StatelessWidget {
                         boxShadow: [
                           BoxShadow(
                             color: const Color(0xFF006c46)
-                                .withOpacity(0.25),
+                                .withValues(alpha: 0.25),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -771,7 +771,7 @@ class _RestCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 2),
           ),
@@ -967,7 +967,7 @@ class _UpcomingScheduleCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: _dark.withOpacity(0.04),
+              color: _dark.withValues(alpha: 0.04),
               blurRadius: 12,
               offset: const Offset(0, 2),
             ),
@@ -1142,7 +1142,7 @@ class _RestRecoveryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1214,7 +1214,7 @@ class _RestRecoveryCard extends StatelessWidget {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
+                  color: Colors.black.withValues(alpha: 0.06),
                   blurRadius: 4,
                   offset: const Offset(0, 1),
                 )

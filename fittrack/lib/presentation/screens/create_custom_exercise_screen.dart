@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -463,11 +464,13 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
     BuildContext context,
     CustomExerciseNotifier notifier,
   ) {
-    showModalBottomSheet<FormCueDraft>(
+    showDialog<FormCueDraft>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const AddFormCueDialog(),
+      barrierColor: const Color(0x660F172A),
+      builder: (_) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+        child: const AddFormCueDialog(),
+      ),
     ).then((result) {
       if (result != null) notifier.addFormCue(result);
     });
@@ -481,7 +484,11 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => const AddMuscleActivationModal(),
+      barrierColor: const Color(0x660F172A),
+      builder: (_) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+        child: const AddMuscleActivationModal(),
+      ),
     ).then((result) {
       if (result != null) notifier.addMuscleActivation(result);
     });
@@ -660,11 +667,18 @@ class _StepCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFf8fafc),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFe2e8f0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -672,58 +686,64 @@ class _StepCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 24,
-                height: 24,
+                width: 28,
+                height: 28,
                 decoration: BoxDecoration(
                   color: _mint,
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
                   child: Text(
                     '${index + 1}',
                     style: const TextStyle(
                       fontWeight: FontWeight.w800,
-                      fontSize: 12,
+                      fontSize: 13,
                       color: _dark,
                     ),
                   ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  onChanged: onTitleChanged,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    color: _dark,
+                  ),
+                  decoration: const InputDecoration(
+                    hintText: 'Step Title',
+                    hintStyle: TextStyle(color: Color(0xFFa0aec0), fontSize: 15, fontWeight: FontWeight.w600),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ),
               GestureDetector(
                 onTap: onRemove,
                 child: const Icon(Icons.close_rounded,
-                    size: 18, color: Color(0xFFef4444)),
+                    size: 20, color: Color(0xFFa0aec0)),
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          TextField(
-            onChanged: onTitleChanged,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-              color: _dark,
-            ),
-            decoration: const InputDecoration(
-              hintText: 'Phase title (e.g. Setup)',
-              hintStyle: TextStyle(color: Color(0xFFa0aec0), fontSize: 13),
-              border: InputBorder.none,
-              isDense: true,
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-          const Divider(height: 12),
+          const SizedBox(height: 12),
           TextField(
             onChanged: onInstructionsChanged,
-            maxLines: 3,
-            style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
-            decoration: const InputDecoration(
-              hintText: 'Step-by-step instructions…',
-              hintStyle: TextStyle(color: Color(0xFFa0aec0), fontSize: 13),
-              border: InputBorder.none,
-              isDense: true,
-              contentPadding: EdgeInsets.zero,
+            maxLines: null,
+            minLines: 2,
+            style: const TextStyle(fontSize: 14, color: Color(0xFF475569), height: 1.5),
+            decoration: InputDecoration(
+              hintText: 'Add detailed instructions for this step...',
+              hintStyle: const TextStyle(color: Color(0xFFcbd5e1), fontSize: 14),
+              filled: true,
+              fillColor: const Color(0xFFf8fafc),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             ),
           ),
         ],
@@ -810,12 +830,19 @@ class _MuscleActivationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final roleColor = _roleColor(activation.role);
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFe2e8f0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -824,102 +851,80 @@ class _MuscleActivationTile extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 8, vertical: 3),
+                    horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: roleColor.withValues(alpha: 0.12),
+                  color: roleColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   activation.role.name[0].toUpperCase() +
                       activation.role.name.substring(1),
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: roleColor,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Text(
-                activation.muscleName,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                  color: _dark,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  activation.muscleName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    color: _dark,
+                  ),
                 ),
               ),
-              const Spacer(),
               GestureDetector(
                 onTap: onRemove,
                 child: const Icon(Icons.close_rounded,
-                    size: 16, color: Color(0xFFa0aec0)),
+                    size: 20, color: Color(0xFFa0aec0)),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
           Row(
             children: [
               const Text(
                 'Intensity',
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 13,
                   color: Color(0xFF64748b),
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const Spacer(),
-              GestureDetector(
-                onTap: () => onIntensityChanged(
-                    (activation.intensityPercentage - 5).clamp(5, 100)),
-                child: _MiniStepBtn(Icons.remove_rounded),
-              ),
-              const SizedBox(width: 8),
               Text(
                 '${activation.intensityPercentage}%',
                 style: const TextStyle(
                   fontWeight: FontWeight.w800,
-                  fontSize: 13,
+                  fontSize: 15,
                   color: _dark,
                 ),
               ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () => onIntensityChanged(
-                    (activation.intensityPercentage + 5).clamp(5, 100)),
-                child: _MiniStepBtn(Icons.add_rounded),
-              ),
             ],
           ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: activation.intensityPercentage / 100,
-              backgroundColor: const Color(0xFFe2e8f0),
-              valueColor: AlwaysStoppedAnimation<Color>(roleColor),
-              minHeight: 6,
+          SliderTheme(
+            data: SliderThemeData(
+              activeTrackColor: roleColor,
+              inactiveTrackColor: const Color(0xFFf1f5f9),
+              thumbColor: roleColor,
+              trackHeight: 8,
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+            ),
+            child: Slider(
+              value: activation.intensityPercentage.toDouble(),
+              min: 5,
+              max: 100,
+              divisions: 19,
+              onChanged: (v) => onIntensityChanged(v.toInt()),
             ),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _MiniStepBtn extends StatelessWidget {
-  const _MiniStepBtn(this.icon);
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 24,
-      height: 24,
-      decoration: BoxDecoration(
-        color: const Color(0xFFf1f5f9),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Icon(icon, size: 14, color: const Color(0xFF0f172a)),
     );
   }
 }

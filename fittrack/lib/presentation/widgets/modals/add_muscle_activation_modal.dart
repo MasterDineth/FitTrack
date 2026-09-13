@@ -107,7 +107,7 @@ class _AddMuscleActivationModalState extends State<AddMuscleActivationModal> {
                   controller: scrollController,
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                   itemCount: _filtered.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  separatorBuilder: (_, _) => const Divider(height: 1),
                   itemBuilder: (context, i) {
                     final muscle = _filtered[i];
                     final isSelected = _selectedMuscle == muscle;

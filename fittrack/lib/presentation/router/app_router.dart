@@ -134,6 +134,13 @@ GoRouter router(Ref ref) {
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const CreateCustomExerciseScreen(),
       ),
+      GoRoute(
+        path: '/workouts/active/:scheduleId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => PlaceholderScreen(
+          title: 'Active Workout: ${state.pathParameters['scheduleId']}',
+        ),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return BottomNavShell(navigationShell: navigationShell);

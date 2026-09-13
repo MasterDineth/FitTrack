@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
   static const _databaseName = "FitTrack.db";
-  static const _databaseVersion = 1;
+  static const _databaseVersion = 2;
 
   DatabaseHelper._privateConstructor();
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
@@ -25,7 +25,22 @@ class DatabaseHelper {
       path,
       version: _databaseVersion,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
+  }
+
+  Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    // Drop all tables
+    final tables = [
+      'set_logs', 'exercise_logs', 'workout_sessions',
+      'schedule_exercises', 'schedules', 'form_cues',
+      'execution_steps', 'muscle_activations', 'exercises'
+    ];
+    for (var table in tables) {
+      await db.execute('DROP TABLE IF EXISTS $table');
+    }
+    // Recreate
+    await _onCreate(db, newVersion);
   }
 
   Future _onCreate(Database db, int version) async {
@@ -145,17 +160,18 @@ class DatabaseHelper {
   }
 
   Future<void> _seedInitialData(Database db) async {
-    // 9 Default Exercises
+    // 10 Default Exercises
     final exercises = [
-      {'id': 'ex1', 'name': 'Barbell Bench Press', 'equipment': 'barbell', 'movementClassification': 'compound'},
+      {'id': 'ex1', 'name': 'BB Bench Press', 'equipment': 'barbell', 'movementClassification': 'compound'},
       {'id': 'ex2', 'name': 'Incline DB Press', 'equipment': 'dumbbell', 'movementClassification': 'compound'},
       {'id': 'ex3', 'name': 'Cable Flyes', 'equipment': 'cable', 'movementClassification': 'isolation'},
-      {'id': 'ex4', 'name': 'Overhead DB Press', 'equipment': 'dumbbell', 'movementClassification': 'compound'},
+      {'id': 'ex4', 'name': 'Overhead Press', 'equipment': 'barbell', 'movementClassification': 'compound'},
       {'id': 'ex5', 'name': 'Lateral Raises', 'equipment': 'dumbbell', 'movementClassification': 'isolation'},
       {'id': 'ex6', 'name': 'Tricep Pushdowns', 'equipment': 'cable', 'movementClassification': 'isolation'},
-      {'id': 'ex7', 'name': 'Barbell Squat', 'equipment': 'barbell', 'movementClassification': 'compound'},
-      {'id': 'ex8', 'name': 'Bent-Over BB Row', 'equipment': 'barbell', 'movementClassification': 'compound'},
-      {'id': 'ex9', 'name': 'Deadlift', 'equipment': 'barbell', 'movementClassification': 'compound'},
+      {'id': 'ex7', 'name': 'Overhead Tricep Extension', 'equipment': 'cable', 'movementClassification': 'isolation'},
+      {'id': 'ex8', 'name': 'Barbell Squat', 'equipment': 'barbell', 'movementClassification': 'compound'},
+      {'id': 'ex9', 'name': 'Bent-Over Row', 'equipment': 'barbell', 'movementClassification': 'compound'},
+      {'id': 'ex10', 'name': 'Deadlift', 'equipment': 'barbell', 'movementClassification': 'compound'},
     ];
 
     for (var ex in exercises) {
@@ -180,6 +196,21 @@ class DatabaseHelper {
 
     for (var sch in schedules) {
       await db.insert('schedules', sch);
+    }
+
+    // Link schedule Day 1 (sch1) to 7 exercises
+    final scheduleExercises = [
+      {'id': 'se1', 'scheduleId': 'sch1', 'exerciseId': 'ex1', 'sortOrder': 1, 'targetSets': 3, 'targetReps': 8, 'targetWeightKg': 60.0, 'restDurationSeconds': 120},
+      {'id': 'se2', 'scheduleId': 'sch1', 'exerciseId': 'ex2', 'sortOrder': 2, 'targetSets': 3, 'targetReps': 10, 'targetWeightKg': 25.0, 'restDurationSeconds': 90},
+      {'id': 'se3', 'scheduleId': 'sch1', 'exerciseId': 'ex3', 'sortOrder': 3, 'targetSets': 3, 'targetReps': 12, 'targetWeightKg': 15.0, 'restDurationSeconds': 60},
+      {'id': 'se4', 'scheduleId': 'sch1', 'exerciseId': 'ex4', 'sortOrder': 4, 'targetSets': 3, 'targetReps': 8, 'targetWeightKg': 40.0, 'restDurationSeconds': 120},
+      {'id': 'se5', 'scheduleId': 'sch1', 'exerciseId': 'ex5', 'sortOrder': 5, 'targetSets': 4, 'targetReps': 15, 'targetWeightKg': 10.0, 'restDurationSeconds': 60},
+      {'id': 'se6', 'scheduleId': 'sch1', 'exerciseId': 'ex6', 'sortOrder': 6, 'targetSets': 3, 'targetReps': 12, 'targetWeightKg': 20.0, 'restDurationSeconds': 60},
+      {'id': 'se7', 'scheduleId': 'sch1', 'exerciseId': 'ex7', 'sortOrder': 7, 'targetSets': 3, 'targetReps': 12, 'targetWeightKg': 15.0, 'restDurationSeconds': 60},
+    ];
+
+    for (var se in scheduleExercises) {
+      await db.insert('schedule_exercises', se);
     }
   }
 }

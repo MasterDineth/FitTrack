@@ -6,7 +6,6 @@ import '../providers/repository_providers.dart';
 import '../providers/workout_logic_providers.dart';
 import '../../domain/entities/schedule.dart';
 import '../../domain/entities/schedule_exercise.dart';
-import '../../domain/entities/exercise.dart';
 
 /// Workout Detail Screen – shows the full routine breakdown for a given [scheduleId].
 ///
@@ -42,14 +41,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
       // ── Sticky Start Workout CTA ────────────────────────────────────
       bottomNavigationBar: _StickyStartDock(
         onStartTap: () {
-          // TODO(workout-active): Navigate to active workout flow when built.
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Starting workout…'),
-              backgroundColor: Color(0xFF00d68f),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          context.push('/workouts/active/$scheduleId');
         },
       ),
       body: SafeArea(
@@ -238,10 +230,10 @@ class _TopNav extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       decoration: BoxDecoration(
-        color: _bg.withOpacity(0.95),
+        color: _bg.withValues(alpha: 0.95),
         border: Border(
           bottom: BorderSide(
-            color: const Color(0xFFe2e8f0).withOpacity(0.5),
+            color: const Color(0xFFe2e8f0).withValues(alpha: 0.5),
           ),
         ),
       ),
@@ -259,7 +251,7 @@ class _TopNav extends StatelessWidget {
                 border: Border.all(color: const Color(0xFFe2e8f0)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   )
@@ -316,7 +308,7 @@ class _NavIconBtn extends StatelessWidget {
           border: Border.all(color: const Color(0xFFe2e8f0)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 4,
               offset: const Offset(0, 1),
             )
@@ -457,10 +449,10 @@ class _MetricsBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _softBorder.withOpacity(0.8)),
+        border: Border.all(color: _softBorder.withValues(alpha: 0.8)),
         boxShadow: [
           BoxShadow(
-            color: _dark.withOpacity(0.05),
+            color: _dark.withValues(alpha: 0.05),
             blurRadius: 20,
             spreadRadius: -4,
             offset: const Offset(0, 4),
@@ -596,10 +588,10 @@ class _ExerciseCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _softBorder.withOpacity(0.7)),
+        border: Border.all(color: _softBorder.withValues(alpha: 0.7)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0f172a).withOpacity(0.04),
+            color: const Color(0xFF0f172a).withValues(alpha: 0.04),
             blurRadius: 20,
             spreadRadius: -4,
             offset: const Offset(0, 4),
@@ -752,7 +744,7 @@ class _AddExerciseButton extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.6),
+        color: Colors.white.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: const Color(0xFFcbd5e1),
@@ -790,7 +782,7 @@ class _StickyStartDock extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     return Container(
-      color: Colors.white.withOpacity(0.95),
+      color: Colors.white.withValues(alpha: 0.95),
       padding: EdgeInsets.only(
         left: 20,
         right: 20,
@@ -816,7 +808,7 @@ class _StickyStartDock extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF00d68f).withOpacity(0.28),
+                    color: const Color(0xFF00d68f).withValues(alpha: 0.28),
                     blurRadius: 32,
                     spreadRadius: -4,
                     offset: const Offset(0, 12),
@@ -830,7 +822,7 @@ class _StickyStartDock extends StatelessWidget {
                     width: 28,
                     height: 28,
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.play_arrow_rounded,

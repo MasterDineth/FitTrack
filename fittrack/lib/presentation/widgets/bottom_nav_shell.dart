@@ -132,21 +132,21 @@ class _FloatingDock extends StatelessWidget {
         height: 68,
         decoration: BoxDecoration(
           // Glassmorphic background
-          color: Colors.white.withOpacity(0.92),
+          color: Colors.white.withValues(alpha: 0.92),
           borderRadius: BorderRadius.circular(28),
           border: Border.all(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF0f172a).withOpacity(0.10),
+              color: const Color(0xFF0f172a).withValues(alpha: 0.10),
               blurRadius: 32,
               spreadRadius: -4,
               offset: const Offset(0, 12),
             ),
             BoxShadow(
-              color: const Color(0xFF0f172a).withOpacity(0.04),
+              color: const Color(0xFF0f172a).withValues(alpha: 0.04),
               blurRadius: 12,
               spreadRadius: -2,
               offset: const Offset(0, 4),
@@ -177,7 +177,7 @@ class _FloatingDock extends StatelessWidget {
                           height: 32,
                           decoration: BoxDecoration(
                             color: isActive
-                                ? const Color(0xFF00d68f).withOpacity(0.12)
+                                ? const Color(0xFF00d68f).withValues(alpha: 0.12)
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
                           ),
