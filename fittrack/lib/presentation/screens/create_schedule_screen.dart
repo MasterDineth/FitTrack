@@ -21,9 +21,10 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
   static const Color _muted = Color(0xFF64748b);
   static const Color _border = Color(0xFFe2e8f0);
 
-  // ── Controllers ────────────────────────────────────────────────────────────
+  // ── Controllers & State ──────────────────────────────────────────────────
   final _nameCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
+  int? _expandedExerciseIndex = 0;
 
   static const _allMuscles = [
     'Chest', 'Back', 'Shoulders',
@@ -296,24 +297,31 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
                     itemCount: state.exercises.length,
                     itemBuilder: (context, index) {
                       final entry = state.exercises[index];
-                      return ReorderableDragStartListener(
+                      return _ExerciseCard(
                         key: ValueKey('${entry.exerciseId}_$index'),
                         index: index,
-                        child: _ExerciseCard(
-                          index: index,
-                          entry: entry,
-                          onRemove: () =>
-                              notifier.removeExercise(index),
-                          onChangeSets: (v) => notifier.updateExerciseParam(
-                              index, sets: v),
-                          onChangeReps: (v) => notifier.updateExerciseParam(
-                              index, reps: v),
-                          onChangeWeight: (v) =>
-                              notifier.updateExerciseParam(
-                                  index, weightKg: v),
-                          onChangeRest: (v) => notifier.updateExerciseParam(
-                              index, restSeconds: v),
-                        ),
+                        entry: entry,
+                        isExpanded: _expandedExerciseIndex == index,
+                        onToggle: () {
+                          setState(() {
+                            if (_expandedExerciseIndex == index) {
+                              _expandedExerciseIndex = null;
+                            } else {
+                              _expandedExerciseIndex = index;
+                            }
+                          });
+                        },
+                        onRemove: () =>
+                            notifier.removeExercise(index),
+                        onChangeSets: (v) => notifier.updateExerciseParam(
+                            index, sets: v),
+                        onChangeReps: (v) => notifier.updateExerciseParam(
+                            index, reps: v),
+                        onChangeWeight: (v) =>
+                            notifier.updateExerciseParam(
+                                index, weightKg: v),
+                        onChangeRest: (v) => notifier.updateExerciseParam(
+                            index, restSeconds: v),
                       );
                     },
                   ),
@@ -602,8 +610,11 @@ class _EmptyExercisesCard extends StatelessWidget {
 
 class _ExerciseCard extends StatelessWidget {
   const _ExerciseCard({
+    super.key,
     required this.index,
     required this.entry,
+    required this.isExpanded,
+    required this.onToggle,
     required this.onRemove,
     required this.onChangeSets,
     required this.onChangeReps,
@@ -613,6 +624,8 @@ class _ExerciseCard extends StatelessWidget {
 
   final int index;
   final ScheduleExerciseEntry entry;
+  final bool isExpanded;
+  final VoidCallback onToggle;
   final VoidCallback onRemove;
   final ValueChanged<int> onChangeSets;
   final ValueChanged<int> onChangeReps;
@@ -625,141 +638,209 @@ class _ExerciseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _border),
+        border: Border.all(
+          color: isExpanded ? _mint : _border,
+          width: isExpanded ? 1.5 : 1,
+        ),
+        boxShadow: isExpanded
+            ? [
+                BoxShadow(
+                  color: _mint.withValues(alpha: 0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
+                )
+              ]
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 10,
+                )
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Card header
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 8, 10),
-            child: Row(
-              children: [
-                // Step number badge
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: _mint,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${index + 1}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 13,
-                        color: _dark,
+          // Card header (tap to toggle)
+          InkWell(
+            onTap: onToggle,
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 8, 10),
+              child: Row(
+                children: [
+                  // Step number badge
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: isExpanded ? Colors.white : const Color(0xFFf1f5f9),
+                      border: isExpanded
+                          ? Border.all(color: _mint, width: 1.5)
+                          : null,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${index + 1}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13,
+                          color: isExpanded ? _mint : _dark,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    entry.exerciseName.isEmpty
-                        ? 'Exercise ${index + 1}'
-                        : entry.exerciseName,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                      color: _dark,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      entry.exerciseName.isEmpty
+                          ? 'Exercise ${index + 1}'
+                          : entry.exerciseName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: _dark,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                // Drag handle
-                const Icon(Icons.drag_handle_rounded,
-                    color: Color(0xFFcbd5e1), size: 22),
-                const SizedBox(width: 4),
-                // Remove
-                IconButton(
-                  icon: const Icon(Icons.close_rounded,
-                      color: Color(0xFFef4444), size: 18),
-                  onPressed: onRemove,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 32, minHeight: 32,
+                  Icon(
+                    isExpanded
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    color: const Color(0xFF94a3b8),
+                    size: 20,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 4),
+                  // Drag handle
+                  ReorderableDragStartListener(
+                    index: index,
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                      child: Icon(Icons.drag_indicator_rounded,
+                          color: Color(0xFFcbd5e1), size: 22),
+                    ),
+                  ),
+                  // Remove
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded,
+                        color: Color(0xFFef4444), size: 18),
+                    onPressed: onRemove,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 32,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
 
-          const Divider(height: 1, indent: 16, endIndent: 16),
-
-          // Steppers grid (2x2)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    _StepperCell(
-                      label: 'Sets',
-                      value: entry.targetSets,
-                      onMinus: () =>
-                          onChangeSets((entry.targetSets - 1).clamp(1, 99)),
-                      onPlus: () =>
-                          onChangeSets((entry.targetSets + 1).clamp(1, 99)),
-                      display: '${entry.targetSets}',
-                      onEdit: () => _showEditDialog(context, 'Sets', entry.targetSets.toDouble(), (v) => onChangeSets(v.toInt())),
-                    ),
-                    const SizedBox(width: 12),
-                    _StepperCell(
-                      label: 'Reps',
-                      value: entry.targetReps,
-                      onMinus: () =>
-                          onChangeReps((entry.targetReps - 1).clamp(1, 999)),
-                      onPlus: () =>
-                          onChangeReps((entry.targetReps + 1).clamp(1, 999)),
-                      display: '${entry.targetReps}',
-                      onEdit: () => _showEditDialog(context, 'Reps', entry.targetReps.toDouble(), (v) => onChangeReps(v.toInt())),
-                    ),
-                  ],
+          if (!isExpanded) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(54, 0, 16, 16),
+              child: Text(
+                '${entry.targetSets} sets • ${entry.targetReps} reps • ${entry.restDurationSeconds}s rest',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF64748b),
+                  fontWeight: FontWeight.w500,
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    _StepperCell(
-                      label: 'Wt. kg',
-                      value: entry.targetWeightKg.toInt(),
-                      onMinus: () =>
-                          onChangeWeight((entry.targetWeightKg - 0.5)
-                              .clamp(0, 999)
-                              .toDouble()),
-                      onPlus: () =>
-                          onChangeWeight((entry.targetWeightKg + 0.5)
-                              .clamp(0, 999)
-                              .toDouble()),
-                      display: entry.targetWeightKg == 0
-                          ? 'BW'
-                          : '${entry.targetWeightKg.toStringAsFixed(entry.targetWeightKg % 1 == 0 ? 0 : 1)}',
-                      onEdit: () => _showEditDialog(context, 'Weight (kg)', entry.targetWeightKg, onChangeWeight, isDouble: true),
-                    ),
-                    const SizedBox(width: 12),
-                    _StepperCell(
-                      label: 'Rest',
-                      value: entry.restDurationSeconds,
-                      onMinus: () =>
-                          onChangeRest((entry.restDurationSeconds - 15)
-                              .clamp(0, 600)),
-                      onPlus: () =>
-                          onChangeRest((entry.restDurationSeconds + 15)
-                              .clamp(0, 600)),
-                      display: '${entry.restDurationSeconds ~/ 60}:${(entry.restDurationSeconds % 60).toString().padLeft(2, '0')}',
-                      onEdit: () => _showEditDialog(context, 'Rest (sec)', entry.restDurationSeconds.toDouble(), (v) => onChangeRest(v.toInt())),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
-          ),
+          ] else ...[
+            const Divider(height: 1, indent: 16, endIndent: 16),
+            // Steppers grid (2x2)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      _StepperCell(
+                        label: 'Sets',
+                        value: entry.targetSets,
+                        onMinus: () =>
+                            onChangeSets((entry.targetSets - 1).clamp(1, 99)),
+                        onPlus: () =>
+                            onChangeSets((entry.targetSets + 1).clamp(1, 99)),
+                        display: '${entry.targetSets}',
+                        onEdit: () => _showEditDialog(
+                            context,
+                            'Sets',
+                            entry.targetSets.toDouble(),
+                            (v) => onChangeSets(v.toInt())),
+                      ),
+                      const SizedBox(width: 12),
+                      _StepperCell(
+                        label: 'Reps',
+                        value: entry.targetReps,
+                        onMinus: () =>
+                            onChangeReps((entry.targetReps - 1).clamp(1, 999)),
+                        onPlus: () =>
+                            onChangeReps((entry.targetReps + 1).clamp(1, 999)),
+                        display: '${entry.targetReps}',
+                        onEdit: () => _showEditDialog(
+                            context,
+                            'Reps',
+                            entry.targetReps.toDouble(),
+                            (v) => onChangeReps(v.toInt())),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      _StepperCell(
+                        label: 'Wt. kg',
+                        value: entry.targetWeightKg.toInt(),
+                        onMinus: () => onChangeWeight(
+                            (entry.targetWeightKg - 0.5)
+                                .clamp(0, 999)
+                                .toDouble()),
+                        onPlus: () => onChangeWeight(
+                            (entry.targetWeightKg + 0.5)
+                                .clamp(0, 999)
+                                .toDouble()),
+                        display: entry.targetWeightKg == 0
+                            ? 'BW'
+                            : '${entry.targetWeightKg.toStringAsFixed(entry.targetWeightKg % 1 == 0 ? 0 : 1)}',
+                        onEdit: () => _showEditDialog(
+                            context,
+                            'Weight (kg)',
+                            entry.targetWeightKg,
+                            onChangeWeight,
+                            isDouble: true),
+                      ),
+                      const SizedBox(width: 12),
+                      _StepperCell(
+                        label: 'Rest',
+                        value: entry.restDurationSeconds,
+                        onMinus: () => onChangeRest(
+                            (entry.restDurationSeconds - 15).clamp(0, 600)),
+                        onPlus: () => onChangeRest(
+                            (entry.restDurationSeconds + 15).clamp(0, 600)),
+                        display:
+                            '${entry.restDurationSeconds ~/ 60}:${(entry.restDurationSeconds % 60).toString().padLeft(2, '0')}',
+                        onEdit: () => _showEditDialog(
+                            context,
+                            'Rest (sec)',
+                            entry.restDurationSeconds.toDouble(),
+                            (v) => onChangeRest(v.toInt())),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
