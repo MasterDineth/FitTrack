@@ -34,8 +34,13 @@ class ActiveRestTimerView extends ConsumerWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
-            boxShadow: const [
+            boxShadow: [
               BoxShadow(
+                color: const Color(0xFF00D68F).withValues(alpha: 0.12),
+                blurRadius: 40,
+                spreadRadius: -5,
+              ),
+              const BoxShadow(
                 color: Color(0x0A0F172A),
                 blurRadius: 20,
                 offset: Offset(0, 4),
@@ -173,6 +178,15 @@ class ActiveRestTimerView extends ConsumerWidget {
                     ),
                   ),
                 ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Set progression carousel
+              _SetProgressionCarousel(
+                totalSets: entry?.totalSets ?? 3,
+                currentSetIndex: state.currentSetIndex,
+                weight: entry?.liveWeightKg ?? 0,
               ),
             ],
           ),
@@ -357,4 +371,102 @@ class _RingPainter extends CustomPainter {
   @override
   bool shouldRepaint(_RingPainter old) =>
       old.progress != progress || old.trackColor != trackColor;
+}
+
+class _SetProgressionCarousel extends StatelessWidget {
+  const _SetProgressionCarousel({
+    required this.totalSets,
+    required this.currentSetIndex,
+    required this.weight,
+  });
+
+  final int totalSets;
+  final int currentSetIndex;
+  final double weight;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(totalSets, (index) {
+          final isCompleted = index <= currentSetIndex;
+          final isNext = index == currentSetIndex + 1;
+          
+          return Row(
+            children: [
+              if (index > 0)
+                Container(
+                  width: 20,
+                  height: 2,
+                  color: isCompleted || isNext
+                      ? const Color(0xFF00d68f)
+                      : const Color(0xFFe2e8f0),
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                ),
+              Column(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isCompleted
+                          ? const Color(0xFF0f172a)
+                          : isNext
+                              ? Colors.white
+                              : const Color(0xFFf8fafc),
+                      border: Border.all(
+                        color: isNext
+                            ? const Color(0xFF00d68f)
+                            : (isCompleted
+                                ? const Color(0xFF0f172a)
+                                : const Color(0xFFe2e8f0)),
+                        width: isNext ? 2 : 1,
+                      ),
+                    ),
+                    child: Center(
+                      child: isCompleted
+                          ? const Icon(Icons.check, color: Colors.white, size: 24)
+                          : Text(
+                              '${index + 1}',
+                              style: TextStyle(
+                                color: isNext
+                                    ? const Color(0xFF0f172a)
+                                    : const Color(0xFF64748b),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    isNext ? 'NEXT' : 'Set ${index + 1}',
+                    style: TextStyle(
+                      color: isNext
+                          ? const Color(0xFF00d68f)
+                          : const Color(0xFF94a3b8),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 10,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${weight.toStringAsFixed(weight % 1 == 0 ? 0 : 1)} kg',
+                    style: const TextStyle(
+                      color: Color(0xFF94a3b8),
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        }),
+      ),
+    );
+  }
 }

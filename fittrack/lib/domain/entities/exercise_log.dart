@@ -13,6 +13,7 @@ abstract class ExerciseLog with _$ExerciseLog {
     required String exerciseId,
     required int orderIndex,
     @Default(false) bool isSkipped,
+    String? skipReason,
   }) = _ExerciseLog;
 
   factory ExerciseLog.fromJson(Map<String, dynamic> json) => _$ExerciseLogFromJson(json);

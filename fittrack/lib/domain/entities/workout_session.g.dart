@@ -17,6 +17,10 @@ _WorkoutSession _$WorkoutSessionFromJson(Map<String, dynamic> json) =>
       durationSeconds: (json['durationSeconds'] as num?)?.toInt(),
       totalCalories: (json['totalCalories'] as num?)?.toInt(),
       notes: json['notes'] as String?,
+      intensity: json['intensity'] as String?,
+      totalSets: (json['totalSets'] as num?)?.toInt() ?? 0,
+      totalReps: (json['totalReps'] as num?)?.toInt() ?? 0,
+      totalVolumeKg: (json['totalVolumeKg'] as num?)?.toDouble() ?? 0.0,
     );
 
 Map<String, dynamic> _$WorkoutSessionToJson(_WorkoutSession instance) =>
@@ -28,4 +32,8 @@ Map<String, dynamic> _$WorkoutSessionToJson(_WorkoutSession instance) =>
       'durationSeconds': instance.durationSeconds,
       'totalCalories': instance.totalCalories,
       'notes': instance.notes,
+      'intensity': instance.intensity,
+      'totalSets': instance.totalSets,
+      'totalReps': instance.totalReps,
+      'totalVolumeKg': instance.totalVolumeKg,
     };

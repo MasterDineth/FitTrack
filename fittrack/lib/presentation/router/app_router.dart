@@ -20,6 +20,9 @@ import '../screens/create_schedule_screen.dart';
 import '../screens/create_custom_exercise_screen.dart';
 import '../screens/active_workout_screen.dart';
 import '../screens/exercise_guide_details_screen.dart';
+import '../screens/workout_summary_screen.dart';
+import '../screens/workout_history_screen.dart';
+import '../screens/workout_history_detail_screen.dart';
 import '../screens/placeholder_screen.dart';
 import '../widgets/bottom_nav_shell.dart';
 
@@ -150,6 +153,18 @@ GoRouter router(Ref ref) {
           exerciseId: state.pathParameters['exerciseId']!,
         ),
       ),
+      GoRoute(
+        path: '/workouts/summary',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const WorkoutSummaryScreen(),
+      ),
+      GoRoute(
+        path: '/history/detail/:sessionId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => WorkoutHistoryDetailScreen(
+          sessionId: state.pathParameters['sessionId']!,
+        ),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return BottomNavShell(navigationShell: navigationShell);
@@ -178,7 +193,7 @@ GoRouter router(Ref ref) {
             routes: [
               GoRoute(
                 path: '/history',
-                builder: (context, state) => const PlaceholderScreen(title: 'History'),
+                builder: (context, state) => const WorkoutHistoryScreen(),
               ),
             ],
           ),

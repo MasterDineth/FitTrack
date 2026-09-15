@@ -12,6 +12,7 @@ _ExerciseLog _$ExerciseLogFromJson(Map<String, dynamic> json) => _ExerciseLog(
   exerciseId: json['exerciseId'] as String,
   orderIndex: (json['orderIndex'] as num).toInt(),
   isSkipped: json['isSkipped'] as bool? ?? false,
+  skipReason: json['skipReason'] as String?,
 );
 
 Map<String, dynamic> _$ExerciseLogToJson(_ExerciseLog instance) =>
@@ -21,4 +22,5 @@ Map<String, dynamic> _$ExerciseLogToJson(_ExerciseLog instance) =>
       'exerciseId': instance.exerciseId,
       'orderIndex': instance.orderIndex,
       'isSkipped': instance.isSkipped,
+      'skipReason': instance.skipReason,
     };

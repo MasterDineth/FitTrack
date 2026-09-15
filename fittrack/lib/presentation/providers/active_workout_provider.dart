@@ -159,6 +159,7 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
   Timer? _stopwatchTimer;
   Timer? _restTimer;
   DateTime? _sessionStartTime;
+  final Map<String, String> _skipReasons = {};
 
   @override
   ActiveWorkoutState build() {
@@ -400,8 +401,13 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
 
   // ── Skip Exercise ──────────────────────────────────────────────────────────
 
-  void skipExercise() {
+  void skipExercise({String? reason}) {
     _restTimer?.cancel();
+    final entry = state.currentEntry;
+    if (entry != null && reason != null) {
+      // Record the skip reason keyed by exerciseId
+      _skipReasons[entry.exerciseId] = reason;
+    }
     final nextIndex = state.currentExerciseIndex + 1;
     if (nextIndex >= state.entries.length) {
       _cancelTimers();
@@ -422,7 +428,29 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
     );
   }
 
-  // ── Stop Session ───────────────────────────────────────────────────────────
+  // ── Pause / Resume ─────────────────────────────────────────────────────────
+
+  void pauseSession() {
+    if (state.phase == WorkoutPhase.active ||
+        state.phase == WorkoutPhase.resting) {
+      _cancelTimers();
+      state = state.copyWith(phase: WorkoutPhase.paused);
+    }
+  }
+
+  void resumeSession() {
+    if (state.phase == WorkoutPhase.paused) {
+      if (state.isResting) {
+        state = state.copyWith(phase: WorkoutPhase.resting);
+        _startRestTimer();
+      } else {
+        state = state.copyWith(phase: WorkoutPhase.active);
+      }
+      _startStopwatch();
+    }
+  }
+
+  // ── Stop / Finish Session ──────────────────────────────────────────────────
 
   Future<void> stopSession() async {
     _cancelTimers();
@@ -430,9 +458,36 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
     await _persistSession(state.completedSets);
   }
 
+  /// Called from summary screen once user has entered notes/intensity.
+  Future<void> finishSession({
+    String? notes,
+    String? intensity,
+  }) async {
+    _cancelTimers();
+    // Mark all remaining unstarted exercises as skipped
+    for (var i = state.currentExerciseIndex; i < state.entries.length; i++) {
+      final exId = state.entries[i].exerciseId;
+      // Don't overwrite an existing explicit skip reason
+      if (!_skipReasons.containsKey(exId) &&
+          !state.completedSets.any((s) => s.exerciseId == exId)) {
+        _skipReasons[exId] = 'Session ended early';
+      }
+    }
+    state = state.copyWith(phase: WorkoutPhase.finished);
+    await _persistSession(
+      state.completedSets,
+      notes: notes,
+      intensity: intensity,
+    );
+  }
+
   // ── SQLite Persistence ─────────────────────────────────────────────────────
 
-  Future<void> _persistSession(List<CompletedSetEntry> sets) async {
+  Future<void> _persistSession(
+    List<CompletedSetEntry> sets, {
+    String? notes,
+    String? intensity,
+  }) async {
     try {
       final repo = ref.read(workoutSessionRepositoryProvider);
       final sessionId = _uuid.v4();
@@ -441,6 +496,11 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
           .difference(_sessionStartTime ?? endTime)
           .inSeconds;
 
+      // Compute aggregate stats
+      final totalReps = sets.fold(0, (sum, s) => sum + s.actualReps);
+      final totalVolumeKg =
+          sets.fold(0.0, (sum, s) => sum + s.actualWeightKg * s.actualReps);
+
       final session = WorkoutSession(
         id: sessionId,
         scheduleId: state.schedule.id,
@@ -448,6 +508,11 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
         endTime: endTime,
         durationSeconds: duration,
         totalCalories: state.estimatedCalories,
+        notes: notes,
+        intensity: intensity,
+        totalSets: sets.length,
+        totalReps: totalReps,
+        totalVolumeKg: totalVolumeKg,
       );
 
       await repo.saveSession(session);
@@ -459,14 +524,24 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
           exerciseOrder.add(s.exerciseId);
         }
       }
+      // Also include exercises that were fully skipped (no sets completed)
+      for (final skippedId in _skipReasons.keys) {
+        if (!exerciseOrder.contains(skippedId)) {
+          exerciseOrder.add(skippedId);
+        }
+      }
 
       final exerciseLogs = <ExerciseLog>[];
       for (var i = 0; i < exerciseOrder.length; i++) {
+        final exId = exerciseOrder[i];
+        final wasSkipped = _skipReasons.containsKey(exId);
         exerciseLogs.add(ExerciseLog(
           id: _uuid.v4(),
           sessionId: sessionId,
-          exerciseId: exerciseOrder[i],
+          exerciseId: exId,
           orderIndex: i,
+          isSkipped: wasSkipped,
+          skipReason: wasSkipped ? _skipReasons[exId] : null,
         ));
       }
       await repo.saveExerciseLogs(exerciseLogs);

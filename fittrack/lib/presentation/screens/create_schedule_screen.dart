@@ -667,78 +667,81 @@ class _ExerciseCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Card header (tap to toggle)
-          InkWell(
-            onTap: onToggle,
-            borderRadius: BorderRadius.circular(16),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 8, 10),
-              child: Row(
-                children: [
-                  // Step number badge
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: isExpanded ? Colors.white : const Color(0xFFf1f5f9),
-                      border: isExpanded
-                          ? Border.all(color: _mint, width: 1.5)
-                          : null,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(
-                      child: Text(
-                        '${index + 1}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13,
-                          color: isExpanded ? _mint : _dark,
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onToggle,
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 8, 10),
+                child: Row(
+                  children: [
+                    // Step number badge
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: isExpanded ? Colors.white : const Color(0xFFf1f5f9),
+                        border: isExpanded
+                            ? Border.all(color: _mint, width: 1.5)
+                            : null,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${index + 1}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13,
+                            color: isExpanded ? _mint : _dark,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      entry.exerciseName.isEmpty
-                          ? 'Exercise ${index + 1}'
-                          : entry.exerciseName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14,
-                        color: _dark,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        entry.exerciseName.isEmpty
+                            ? 'Exercise ${index + 1}'
+                            : entry.exerciseName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                          color: _dark,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  Icon(
-                    isExpanded
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.keyboard_arrow_down_rounded,
-                    color: const Color(0xFF94a3b8),
-                    size: 20,
-                  ),
-                  const SizedBox(width: 4),
-                  // Drag handle
-                  ReorderableDragStartListener(
-                    index: index,
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                      child: Icon(Icons.drag_indicator_rounded,
-                          color: Color(0xFFcbd5e1), size: 22),
+                    Icon(
+                      isExpanded
+                          ? Icons.keyboard_arrow_up_rounded
+                          : Icons.keyboard_arrow_down_rounded,
+                      color: const Color(0xFF94a3b8),
+                      size: 20,
                     ),
-                  ),
-                  // Remove
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded,
-                        color: Color(0xFFef4444), size: 18),
-                    onPressed: onRemove,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 32,
+                    const SizedBox(width: 4),
+                    // Drag handle
+                    ReorderableDragStartListener(
+                      index: index,
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                        child: Icon(Icons.drag_indicator_rounded,
+                            color: Color(0xFFcbd5e1), size: 22),
+                      ),
                     ),
-                  ),
-                ],
+                    // Remove
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded,
+                          color: Color(0xFFef4444), size: 18),
+                      onPressed: onRemove,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

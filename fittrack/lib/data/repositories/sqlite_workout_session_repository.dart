@@ -45,6 +45,10 @@ class SqliteWorkoutSessionRepository implements IWorkoutSessionRepository {
     for (var log in logs) {
       final map = log.toJson();
       map['isSkipped'] = log.isSkipped ? 1 : 0;
+      // Store skipReason in the snake_case column name
+      map['skip_reason'] = log.skipReason;
+      // Remove the Freezed-generated camelCase key if present
+      map.remove('skipReason');
       batch.insert('exercise_logs', map, conflictAlgorithm: ConflictAlgorithm.replace);
     }
     await batch.commit(noResult: true);

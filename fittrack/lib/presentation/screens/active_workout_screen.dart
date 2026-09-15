@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../providers/active_workout_provider.dart';
 import '../widgets/active_rest_timer_view.dart';
+import '../widgets/modals/skip_exercise_modal.dart';
+import '../widgets/modals/workout_paused_modal.dart';
+import '../widgets/modals/end_workout_early_modal.dart';
 
 class ActiveWorkoutScreen extends ConsumerStatefulWidget {
   const ActiveWorkoutScreen({super.key, required this.scheduleId});
@@ -70,90 +73,198 @@ class _ActiveWorkoutScreenState
       );
     }
 
-    // ── Finished ─────────────────────────────────────────────────────────────
+    // ── Finished ────────────────────────────────────────────────────────────────
     if (state.phase == WorkoutPhase.finished) {
-      return Scaffold(
-        backgroundColor: _bg,
-        body: _FinishedView(state: state, onDismiss: () => context.pop()),
+      // Navigate to summary once the phase flips to finished (from stopSession)
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) context.pushReplacement('/workouts/summary');
+      });
+      // Show a transient loading scaffold while navigation happens
+      return const Scaffold(
+        backgroundColor: Color(0xFFf7f9fb),
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFF00d68f)),
+        ),
       );
     }
 
     final entry = state.currentEntry;
 
-    return Scaffold(
-      backgroundColor: _bg,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // ── Scrollable body ─────────────────────────────────────────
-            CustomScrollView(
-              slivers: [
-                // Sticky header
-                SliverAppBar(
-                  pinned: true,
-                  backgroundColor: _bg.withValues(alpha: 0.95),
-                  elevation: 0,
-                  scrolledUnderElevation: 1,
-                  automaticallyImplyLeading: false,
-                  title: _WorkoutHeader(state: state),
-                ),
-
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      // Active card OR rest timer
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 350),
-                        transitionBuilder: (child, animation) =>
-                            FadeTransition(
-                          opacity: animation,
-                          child: SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(0, 0.08),
-                              end: Offset.zero,
-                            ).animate(CurvedAnimation(
-                              parent: animation,
-                              curve: Curves.easeOut,
-                            )),
-                            child: child,
-                          ),
-                        ),
-                        child: state.isResting
-                            ? const ActiveRestTimerView(
-                                key: ValueKey('rest'))
-                            : entry != null
-                                ? _ActiveExerciseCard(
-                                    key: ValueKey(
-                                        '${entry.exerciseId}-${state.currentSetIndex}'),
-                                    state: state,
-                                    notifier: notifier,
-                                    scheduleId: widget.scheduleId,
-                                  )
-                                : const SizedBox.shrink(),
-                      ),
-
-                      // Upcoming queue
-                      if (state.upcomingEntries.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        _UpcomingQueue(entries: state.upcomingEntries),
-                      ],
-                    ]),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _showPaused(context, state, notifier);
+      },
+      child: Scaffold(
+        backgroundColor: _bg,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              // ── Scrollable body ─────────────────────────────────────────
+              CustomScrollView(
+                slivers: [
+                  // Sticky header
+                  SliverAppBar(
+                    pinned: true,
+                    backgroundColor: _bg.withValues(alpha: 0.95),
+                    elevation: 0,
+                    scrolledUnderElevation: 1,
+                    automaticallyImplyLeading: false,
+                    title: _WorkoutHeader(state: state),
                   ),
-                ),
-              ],
-            ),
 
-            // ── Sticky footer ───────────────────────────────────────────
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: _SessionFooter(state: state, notifier: notifier),
-            ),
-          ],
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        // Render the entire list: Past, Active, and Upcoming
+                        ...state.entries.asMap().entries.map((mapEntry) {
+                          final index = mapEntry.key;
+                          final loopEntry = mapEntry.value;
+
+                          if (index < state.currentExerciseIndex) {
+                            final isFirstPast = index == 0;
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (isFirstPast)
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 4, bottom: 8, top: 4),
+                                    child: Text(
+                                      'COMPLETED',
+                                      style: TextStyle(
+                                        color: Color(0xFF94a3b8),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.6,
+                                      ),
+                                    ),
+                                  ),
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 8.0),
+                                  child: _PastCard(entry: loopEntry),
+                                ),
+                              ],
+                            );
+                          } else if (index == state.currentExerciseIndex) {
+                            final isFirstUpcomingAfterPast = state.currentExerciseIndex > 0;
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (isFirstUpcomingAfterPast)
+                                  const SizedBox(height: 8),
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 350),
+                                  transitionBuilder: (child, animation) =>
+                                      FadeTransition(
+                                    opacity: animation,
+                                    child: SlideTransition(
+                                      position: Tween<Offset>(
+                                        begin: const Offset(0, 0.08),
+                                        end: Offset.zero,
+                                      ).animate(CurvedAnimation(
+                                        parent: animation,
+                                        curve: Curves.easeOut,
+                                      )),
+                                      child: child,
+                                    ),
+                                  ),
+                                  child: state.isResting
+                                      ? const ActiveRestTimerView(key: ValueKey('rest'))
+                                      : entry != null
+                                          ? _ActiveExerciseCard(
+                                              key: ValueKey(
+                                                  '${entry.exerciseId}-${state.currentSetIndex}'),
+                                              state: state,
+                                              notifier: notifier,
+                                              scheduleId: widget.scheduleId,
+                                            )
+                                          : const SizedBox.shrink(),
+                                ),
+                              ],
+                            );
+                          } else {
+                            final isFirstUpcoming = index == state.currentExerciseIndex + 1;
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (isFirstUpcoming)
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 4, bottom: 8, top: 16),
+                                    child: Text(
+                                      'UPCOMING',
+                                      style: TextStyle(
+                                        color: Color(0xFF94a3b8),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.6,
+                                      ),
+                                    ),
+                                  ),
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 8.0),
+                                  child: _UpcomingCard(entry: loopEntry),
+                                ),
+                              ],
+                            );
+                          }
+                        }),
+                      ]),
+                    ),
+                  ),
+                ],
+              ),
+
+              // ── Sticky footer ───────────────────────────────────────────
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _SessionFooter(
+                  state: state,
+                  notifier: notifier,
+                  onPause: () => _showPaused(context, state, notifier),
+                  onStop: () => _showEndEarly(context, state, notifier),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  void _showPaused(
+    BuildContext context,
+    ActiveWorkoutState state,
+    ActiveWorkoutNotifier notifier,
+  ) {
+    showWorkoutPausedModal(
+      context,
+      state: state,
+      notifier: notifier,
+      onEndWorkout: () => _showEndEarly(context, state, notifier),
+    );
+  }
+
+  void _showEndEarly(
+    BuildContext context,
+    ActiveWorkoutState state,
+    ActiveWorkoutNotifier notifier,
+  ) {
+    showEndWorkoutEarlyModal(
+      context,
+      state: state,
+      notifier: notifier,
+      onFinishAndSave: ({String? notes, String? intensity}) async {
+        await notifier.stopSession();
+      },
+      onDiscard: () {
+        notifier.stopSession().then((_) {
+          if (context.mounted) context.go('/dashboard');
+        });
+      },
     );
   }
 }
@@ -610,7 +721,30 @@ class _ActiveExerciseCard extends StatelessWidget {
           // Skip exercise
           Center(
             child: TextButton.icon(
-              onPressed: notifier.skipExercise,
+              onPressed: () {
+                final currentEntry = state.currentEntry;
+                if (currentEntry == null) return;
+
+                // Build next exercise info (if any)
+                final nextIndex = state.currentExerciseIndex + 1;
+                final hasNext = nextIndex < state.entries.length;
+                final nextEntry =
+                    hasNext ? state.entries[nextIndex] : null;
+
+                final args = SkipExerciseArgs(
+                  currentExerciseName: currentEntry.name,
+                  currentExerciseMuscleTag:
+                      currentEntry.exercise.movementClassification
+                          .name.toUpperCase(),
+                  currentSetIndex: state.currentSetIndex,
+                  totalSets: currentEntry.totalSets,
+                  nextExerciseName: nextEntry?.name,
+                  nextExerciseSets: nextEntry?.totalSets,
+                  nextExerciseReps: nextEntry?.targetReps,
+                );
+
+                showSkipExerciseModal(context, args: args);
+              },
               style: TextButton.styleFrom(
                 foregroundColor: const Color(0xFF166534),
               ),
@@ -789,34 +923,60 @@ class _SetBadge extends StatelessWidget {
 
 // ── Upcoming Queue ────────────────────────────────────────────────────────────
 
-class _UpcomingQueue extends StatelessWidget {
-  const _UpcomingQueue({required this.entries});
-  final List<LiveExerciseEntry> entries;
+class _PastCard extends StatelessWidget {
+  const _PastCard({required this.entry});
+  final LiveExerciseEntry entry;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.only(left: 4, bottom: 8),
-          child: Text(
-            'UPCOMING',
-            style: TextStyle(
-              color: Color(0xFF94a3b8),
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.6,
-            ),
-          ),
+    return Opacity(
+      opacity: 0.6,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFf8fafc),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFe2e8f0)),
         ),
-        ...entries.take(3).map(
-              (e) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: _UpcomingCard(entry: e),
+        child: Row(
+          children: [
+            Container(
+              width: 6,
+              height: 40,
+              decoration: BoxDecoration(
+                color: const Color(0xFF00d68f),
+                borderRadius: BorderRadius.circular(3),
               ),
             ),
-      ],
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    entry.name,
+                    style: const TextStyle(
+                      color: Color(0xFF64748b),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      decoration: TextDecoration.lineThrough,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Completed',
+                    style: TextStyle(
+                      color: Color(0xFF94a3b8),
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.check_circle, color: Color(0xFF00d68f)),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -884,10 +1044,16 @@ class _UpcomingCard extends StatelessWidget {
 // ── Session Footer ────────────────────────────────────────────────────────────
 
 class _SessionFooter extends StatelessWidget {
-  const _SessionFooter(
-      {required this.state, required this.notifier});
+  const _SessionFooter({
+    required this.state,
+    required this.notifier,
+    required this.onPause,
+    required this.onStop,
+  });
   final ActiveWorkoutState state;
   final ActiveWorkoutNotifier notifier;
+  final VoidCallback onPause;
+  final VoidCallback onStop;
 
   @override
   Widget build(BuildContext context) {
@@ -935,7 +1101,7 @@ class _SessionFooter extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: notifier.togglePause,
+                  onPressed: isPaused ? notifier.resumeSession : onPause,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF0f172a),
                     side: const BorderSide(color: Color(0xFFe2e8f0)),
@@ -957,8 +1123,7 @@ class _SessionFooter extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () =>
-                      _confirmStop(context, notifier),
+                  onPressed: onStop,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFef4444),
                     foregroundColor: Colors.white,
@@ -980,32 +1145,6 @@ class _SessionFooter extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Future<void> _confirmStop(
-      BuildContext context, ActiveWorkoutNotifier notifier) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Stop Session?'),
-        content: const Text(
-            'Your progress will be saved. Are you sure you want to end this workout?'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFFef4444)),
-            child: const Text('Stop'),
-          ),
-        ],
-      ),
-    );
-    if (confirm == true) {
-      await notifier.stopSession();
-    }
   }
 }
 
@@ -1200,78 +1339,4 @@ class _StepBtn extends StatelessWidget {
   }
 }
 
-// ── Finished View ─────────────────────────────────────────────────────────────
 
-class _FinishedView extends StatelessWidget {
-  const _FinishedView({required this.state, required this.onDismiss});
-  final ActiveWorkoutState state;
-  final VoidCallback onDismiss;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: const Color(0xFFe6faf3),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF00d68f).withValues(alpha: 0.3),
-                    blurRadius: 24,
-                    spreadRadius: 4,
-                  ),
-                ],
-              ),
-              child: const Icon(Icons.emoji_events,
-                  color: Color(0xFF00d68f), size: 40),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Workout Complete!',
-              style: TextStyle(
-                color: Color(0xFF0f172a),
-                fontWeight: FontWeight.w900,
-                fontSize: 24,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '${state.completedSetCount} sets · ${state.estimatedCalories} kcal · ${state.elapsedFormatted}',
-              style: const TextStyle(
-                color: Color(0xFF64748b),
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: onDismiss,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00d68f),
-                  foregroundColor: const Color(0xFF0f172a),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: const Text(
-                  'Back to Dashboard',
-                  style: TextStyle(
-                      fontWeight: FontWeight.w800, fontSize: 15),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

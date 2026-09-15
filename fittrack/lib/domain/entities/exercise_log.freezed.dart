@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ExerciseLog {
 
- String get id; String get sessionId; String get exerciseId; int get orderIndex; bool get isSkipped;
+ String get id; String get sessionId; String get exerciseId; int get orderIndex; bool get isSkipped; String? get skipReason;
 /// Create a copy of ExerciseLog
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +30,20 @@ $ExerciseLogCopyWith<ExerciseLog> get copyWith => _$ExerciseLogCopyWithImpl<Exer
 @override
 bool operator ==(Object other) {
   final _this = this as ExerciseLog;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ExerciseLog&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.sessionId, _this.sessionId) || other.sessionId == _this.sessionId)&&(identical(other.exerciseId, _this.exerciseId) || other.exerciseId == _this.exerciseId)&&(identical(other.orderIndex, _this.orderIndex) || other.orderIndex == _this.orderIndex)&&(identical(other.isSkipped, _this.isSkipped) || other.isSkipped == _this.isSkipped));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ExerciseLog&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.sessionId, _this.sessionId) || other.sessionId == _this.sessionId)&&(identical(other.exerciseId, _this.exerciseId) || other.exerciseId == _this.exerciseId)&&(identical(other.orderIndex, _this.orderIndex) || other.orderIndex == _this.orderIndex)&&(identical(other.isSkipped, _this.isSkipped) || other.isSkipped == _this.isSkipped)&&(identical(other.skipReason, _this.skipReason) || other.skipReason == _this.skipReason));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as ExerciseLog;
-  return Object.hash(runtimeType,_this.id,_this.sessionId,_this.exerciseId,_this.orderIndex,_this.isSkipped);
+  return Object.hash(runtimeType,_this.id,_this.sessionId,_this.exerciseId,_this.orderIndex,_this.isSkipped,_this.skipReason);
 }
 
 @override
 String toString() {
   final _this = this as ExerciseLog;
-  return 'ExerciseLog(id: ${_this.id}, sessionId: ${_this.sessionId}, exerciseId: ${_this.exerciseId}, orderIndex: ${_this.orderIndex}, isSkipped: ${_this.isSkipped})';
+  return 'ExerciseLog(id: ${_this.id}, sessionId: ${_this.sessionId}, exerciseId: ${_this.exerciseId}, orderIndex: ${_this.orderIndex}, isSkipped: ${_this.isSkipped}, skipReason: ${_this.skipReason})';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $ExerciseLogCopyWith<$Res>  {
   factory $ExerciseLogCopyWith(ExerciseLog value, $Res Function(ExerciseLog) _then) = _$ExerciseLogCopyWithImpl;
 @useResult
 $Res call({
- String id, String sessionId, String exerciseId, int orderIndex, bool isSkipped
+ String id, String sessionId, String exerciseId, int orderIndex, bool isSkipped, String? skipReason
 });
 
 
@@ -71,14 +71,15 @@ class _$ExerciseLogCopyWithImpl<$Res>
 
 /// Create a copy of ExerciseLog
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? sessionId = null,Object? exerciseId = null,Object? orderIndex = null,Object? isSkipped = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? sessionId = null,Object? exerciseId = null,Object? orderIndex = null,Object? isSkipped = null,Object? skipReason = freezed,}) {
   return _then(ExerciseLog(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,sessionId: null == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
 as String,exerciseId: null == exerciseId ? _self.exerciseId : exerciseId // ignore: cast_nullable_to_non_nullable
 as String,orderIndex: null == orderIndex ? _self.orderIndex : orderIndex // ignore: cast_nullable_to_non_nullable
 as int,isSkipped: null == isSkipped ? _self.isSkipped : isSkipped // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,skipReason: freezed == skipReason ? _self.skipReason : skipReason // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -163,10 +164,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String sessionId,  String exerciseId,  int orderIndex,  bool isSkipped)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String sessionId,  String exerciseId,  int orderIndex,  bool isSkipped,  String? skipReason)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ExerciseLog() when $default != null:
-return $default(_that.id,_that.sessionId,_that.exerciseId,_that.orderIndex,_that.isSkipped);case _:
+return $default(_that.id,_that.sessionId,_that.exerciseId,_that.orderIndex,_that.isSkipped,_that.skipReason);case _:
   return orElse();
 
 }
@@ -184,10 +185,10 @@ return $default(_that.id,_that.sessionId,_that.exerciseId,_that.orderIndex,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String sessionId,  String exerciseId,  int orderIndex,  bool isSkipped)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String sessionId,  String exerciseId,  int orderIndex,  bool isSkipped,  String? skipReason)  $default,) {final _that = this;
 switch (_that) {
 case _ExerciseLog():
-return $default(_that.id,_that.sessionId,_that.exerciseId,_that.orderIndex,_that.isSkipped);case _:
+return $default(_that.id,_that.sessionId,_that.exerciseId,_that.orderIndex,_that.isSkipped,_that.skipReason);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +205,10 @@ return $default(_that.id,_that.sessionId,_that.exerciseId,_that.orderIndex,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String sessionId,  String exerciseId,  int orderIndex,  bool isSkipped)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String sessionId,  String exerciseId,  int orderIndex,  bool isSkipped,  String? skipReason)?  $default,) {final _that = this;
 switch (_that) {
 case _ExerciseLog() when $default != null:
-return $default(_that.id,_that.sessionId,_that.exerciseId,_that.orderIndex,_that.isSkipped);case _:
+return $default(_that.id,_that.sessionId,_that.exerciseId,_that.orderIndex,_that.isSkipped,_that.skipReason);case _:
   return null;
 
 }
@@ -219,7 +220,7 @@ return $default(_that.id,_that.sessionId,_that.exerciseId,_that.orderIndex,_that
 @JsonSerializable()
 
 class _ExerciseLog extends ExerciseLog {
-  const _ExerciseLog({required this.id, required this.sessionId, required this.exerciseId, required this.orderIndex, this.isSkipped = false}): super._();
+  const _ExerciseLog({required this.id, required this.sessionId, required this.exerciseId, required this.orderIndex, this.isSkipped = false, this.skipReason}): super._();
   factory _ExerciseLog.fromJson(Map<String, dynamic> json) => _$ExerciseLogFromJson(json);
 
 @override final  String id;
@@ -227,6 +228,7 @@ class _ExerciseLog extends ExerciseLog {
 @override final  String exerciseId;
 @override final  int orderIndex;
 @override@JsonKey() final  bool isSkipped;
+@override final  String? skipReason;
 
 /// Create a copy of ExerciseLog
 /// with the given fields replaced by the non-null parameter values.
@@ -241,18 +243,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ExerciseLog&&(identical(other.id, id) || other.id == id)&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.orderIndex, orderIndex) || other.orderIndex == orderIndex)&&(identical(other.isSkipped, isSkipped) || other.isSkipped == isSkipped));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ExerciseLog&&(identical(other.id, id) || other.id == id)&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.orderIndex, orderIndex) || other.orderIndex == orderIndex)&&(identical(other.isSkipped, isSkipped) || other.isSkipped == isSkipped)&&(identical(other.skipReason, skipReason) || other.skipReason == skipReason));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,sessionId,exerciseId,orderIndex,isSkipped);
+    return Object.hash(runtimeType,id,sessionId,exerciseId,orderIndex,isSkipped,skipReason);
 }
 
 @override
 String toString() {
-    return 'ExerciseLog(id: $id, sessionId: $sessionId, exerciseId: $exerciseId, orderIndex: $orderIndex, isSkipped: $isSkipped)';
+    return 'ExerciseLog(id: $id, sessionId: $sessionId, exerciseId: $exerciseId, orderIndex: $orderIndex, isSkipped: $isSkipped, skipReason: $skipReason)';
 }
 
 
@@ -263,7 +265,7 @@ abstract mixin class _$ExerciseLogCopyWith<$Res> implements $ExerciseLogCopyWith
   factory _$ExerciseLogCopyWith(_ExerciseLog value, $Res Function(_ExerciseLog) _then) = __$ExerciseLogCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String sessionId, String exerciseId, int orderIndex, bool isSkipped
+ String id, String sessionId, String exerciseId, int orderIndex, bool isSkipped, String? skipReason
 });
 
 
@@ -280,14 +282,15 @@ class __$ExerciseLogCopyWithImpl<$Res>
 
 /// Create a copy of ExerciseLog
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? sessionId = null,Object? exerciseId = null,Object? orderIndex = null,Object? isSkipped = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? sessionId = null,Object? exerciseId = null,Object? orderIndex = null,Object? isSkipped = null,Object? skipReason = freezed,}) {
   return _then(_ExerciseLog(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,sessionId: null == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
 as String,exerciseId: null == exerciseId ? _self.exerciseId : exerciseId // ignore: cast_nullable_to_non_nullable
 as String,orderIndex: null == orderIndex ? _self.orderIndex : orderIndex // ignore: cast_nullable_to_non_nullable
 as int,isSkipped: null == isSkipped ? _self.isSkipped : isSkipped // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,skipReason: freezed == skipReason ? _self.skipReason : skipReason // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

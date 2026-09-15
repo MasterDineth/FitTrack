@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$WorkoutSession {
 
- String get id; String get scheduleId; DateTime get startTime; DateTime? get endTime; int? get durationSeconds; int? get totalCalories; String? get notes;
+ String get id; String get scheduleId; DateTime get startTime; DateTime? get endTime; int? get durationSeconds; int? get totalCalories; String? get notes; String? get intensity; int get totalSets; int get totalReps; double get totalVolumeKg;
 /// Create a copy of WorkoutSession
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +30,20 @@ $WorkoutSessionCopyWith<WorkoutSession> get copyWith => _$WorkoutSessionCopyWith
 @override
 bool operator ==(Object other) {
   final _this = this as WorkoutSession;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkoutSession&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.scheduleId, _this.scheduleId) || other.scheduleId == _this.scheduleId)&&(identical(other.startTime, _this.startTime) || other.startTime == _this.startTime)&&(identical(other.endTime, _this.endTime) || other.endTime == _this.endTime)&&(identical(other.durationSeconds, _this.durationSeconds) || other.durationSeconds == _this.durationSeconds)&&(identical(other.totalCalories, _this.totalCalories) || other.totalCalories == _this.totalCalories)&&(identical(other.notes, _this.notes) || other.notes == _this.notes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkoutSession&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.scheduleId, _this.scheduleId) || other.scheduleId == _this.scheduleId)&&(identical(other.startTime, _this.startTime) || other.startTime == _this.startTime)&&(identical(other.endTime, _this.endTime) || other.endTime == _this.endTime)&&(identical(other.durationSeconds, _this.durationSeconds) || other.durationSeconds == _this.durationSeconds)&&(identical(other.totalCalories, _this.totalCalories) || other.totalCalories == _this.totalCalories)&&(identical(other.notes, _this.notes) || other.notes == _this.notes)&&(identical(other.intensity, _this.intensity) || other.intensity == _this.intensity)&&(identical(other.totalSets, _this.totalSets) || other.totalSets == _this.totalSets)&&(identical(other.totalReps, _this.totalReps) || other.totalReps == _this.totalReps)&&(identical(other.totalVolumeKg, _this.totalVolumeKg) || other.totalVolumeKg == _this.totalVolumeKg));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as WorkoutSession;
-  return Object.hash(runtimeType,_this.id,_this.scheduleId,_this.startTime,_this.endTime,_this.durationSeconds,_this.totalCalories,_this.notes);
+  return Object.hash(runtimeType,_this.id,_this.scheduleId,_this.startTime,_this.endTime,_this.durationSeconds,_this.totalCalories,_this.notes,_this.intensity,_this.totalSets,_this.totalReps,_this.totalVolumeKg);
 }
 
 @override
 String toString() {
   final _this = this as WorkoutSession;
-  return 'WorkoutSession(id: ${_this.id}, scheduleId: ${_this.scheduleId}, startTime: ${_this.startTime}, endTime: ${_this.endTime}, durationSeconds: ${_this.durationSeconds}, totalCalories: ${_this.totalCalories}, notes: ${_this.notes})';
+  return 'WorkoutSession(id: ${_this.id}, scheduleId: ${_this.scheduleId}, startTime: ${_this.startTime}, endTime: ${_this.endTime}, durationSeconds: ${_this.durationSeconds}, totalCalories: ${_this.totalCalories}, notes: ${_this.notes}, intensity: ${_this.intensity}, totalSets: ${_this.totalSets}, totalReps: ${_this.totalReps}, totalVolumeKg: ${_this.totalVolumeKg})';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $WorkoutSessionCopyWith<$Res>  {
   factory $WorkoutSessionCopyWith(WorkoutSession value, $Res Function(WorkoutSession) _then) = _$WorkoutSessionCopyWithImpl;
 @useResult
 $Res call({
- String id, String scheduleId, DateTime startTime, DateTime? endTime, int? durationSeconds, int? totalCalories, String? notes
+ String id, String scheduleId, DateTime startTime, DateTime? endTime, int? durationSeconds, int? totalCalories, String? notes, String? intensity, int totalSets, int totalReps, double totalVolumeKg
 });
 
 
@@ -71,7 +71,7 @@ class _$WorkoutSessionCopyWithImpl<$Res>
 
 /// Create a copy of WorkoutSession
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? scheduleId = null,Object? startTime = null,Object? endTime = freezed,Object? durationSeconds = freezed,Object? totalCalories = freezed,Object? notes = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? scheduleId = null,Object? startTime = null,Object? endTime = freezed,Object? durationSeconds = freezed,Object? totalCalories = freezed,Object? notes = freezed,Object? intensity = freezed,Object? totalSets = null,Object? totalReps = null,Object? totalVolumeKg = null,}) {
   return _then(WorkoutSession(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,scheduleId: null == scheduleId ? _self.scheduleId : scheduleId // ignore: cast_nullable_to_non_nullable
@@ -80,7 +80,11 @@ as DateTime,endTime: freezed == endTime ? _self.endTime : endTime // ignore: cas
 as DateTime?,durationSeconds: freezed == durationSeconds ? _self.durationSeconds : durationSeconds // ignore: cast_nullable_to_non_nullable
 as int?,totalCalories: freezed == totalCalories ? _self.totalCalories : totalCalories // ignore: cast_nullable_to_non_nullable
 as int?,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,intensity: freezed == intensity ? _self.intensity : intensity // ignore: cast_nullable_to_non_nullable
+as String?,totalSets: null == totalSets ? _self.totalSets : totalSets // ignore: cast_nullable_to_non_nullable
+as int,totalReps: null == totalReps ? _self.totalReps : totalReps // ignore: cast_nullable_to_non_nullable
+as int,totalVolumeKg: null == totalVolumeKg ? _self.totalVolumeKg : totalVolumeKg // ignore: cast_nullable_to_non_nullable
+as double,
   ));
 }
 
@@ -165,10 +169,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String scheduleId,  DateTime startTime,  DateTime? endTime,  int? durationSeconds,  int? totalCalories,  String? notes)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String scheduleId,  DateTime startTime,  DateTime? endTime,  int? durationSeconds,  int? totalCalories,  String? notes,  String? intensity,  int totalSets,  int totalReps,  double totalVolumeKg)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WorkoutSession() when $default != null:
-return $default(_that.id,_that.scheduleId,_that.startTime,_that.endTime,_that.durationSeconds,_that.totalCalories,_that.notes);case _:
+return $default(_that.id,_that.scheduleId,_that.startTime,_that.endTime,_that.durationSeconds,_that.totalCalories,_that.notes,_that.intensity,_that.totalSets,_that.totalReps,_that.totalVolumeKg);case _:
   return orElse();
 
 }
@@ -186,10 +190,10 @@ return $default(_that.id,_that.scheduleId,_that.startTime,_that.endTime,_that.du
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String scheduleId,  DateTime startTime,  DateTime? endTime,  int? durationSeconds,  int? totalCalories,  String? notes)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String scheduleId,  DateTime startTime,  DateTime? endTime,  int? durationSeconds,  int? totalCalories,  String? notes,  String? intensity,  int totalSets,  int totalReps,  double totalVolumeKg)  $default,) {final _that = this;
 switch (_that) {
 case _WorkoutSession():
-return $default(_that.id,_that.scheduleId,_that.startTime,_that.endTime,_that.durationSeconds,_that.totalCalories,_that.notes);case _:
+return $default(_that.id,_that.scheduleId,_that.startTime,_that.endTime,_that.durationSeconds,_that.totalCalories,_that.notes,_that.intensity,_that.totalSets,_that.totalReps,_that.totalVolumeKg);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -206,10 +210,10 @@ return $default(_that.id,_that.scheduleId,_that.startTime,_that.endTime,_that.du
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String scheduleId,  DateTime startTime,  DateTime? endTime,  int? durationSeconds,  int? totalCalories,  String? notes)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String scheduleId,  DateTime startTime,  DateTime? endTime,  int? durationSeconds,  int? totalCalories,  String? notes,  String? intensity,  int totalSets,  int totalReps,  double totalVolumeKg)?  $default,) {final _that = this;
 switch (_that) {
 case _WorkoutSession() when $default != null:
-return $default(_that.id,_that.scheduleId,_that.startTime,_that.endTime,_that.durationSeconds,_that.totalCalories,_that.notes);case _:
+return $default(_that.id,_that.scheduleId,_that.startTime,_that.endTime,_that.durationSeconds,_that.totalCalories,_that.notes,_that.intensity,_that.totalSets,_that.totalReps,_that.totalVolumeKg);case _:
   return null;
 
 }
@@ -221,7 +225,7 @@ return $default(_that.id,_that.scheduleId,_that.startTime,_that.endTime,_that.du
 @JsonSerializable()
 
 class _WorkoutSession extends WorkoutSession {
-  const _WorkoutSession({required this.id, required this.scheduleId, required this.startTime, this.endTime, this.durationSeconds, this.totalCalories, this.notes}): super._();
+  const _WorkoutSession({required this.id, required this.scheduleId, required this.startTime, this.endTime, this.durationSeconds, this.totalCalories, this.notes, this.intensity, this.totalSets = 0, this.totalReps = 0, this.totalVolumeKg = 0.0}): super._();
   factory _WorkoutSession.fromJson(Map<String, dynamic> json) => _$WorkoutSessionFromJson(json);
 
 @override final  String id;
@@ -231,6 +235,10 @@ class _WorkoutSession extends WorkoutSession {
 @override final  int? durationSeconds;
 @override final  int? totalCalories;
 @override final  String? notes;
+@override final  String? intensity;
+@override@JsonKey() final  int totalSets;
+@override@JsonKey() final  int totalReps;
+@override@JsonKey() final  double totalVolumeKg;
 
 /// Create a copy of WorkoutSession
 /// with the given fields replaced by the non-null parameter values.
@@ -245,18 +253,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkoutSession&&(identical(other.id, id) || other.id == id)&&(identical(other.scheduleId, scheduleId) || other.scheduleId == scheduleId)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.durationSeconds, durationSeconds) || other.durationSeconds == durationSeconds)&&(identical(other.totalCalories, totalCalories) || other.totalCalories == totalCalories)&&(identical(other.notes, notes) || other.notes == notes));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkoutSession&&(identical(other.id, id) || other.id == id)&&(identical(other.scheduleId, scheduleId) || other.scheduleId == scheduleId)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.durationSeconds, durationSeconds) || other.durationSeconds == durationSeconds)&&(identical(other.totalCalories, totalCalories) || other.totalCalories == totalCalories)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.intensity, intensity) || other.intensity == intensity)&&(identical(other.totalSets, totalSets) || other.totalSets == totalSets)&&(identical(other.totalReps, totalReps) || other.totalReps == totalReps)&&(identical(other.totalVolumeKg, totalVolumeKg) || other.totalVolumeKg == totalVolumeKg));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,scheduleId,startTime,endTime,durationSeconds,totalCalories,notes);
+    return Object.hash(runtimeType,id,scheduleId,startTime,endTime,durationSeconds,totalCalories,notes,intensity,totalSets,totalReps,totalVolumeKg);
 }
 
 @override
 String toString() {
-    return 'WorkoutSession(id: $id, scheduleId: $scheduleId, startTime: $startTime, endTime: $endTime, durationSeconds: $durationSeconds, totalCalories: $totalCalories, notes: $notes)';
+    return 'WorkoutSession(id: $id, scheduleId: $scheduleId, startTime: $startTime, endTime: $endTime, durationSeconds: $durationSeconds, totalCalories: $totalCalories, notes: $notes, intensity: $intensity, totalSets: $totalSets, totalReps: $totalReps, totalVolumeKg: $totalVolumeKg)';
 }
 
 
@@ -267,7 +275,7 @@ abstract mixin class _$WorkoutSessionCopyWith<$Res> implements $WorkoutSessionCo
   factory _$WorkoutSessionCopyWith(_WorkoutSession value, $Res Function(_WorkoutSession) _then) = __$WorkoutSessionCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String scheduleId, DateTime startTime, DateTime? endTime, int? durationSeconds, int? totalCalories, String? notes
+ String id, String scheduleId, DateTime startTime, DateTime? endTime, int? durationSeconds, int? totalCalories, String? notes, String? intensity, int totalSets, int totalReps, double totalVolumeKg
 });
 
 
@@ -284,7 +292,7 @@ class __$WorkoutSessionCopyWithImpl<$Res>
 
 /// Create a copy of WorkoutSession
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? scheduleId = null,Object? startTime = null,Object? endTime = freezed,Object? durationSeconds = freezed,Object? totalCalories = freezed,Object? notes = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? scheduleId = null,Object? startTime = null,Object? endTime = freezed,Object? durationSeconds = freezed,Object? totalCalories = freezed,Object? notes = freezed,Object? intensity = freezed,Object? totalSets = null,Object? totalReps = null,Object? totalVolumeKg = null,}) {
   return _then(_WorkoutSession(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,scheduleId: null == scheduleId ? _self.scheduleId : scheduleId // ignore: cast_nullable_to_non_nullable
@@ -293,7 +301,11 @@ as DateTime,endTime: freezed == endTime ? _self.endTime : endTime // ignore: cas
 as DateTime?,durationSeconds: freezed == durationSeconds ? _self.durationSeconds : durationSeconds // ignore: cast_nullable_to_non_nullable
 as int?,totalCalories: freezed == totalCalories ? _self.totalCalories : totalCalories // ignore: cast_nullable_to_non_nullable
 as int?,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,intensity: freezed == intensity ? _self.intensity : intensity // ignore: cast_nullable_to_non_nullable
+as String?,totalSets: null == totalSets ? _self.totalSets : totalSets // ignore: cast_nullable_to_non_nullable
+as int,totalReps: null == totalReps ? _self.totalReps : totalReps // ignore: cast_nullable_to_non_nullable
+as int,totalVolumeKg: null == totalVolumeKg ? _self.totalVolumeKg : totalVolumeKg // ignore: cast_nullable_to_non_nullable
+as double,
   ));
 }
 
