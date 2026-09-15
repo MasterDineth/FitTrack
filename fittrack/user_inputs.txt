@@ -1,0 +1,123 @@
+---USER_INPUT---
+<USER_REQUEST>
+The presentation UI is finished, but flutter run is failing with this Freezed syntax error across all my models:
+Error: The non-abstract class 'Exercise' is missing implementations for these members...
+
+Please fix all Freezed entities in lib/domain/entities/ (Exercise, Schedule, ScheduleExercise, WorkoutSession, ExerciseLog, SetLog).
+
+To resolve this, you must either:
+
+Change the class declarations to abstract class or sealed class (e.g., @freezed abstract class Exercise with _$Exercise).
+
+Add the private empty constructor (e.g., const Exercise._();) to every entity.
+
+Once updated, run flutter pub run build_runner build --delete-conflicting-outputs to regenerate the .freezed.dart files.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-09-10T17:04:27+05:30.
+
+The user's current state is as follows:
+Active Document: c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\presentation\providers\repository_providers.dart (LANGUAGE_DART)
+Cursor is on line: 1
+Other open documents:
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\presentation\providers\repository_providers.dart (LANGUAGE_DART)
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\presentation\screens\dashboard_screen.dart (LANGUAGE_DART)
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\presentation\screens\workout_detail_screen.dart (LANGUAGE_DART)
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\presentation\screens\workout_schedules_screen.dart (LANGUAGE_DART)
+</ADDITIONAL_METADATA>
+<USER_SETTINGS_CHANGE>
+The user changed setting `Model Selection` from None to Gemini 3.1 Pro (High). No need to comment on this change if the user doesn't ask about it. If reporting what model you are, please use a human readable name instead of the exact string.
+</USER_SETTINGS_CHANGE>
+---USER_INPUT---
+<USER_REQUEST>
+Fix the three runtime and visual bugs currently present in the presentation layer:
+
+1. FIX WORKOUT SCREEN NEGATIVE MARGIN CRASH (lib/presentation/screens/workout_schedules_screen.dart):
+   - Flutter's Container asserts 'margin == null || margin.isNonNegative'.
+   - Search for all negative EdgeInsets values (such as `EdgeInsets.only(bottom: -...)` or `EdgeInsets.symmetric(horizontal: -...)`) that were translated from Tailwind `-mx-5 -mb-5`.
+   - Remove all negative margins. To achieve the card footer styling without breaking Flutter constraints, structure the card with a Column containing an expanded content area and a full-width bottom Container styled with the surface-container-low color and rounded bottom corners.
+
+2. FIX WORKOUT DETAIL ASYNC CAST ERROR (lib/presentation/screens/workout_detail_screen.dart & app_router.dart):
+   - The screen crashes with: `Error: type 'Future<Schedule?>' is not a subtype of type 'Schedule?' in type cast`.
+   - In `app_router.dart` and `dashboard_screen.dart`, inspect how the "Start" button navigates to `/workouts/detail/:id`. If passing `extra`, ensure it passes a resolved `Schedule` entity, NOT an unresolved `Future<Schedule?>`.
+   - In `workout_detail_screen.dart`, ensure the schedule is loaded using Riverpod's `ref.watch(...)` on an `AsyncValue<Schedule?>` and handled with `.when(data: ..., loading: ..., error: ...)`. Do NOT directly call an asynchronous repository method inside `build()`.
+
+3. STANDARDIZE THE TOP HEADER & REMOVE EXTRA SETTINGS ICON:
+   - In `workout_schedules_screen.dart`, remove the extra tune/settings icon button currently located in the top-right app bar actions row next to the notification bell.
+   - Inspect the top navigation bar in `dashboard_screen.dart`. Align the notification icon button and profile avatar in `workout_schedules_screen.dart` so they use identical sizing, padding, background colors, and online status indicator dots.
+
+Run `flutter analyze` when finished to verify clean compilation.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-09-10T17:20:31+05:30.
+
+The user's current state is as follows:
+Active Document: c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\domain\entities\schedule.dart (LANGUAGE_DART)
+Cursor is on line: 1
+Other open documents:
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\domain\entities\schedule.dart (LANGUAGE_DART)
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\domain\entities\exercise.dart (LANGUAGE_DART)
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\domain\entities\workout_session.dart (LANGUAGE_DART)
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\domain\entities\set_log.dart (LANGUAGE_DART)
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\domain\entities\form_cue.dart (LANGUAGE_DART)
+</ADDITIONAL_METADATA>
+---USER_INPUT---
+<USER_REQUEST>
+when back guesture is applied app is minimized without warning. impliement doubble confirmation to exit or minimize the app. floating action button to create custom schedules are too higher up bring it down a little to near bottom navigation. profile and notification icons are little missaligned to the right in the workout tab. fix all the mentioned issues
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-09-10T17:35:47+05:30.
+
+The user's current state is as follows:
+Active Document: c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\presentation\screens\workout_schedules_screen.dart (LANGUAGE_DART)
+Cursor is on line: 1
+Other open documents:
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\presentation\screens\workout_schedules_screen.dart (LANGUAGE_DART)
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\presentation\screens\workout_detail_screen.dart (LANGUAGE_DART)
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\domain\entities\schedule.dart (LANGUAGE_DART)
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\domain\entities\exercise.dart (LANGUAGE_DART)
+</ADDITIONAL_METADATA>
+---USER_INPUT---
+Comments on artifact URI: file:///c%3A/Users/dinet/.gemini/antigravity-ide/brain/a5f53a41-6f80-4254-b2bd-be32de5326f8/walkthrough.md
+
+Selection:
+>Fix: Adjusted the FAB's bottom padding down from 88 to 72. It now sits visually closer and more comfortably above the floating dock navigation.
+
+Comment: "fav need to lower bit more it's position is still bit too high and it need to be just few pixel above bottom navigation."
+
+Selection:
+>Fix: Upgraded BottomNavShell from a StatelessWidget to a StatefulWidget. Wrapped the main Scaffold with a PopScope that intercepts the system back button. It now displays a SnackBar warning ("Press back again to exit") if the user hasn't pressed back in the last 2 seconds. Pressing back twice within 2 seconds cleanly pops the system navigator.
+
+Comment: "after tost with "Press back again to exit" is displayed and 2nd back press is recorded insted of exiting display the confirm exit dialog model implemented in the onboarding screen and only if that is confirmed proceed with the exit"
+<USER_REQUEST>
+fav need to lower bit more it's position is still bit too high and it need to be just few pixel above bottom navigation. after tost with "Press back again to exit" is displayed and 2nd back press is recorded insted of exiting display the confirm exit dialog model implemented in the onboarding screen and only if that is confirmed proceed with the exit.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-09-10T17:44:14+05:30.
+
+The user's current state is as follows:
+Active Document: c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\presentation\widgets\bottom_nav_shell.dart (LANGUAGE_DART)
+Cursor is on line: 1
+Other open documents:
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\presentation\widgets\bottom_nav_shell.dart (LANGUAGE_DART)
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\presentation\screens\workout_schedules_screen.dart (LANGUAGE_DART)
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\presentation\screens\workout_detail_screen.dart (LANGUAGE_DART)
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\domain\entities\schedule.dart (LANGUAGE_DART)
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\domain\entities\exercise.dart (LANGUAGE_DART)
+</ADDITIONAL_METADATA>
+---USER_INPUT---
+<USER_REQUEST>
+fab is still way above the bottom nav place it just so slightly above the bottom nav bar
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-09-10T17:53:13+05:30.
+
+The user's current state is as follows:
+Active Document: c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\presentation\screens\workout_schedules_screen.dart (LANGUAGE_DART)
+Cursor is on line: 226
+Other open documents:
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\presentation\widgets\bottom_nav_shell.dart (LANGUAGE_DART)
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\presentation\screens\workout_schedules_screen.dart (LANGUAGE_DART)
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\presentation\screens\workout_detail_screen.dart (LANGUAGE_DART)
+- c:\Users\dinet\Documents\Projects\FitTrack\fittrack\lib\presentation\widgets\ft_exit_confirmation.dart (LANGUAGE_DART)
+</ADDITIONAL_METADATA>

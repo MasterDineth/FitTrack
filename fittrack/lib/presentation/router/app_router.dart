@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -14,17 +14,33 @@ import '../screens/set_new_password_screen.dart';
 import '../screens/telemetry_setup_screen.dart';
 import '../screens/fitness_profile_setup_screen.dart';
 import '../screens/dashboard_screen.dart';
+import '../screens/workout_schedules_screen.dart';
+import '../screens/workout_detail_screen.dart';
+import '../screens/create_schedule_screen.dart';
+import '../screens/create_custom_exercise_screen.dart';
+import '../screens/active_workout_screen.dart';
+import '../screens/exercise_guide_details_screen.dart';
+import '../screens/workout_summary_screen.dart';
+import '../screens/workout_history_screen.dart';
+import '../screens/workout_history_detail_screen.dart';
+import '../screens/settings_screen.dart';
+import '../screens/settings/settings_subscreens.dart';
+import '../widgets/bottom_nav_shell.dart';
 
 part 'app_router.g.dart';
 
-final rootNavigatorKey = GlobalKey<NavigatorState>();
+final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+final shellNavigatorDashboardKey = GlobalKey<NavigatorState>(debugLabel: 'shellDashboard');
+final shellNavigatorWorkoutsKey = GlobalKey<NavigatorState>(debugLabel: 'shellWorkouts');
+final shellNavigatorHistoryKey = GlobalKey<NavigatorState>(debugLabel: 'shellHistory');
+final shellNavigatorSettingsKey = GlobalKey<NavigatorState>(debugLabel: 'shellSettings');
 
 class GoRouterNotifier extends ChangeNotifier {
   final Ref _ref;
 
   GoRouterNotifier(this._ref) {
-    _ref.listen(authProvider, (_, __) => notifyListeners());
-    _ref.listen(userProfileProvider, (_, __) => notifyListeners());
+    _ref.listen(authProvider, (_, _) => notifyListeners());
+    _ref.listen(userProfileProvider, (_, _) => notifyListeners());
   }
 }
 
@@ -108,8 +124,145 @@ GoRouter router(Ref ref) {
         builder: (context, state) => const FitnessProfileSetupScreen(),
       ),
       GoRoute(
-        path: '/dashboard',
-        builder: (context, state) => const DashboardScreen(),
+        path: '/workouts/detail/:scheduleId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => WorkoutDetailScreen(
+          scheduleId: state.pathParameters['scheduleId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/workouts/create-schedule',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const CreateScheduleScreen(),
+      ),
+      GoRoute(
+        path: '/exercises/create-custom',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const CreateCustomExerciseScreen(),
+      ),
+      GoRoute(
+        path: '/workouts/active/:scheduleId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => ActiveWorkoutScreen(
+          scheduleId: state.pathParameters['scheduleId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/workouts/guide/:exerciseId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => ExerciseGuideDetailsScreen(
+          exerciseId: state.pathParameters['exerciseId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/workouts/summary',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const WorkoutSummaryScreen(),
+      ),
+      GoRoute(
+        path: '/history/detail/:sessionId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => WorkoutHistoryDetailScreen(
+          sessionId: state.pathParameters['sessionId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/settings/profile',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/settings/account',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AccountDetailsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/security',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const SecurityAppLockScreen(),
+      ),
+      GoRoute(
+        path: '/settings/password',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const PasswordSecurityScreen(),
+      ),
+      GoRoute(
+        path: '/settings/appearance',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AppearanceSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/notifications',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const NotificationsSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/data',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const DataManagementScreen(),
+      ),
+      GoRoute(
+        path: '/settings/workout-preferences',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const WorkoutPreferencesScreen(),
+      ),
+      GoRoute(
+        path: '/settings/units-equipment',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const UnitsEquipmentScreen(),
+      ),
+      GoRoute(
+        path: '/settings/help',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const HelpCenterScreen(),
+      ),
+      GoRoute(
+        path: '/settings/about',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AboutScreen(),
+      ),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return BottomNavShell(navigationShell: navigationShell);
+        },
+        branches: [
+          StatefulShellBranch(
+            navigatorKey: shellNavigatorDashboardKey,
+            routes: [
+              GoRoute(
+                path: '/dashboard',
+                builder: (context, state) => const DashboardScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: shellNavigatorWorkoutsKey,
+            routes: [
+              GoRoute(
+                path: '/workouts',
+                builder: (context, state) => const WorkoutSchedulesScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: shellNavigatorHistoryKey,
+            routes: [
+              GoRoute(
+                path: '/history',
+                builder: (context, state) => const WorkoutHistoryScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: shellNavigatorSettingsKey,
+            routes: [
+              GoRoute(
+                path: '/settings',
+                builder: (context, state) => const SettingsScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
     ],
   );

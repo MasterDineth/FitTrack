@@ -92,3 +92,147 @@ final class UserRepositoryProvider
 }
 
 String _$userRepositoryHash() => r'568d084ff40cfcde34fbcae41bd36cdbba5d1118';
+
+@ProviderFor(scheduleRepository)
+final scheduleRepositoryProvider = ScheduleRepositoryProvider._();
+
+final class ScheduleRepositoryProvider
+    extends
+        $FunctionalProvider<
+          IScheduleRepository,
+          IScheduleRepository,
+          IScheduleRepository
+        >
+    with $Provider<IScheduleRepository> {
+  ScheduleRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'scheduleRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$scheduleRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<IScheduleRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  IScheduleRepository create(Ref ref) {
+    return scheduleRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(IScheduleRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<IScheduleRepository>(value),
+    );
+  }
+}
+
+String _$scheduleRepositoryHash() =>
+    r'52bef6fbb736d77a29103b550f485b79709c0363';
+
+@ProviderFor(workoutSessionRepository)
+final workoutSessionRepositoryProvider = WorkoutSessionRepositoryProvider._();
+
+final class WorkoutSessionRepositoryProvider
+    extends
+        $FunctionalProvider<
+          IWorkoutSessionRepository,
+          IWorkoutSessionRepository,
+          IWorkoutSessionRepository
+        >
+    with $Provider<IWorkoutSessionRepository> {
+  WorkoutSessionRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'workoutSessionRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$workoutSessionRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<IWorkoutSessionRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  IWorkoutSessionRepository create(Ref ref) {
+    return workoutSessionRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(IWorkoutSessionRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<IWorkoutSessionRepository>(value),
+    );
+  }
+}
+
+String _$workoutSessionRepositoryHash() =>
+    r'9bd2e78bdc7f5efa09b43ff26e6a52b73ec74a1d';
+
+@ProviderFor(exerciseRepository)
+final exerciseRepositoryProvider = ExerciseRepositoryProvider._();
+
+final class ExerciseRepositoryProvider
+    extends
+        $FunctionalProvider<
+          IExerciseRepository,
+          IExerciseRepository,
+          IExerciseRepository
+        >
+    with $Provider<IExerciseRepository> {
+  ExerciseRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'exerciseRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$exerciseRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<IExerciseRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  IExerciseRepository create(Ref ref) {
+    return exerciseRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(IExerciseRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<IExerciseRepository>(value),
+    );
+  }
+}
+
+String _$exerciseRepositoryHash() =>
+    r'a484562bb533b2e343472675ab332a13a7426327';

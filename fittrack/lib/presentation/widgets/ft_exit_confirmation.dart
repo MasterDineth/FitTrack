@@ -12,7 +12,7 @@ class FtExitConfirmation extends StatelessWidget {
     required this.child,
   });
 
-  Future<void> _showExitDialog(BuildContext context) async {
+  static Future<bool> show(BuildContext context) async {
     final shouldExit = await showDialog<bool>(
       context: context,
       barrierColor: AppColors.slateDark.withValues(alpha: 0.3),
@@ -103,9 +103,7 @@ class FtExitConfirmation extends StatelessWidget {
       },
     );
 
-    if (shouldExit == true) {
-      SystemNavigator.pop();
-    }
+    return shouldExit == true;
   }
 
   @override
@@ -116,7 +114,10 @@ class FtExitConfirmation extends StatelessWidget {
         if (didPop) {
           return;
         }
-        await _showExitDialog(context);
+        final shouldExit = await show(context);
+        if (shouldExit) {
+          SystemNavigator.pop();
+        }
       },
       child: child,
     );
