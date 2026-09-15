@@ -1,8 +1,8 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../../providers/active_workout_provider.dart';
 import 'discard_workout_modal.dart';
+import 'modal_backdrop_helper.dart';
 import 'save_session_modal.dart';
 
 /// Shows the End Workout Early bottom sheet with backdrop blur.
@@ -19,68 +19,15 @@ Future<void> showEndWorkoutEarlyModal(
       onFinishAndSave,
   required VoidCallback onDiscard,
 }) async {
-  await showModalBottomSheet<void>(
+  await showBlurBottomSheet<void>(
     context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: Colors.transparent, // Handled by custom BackdropFilter
-    builder: (_) => _EndWorkoutEarlyHost(
+    child: _EndWorkoutEarlySheet(
       state: state,
       notifier: notifier,
       onFinishAndSave: onFinishAndSave,
       onDiscard: onDiscard,
     ),
   );
-}
-
-class _EndWorkoutEarlyHost extends StatelessWidget {
-  const _EndWorkoutEarlyHost({
-    required this.state,
-    required this.notifier,
-    required this.onFinishAndSave,
-    required this.onDiscard,
-  });
-
-  final ActiveWorkoutState state;
-  final ActiveWorkoutNotifier notifier;
-  final Future<void> Function({String? notes, String? intensity})
-      onFinishAndSave;
-  final VoidCallback onDiscard;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.of(context).pop(),
-      behavior: HitTestBehavior.opaque,
-      child: Stack(
-        children: [
-          // ── Blurred Dimmed Backdrop ──────────────────────────────────────────
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-              child: Container(
-                color: const Color(0xFF0F172A).withValues(alpha: 0.45),
-              ),
-            ),
-          ),
-
-          // ── Bottom Sheet Card ────────────────────────────────────────────────
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: GestureDetector(
-              onTap: () {}, // Prevent taps inside sheet from dismissing
-              child: _EndWorkoutEarlySheet(
-                state: state,
-                notifier: notifier,
-                onFinishAndSave: onFinishAndSave,
-                onDiscard: onDiscard,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _EndWorkoutEarlySheet extends StatelessWidget {

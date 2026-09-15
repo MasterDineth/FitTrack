@@ -1,11 +1,11 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../../providers/active_workout_provider.dart';
+import 'modal_backdrop_helper.dart';
 
 /// Shows the modern Save Session Modal from Stitch (ID: b42dc5d85712471eaaf22f1f2cc118e6).
 /// Features:
-///   - Full-screen dimmed backdrop blur
+///   - Full-screen stationary dimmed backdrop blur
 ///   - Illuminated mint hero icon with cloud save & checkmark badge
 ///   - Title: "Save this session?"
 ///   - Session Progress telemetry card (Time, Sets, Exercises, Est. Burn)
@@ -16,59 +16,13 @@ Future<void> showSaveSessionModal(
   required ActiveWorkoutState state,
   required Future<void> Function() onSave,
 }) async {
-  await showModalBottomSheet<void>(
+  await showBlurBottomSheet<void>(
     context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: Colors.transparent, // Handled by custom BackdropFilter
-    builder: (ctx) => _SaveSessionModalHost(
+    child: _SaveSessionCard(
       state: state,
       onSave: onSave,
     ),
   );
-}
-
-class _SaveSessionModalHost extends StatelessWidget {
-  const _SaveSessionModalHost({
-    required this.state,
-    required this.onSave,
-  });
-
-  final ActiveWorkoutState state;
-  final Future<void> Function() onSave;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.of(context).pop(),
-      behavior: HitTestBehavior.opaque,
-      child: Stack(
-        children: [
-          // ── Blurred Dimmed Backdrop ──────────────────────────────────────────
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-              child: Container(
-                color: const Color(0xFF0F172A).withValues(alpha: 0.45),
-              ),
-            ),
-          ),
-
-          // ── Bottom Sheet Card ────────────────────────────────────────────────
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: GestureDetector(
-              onTap: () {}, // Prevent taps inside modal from closing
-              child: _SaveSessionCard(
-                state: state,
-                onSave: onSave,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _SaveSessionCard extends StatefulWidget {

@@ -1,11 +1,11 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../../providers/active_workout_provider.dart';
+import 'modal_backdrop_helper.dart';
 
 /// Shows the modern Discard Workout Confirmation Modal from Stitch (ID: a9255ebb92064a47ab69b52063e5e9f9).
 /// Features:
-///   - Full-screen dimmed backdrop blur
+///   - Full-screen stationary dimmed backdrop blur
 ///   - Warning badge with pulsing dot and close button
 ///   - Subtle pulsing rose trash hero icon
 ///   - Unsaved session telemetry summary
@@ -15,59 +15,13 @@ Future<void> showDiscardWorkoutModal(
   required ActiveWorkoutState state,
   required VoidCallback onDiscard,
 }) async {
-  await showModalBottomSheet<void>(
+  await showBlurBottomSheet<void>(
     context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: Colors.transparent, // Handled by custom BackdropFilter
-    builder: (ctx) => _DiscardWorkoutModalHost(
+    child: _DiscardWorkoutCard(
       state: state,
       onDiscard: onDiscard,
     ),
   );
-}
-
-class _DiscardWorkoutModalHost extends StatelessWidget {
-  const _DiscardWorkoutModalHost({
-    required this.state,
-    required this.onDiscard,
-  });
-
-  final ActiveWorkoutState state;
-  final VoidCallback onDiscard;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.of(context).pop(),
-      behavior: HitTestBehavior.opaque,
-      child: Stack(
-        children: [
-          // ── Blurred Dimmed Backdrop ──────────────────────────────────────────
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-              child: Container(
-                color: const Color(0xFF0F172A).withValues(alpha: 0.45),
-              ),
-            ),
-          ),
-
-          // ── Bottom Sheet Card ────────────────────────────────────────────────
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: GestureDetector(
-              onTap: () {}, // Prevent taps inside modal from closing
-              child: _DiscardWorkoutCard(
-                state: state,
-                onDiscard: onDiscard,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _DiscardWorkoutCard extends StatefulWidget {

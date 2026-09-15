@@ -68,7 +68,7 @@ class LiveExerciseEntry {
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
-enum WorkoutPhase { loading, active, resting, paused, finished, error }
+enum WorkoutPhase { loading, active, resting, paused, finished, discarded, error }
 
 class ActiveWorkoutState {
   const ActiveWorkoutState({
@@ -457,7 +457,7 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
     _cancelTimers();
     _sessionStartTime = null;
     _skipReasons.clear();
-    state = state.copyWith(phase: WorkoutPhase.finished);
+    state = state.copyWith(phase: WorkoutPhase.discarded);
   }
 
   Future<void> stopSession() async {

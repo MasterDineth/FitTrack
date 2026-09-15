@@ -89,7 +89,10 @@ class _WorkoutHistoryDetailScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ── Hero summary card ─────────────────────────────────
-                    _HeroCard(session: session),
+                    _HeroCard(
+                      session: session,
+                      exerciseCount: exercises.length,
+                    ),
 
                     const SizedBox(height: 16),
 
@@ -345,9 +348,10 @@ class _MockSet {
 // ── Hero Summary Card ─────────────────────────────────────────────────────────
 
 class _HeroCard extends StatelessWidget {
-  const _HeroCard({required this.session});
+  const _HeroCard({required this.session, this.exerciseCount});
 
   final WorkoutSession session;
+  final int? exerciseCount;
 
   Color get _intensityColor {
     switch (session.intensity) {
@@ -431,6 +435,7 @@ class _HeroCard extends StatelessWidget {
               children: [
                 // Status + intensity badges
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -464,23 +469,27 @@ class _HeroCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const Spacer(),
+                    const SizedBox(width: 8),
                     if (session.intensity != null)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: _intensityBg,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                              color: _intensityColor.withValues(alpha: 0.3)),
-                        ),
-                        child: Text(
-                          '${session.intensity} Intensity',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: _intensityColor,
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: _intensityBg,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                                color: _intensityColor.withValues(alpha: 0.3)),
+                          ),
+                          child: Text(
+                            '${session.intensity} Intensity',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: _intensityColor,
+                            ),
                           ),
                         ),
                       ),
@@ -509,12 +518,16 @@ class _HeroCard extends StatelessWidget {
                       color: Colors.grey.shade400,
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      '$dateStr · $timeStr',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade400,
-                        fontWeight: FontWeight.w500,
+                    Expanded(
+                      child: Text(
+                        '$dateStr · $timeStr',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade400,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ],
@@ -525,53 +538,74 @@ class _HeroCard extends StatelessWidget {
                 const SizedBox(height: 14),
 
                 // 3×2 metrics grid
-                GridView.count(
-                  crossAxisCount: 3,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                  childAspectRatio: 1.1,
-                  children: [
-                    _MiniMetric(
-                      icon: Icons.timer_outlined,
-                      iconColor: const Color(0xFF0d9488),
-                      value: _fmtDuration(session.durationSeconds),
-                      label: 'Duration',
-                    ),
-                    _MiniMetric(
-                      icon: Icons.local_fire_department_rounded,
-                      iconColor: const Color(0xFFef4444),
-                      value: '${session.totalCalories ?? 0}',
-                      label: 'Calories',
-                    ),
-                    _MiniMetric(
-                      icon: Icons.fitness_center_rounded,
-                      iconColor: const Color(0xFF00d68f),
-                      value: '${session.totalSets}',
-                      label: 'Sets',
-                    ),
-                    _MiniMetric(
-                      icon: Icons.repeat_rounded,
-                      iconColor: const Color(0xFF8b5cf6),
-                      value: '${session.totalReps}',
-                      label: 'Reps',
-                    ),
-                    _MiniMetric(
-                      icon: Icons.show_chart_rounded,
-                      iconColor: const Color(0xFFf97316),
-                      value: session.totalVolumeKg >= 1000
-                          ? '${(session.totalVolumeKg / 1000).toStringAsFixed(1)}k kg'
-                          : '${session.totalVolumeKg.toStringAsFixed(0)} kg',
-                      label: 'Volume',
-                    ),
-                    _MiniMetric(
-                      icon: Icons.format_list_bulleted_rounded,
-                      iconColor: const Color(0xFF3b82f6),
-                      value: '–',
-                      label: 'Exercises',
-                    ),
-                  ],
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: _MiniMetric(
+                          icon: Icons.timer_outlined,
+                          iconColor: const Color(0xFF0d9488),
+                          value: _fmtDuration(session.durationSeconds),
+                          label: 'Duration',
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _MiniMetric(
+                          icon: Icons.local_fire_department_rounded,
+                          iconColor: const Color(0xFFef4444),
+                          value: '${session.totalCalories ?? 0}',
+                          label: 'Calories',
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _MiniMetric(
+                          icon: Icons.fitness_center_rounded,
+                          iconColor: const Color(0xFF00d68f),
+                          value: '${session.totalSets}',
+                          label: 'Sets',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: _MiniMetric(
+                          icon: Icons.repeat_rounded,
+                          iconColor: const Color(0xFF8b5cf6),
+                          value: '${session.totalReps}',
+                          label: 'Reps',
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _MiniMetric(
+                          icon: Icons.show_chart_rounded,
+                          iconColor: const Color(0xFFf97316),
+                          value: session.totalVolumeKg >= 1000
+                              ? '${(session.totalVolumeKg / 1000).toStringAsFixed(1)}k kg'
+                              : '${session.totalVolumeKg.toStringAsFixed(0)} kg',
+                          label: 'Volume',
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _MiniMetric(
+                          icon: Icons.format_list_bulleted_rounded,
+                          iconColor: const Color(0xFF3b82f6),
+                          value: exerciseCount != null ? '$exerciseCount' : '–',
+                          label: 'Exercises',
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -598,13 +632,15 @@ class _MiniMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+      constraints: const BoxConstraints(minHeight: 84),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       decoration: BoxDecoration(
         color: const Color(0xFFf8fafc),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFe2e8f0)),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
@@ -617,16 +653,18 @@ class _MiniMetric extends StatelessWidget {
             child: Icon(icon, color: iconColor, size: 14),
           ),
           const SizedBox(height: 5),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF0f172a),
-              fontFeatures: [FontFeature.tabularFigures()],
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF0f172a),
+                fontFeatures: [FontFeature.tabularFigures()],
+              ),
+              maxLines: 1,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
           Text(
@@ -636,6 +674,8 @@ class _MiniMetric extends StatelessWidget {
               fontWeight: FontWeight.w600,
               color: Color(0xFF94a3b8),
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

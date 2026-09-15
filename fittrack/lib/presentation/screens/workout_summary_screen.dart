@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/active_workout_provider.dart';
+import '../widgets/modals/leave_without_saving_modal.dart';
 
 class WorkoutSummaryScreen extends ConsumerStatefulWidget {
   const WorkoutSummaryScreen({super.key});
@@ -72,53 +73,7 @@ class _WorkoutSummaryScreenState
   }
 
   Future<bool> _onWillPop() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: const Text(
-          'Leave without saving?',
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-            fontSize: 18,
-            color: Color(0xFF0f172a),
-          ),
-        ),
-        content: const Text(
-          'Your workout summary will not be saved if you go back now.',
-          style: TextStyle(fontSize: 14, color: Color(0xFF64748b)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text(
-              'Stay',
-              style: TextStyle(
-                color: Color(0xFF64748b),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFef4444),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: const Text(
-              'Leave',
-              style: TextStyle(fontWeight: FontWeight.w800),
-            ),
-          ),
-        ],
-      ),
-    );
-    return confirmed ?? false;
+    return await showLeaveWithoutSavingModal(context);
   }
 
   @override

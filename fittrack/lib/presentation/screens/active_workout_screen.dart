@@ -88,6 +88,19 @@ class _ActiveWorkoutScreenState
       );
     }
 
+    // ── Discarded ─────────────────────────────────────────────────────────────
+    if (state.phase == WorkoutPhase.discarded) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) context.go('/dashboard');
+      });
+      return const Scaffold(
+        backgroundColor: Color(0xFFf7f9fb),
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFF00d68f)),
+        ),
+      );
+    }
+
     final entry = state.currentEntry;
 
     return PopScope(

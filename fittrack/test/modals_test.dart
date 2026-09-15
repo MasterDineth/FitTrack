@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fittrack/presentation/providers/active_workout_provider.dart';
 import 'package:fittrack/presentation/widgets/modals/discard_workout_modal.dart';
 import 'package:fittrack/presentation/widgets/modals/save_session_modal.dart';
+import 'package:fittrack/presentation/widgets/modals/leave_without_saving_modal.dart';
 import 'package:fittrack/domain/entities/schedule.dart';
 import 'package:fittrack/domain/entities/schedule_exercise.dart';
 import 'package:fittrack/domain/entities/exercise.dart';
@@ -132,5 +133,43 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(saved, isTrue);
+  });
+
+  testWidgets('LeaveWithoutSavingModal renders elements correctly',
+      (WidgetTester tester) async {
+    bool? userLeft;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () async {
+                userLeft = await showLeaveWithoutSavingModal(context);
+              },
+              child: const Text('Open Modal'),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // Open modal
+    await tester.tap(find.text('Open Modal'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // Verify badge, title, subtitle, buttons
+    expect(find.text('UNSAVED SUMMARY'), findsOneWidget);
+    expect(find.text('Leave without saving?'), findsOneWidget);
+    expect(find.text('Stay on Summary'), findsOneWidget);
+    expect(find.text('Leave without Saving'), findsOneWidget);
+
+    // Tap Leave
+    await tester.tap(find.text('Leave without Saving'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(userLeft, isTrue);
   });
 }
