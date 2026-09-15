@@ -1,13 +1,16 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../../providers/active_workout_provider.dart';
+import 'discard_workout_modal.dart';
+import 'save_session_modal.dart';
 
-/// Shows the End Workout Early confirmation bottom sheet.
+/// Shows the End Workout Early bottom sheet with backdrop blur.
 /// The sheet has:
 ///   - Session stats summary
 ///   - Disabled "Finish & Save" if session < 2 min OR 0 sets done
-///   - Double confirmation dialog before committing
-///   - Discard button also requires confirmation
+///   - Launches modern SaveSessionModal (Stitch ID: b42dc5d85712471eaaf22f1f2cc118e6)
+///   - Launches modern DiscardWorkoutModal (Stitch ID: a9255ebb92064a47ab69b52063e5e9f9)
 Future<void> showEndWorkoutEarlyModal(
   BuildContext context, {
   required ActiveWorkoutState state,
@@ -20,13 +23,64 @@ Future<void> showEndWorkoutEarlyModal(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => _EndWorkoutEarlySheet(
+    barrierColor: Colors.transparent, // Handled by custom BackdropFilter
+    builder: (_) => _EndWorkoutEarlyHost(
       state: state,
       notifier: notifier,
       onFinishAndSave: onFinishAndSave,
       onDiscard: onDiscard,
     ),
   );
+}
+
+class _EndWorkoutEarlyHost extends StatelessWidget {
+  const _EndWorkoutEarlyHost({
+    required this.state,
+    required this.notifier,
+    required this.onFinishAndSave,
+    required this.onDiscard,
+  });
+
+  final ActiveWorkoutState state;
+  final ActiveWorkoutNotifier notifier;
+  final Future<void> Function({String? notes, String? intensity})
+      onFinishAndSave;
+  final VoidCallback onDiscard;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.of(context).pop(),
+      behavior: HitTestBehavior.opaque,
+      child: Stack(
+        children: [
+          // ── Blurred Dimmed Backdrop ──────────────────────────────────────────
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+              child: Container(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.45),
+              ),
+            ),
+          ),
+
+          // ── Bottom Sheet Card ────────────────────────────────────────────────
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: GestureDetector(
+              onTap: () {}, // Prevent taps inside sheet from dismissing
+              child: _EndWorkoutEarlySheet(
+                state: state,
+                notifier: notifier,
+                onFinishAndSave: onFinishAndSave,
+                onDiscard: onDiscard,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _EndWorkoutEarlySheet extends StatelessWidget {
@@ -52,15 +106,25 @@ class _EndWorkoutEarlySheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      constraints: const BoxConstraints(maxWidth: 460),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x33000000),
+            blurRadius: 36,
+            offset: Offset(0, 14),
+          ),
+        ],
       ),
       padding: EdgeInsets.only(
         left: 24,
         right: 24,
-        top: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 28,
+        top: 14,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -68,15 +132,15 @@ class _EndWorkoutEarlySheet extends StatelessWidget {
         children: [
           // Drag handle
           Container(
-            width: 40,
-            height: 4,
+            width: 44,
+            height: 5,
             decoration: BoxDecoration(
-              color: const Color(0xFFe2e8f0),
-              borderRadius: BorderRadius.circular(2),
+              color: const Color(0xFFE2E8F0),
+              borderRadius: BorderRadius.circular(3),
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
 
           // Red stop icon
           Container(
@@ -201,23 +265,19 @@ class _EndWorkoutEarlySheet extends StatelessWidget {
             const SizedBox(height: 14),
           ],
 
-          // ── Finish & Save ────────────────────────────────────────────────
+          // ── Finish & Save (Launches SaveSessionModal) ─────────────────────
           FilledButton.icon(
             onPressed: _canSave
-                ? () async {
-                    final confirmed = await _showConfirmDialog(
+                ? () {
+                    // Close this sheet and present modern SaveSessionModal
+                    Navigator.of(context).pop();
+                    showSaveSessionModal(
                       context,
-                      title: 'Save this session?',
-                      message:
-                          'Your completed sets will be saved to your history.',
-                      confirmLabel: 'Yes, Save It',
-                      confirmColor: _mint,
-                      confirmTextColor: _dark,
+                      state: state,
+                      onSave: () async {
+                        await onFinishAndSave();
+                      },
                     );
-                    if (confirmed && context.mounted) {
-                      Navigator.of(context).pop();
-                      await onFinishAndSave();
-                    }
                   }
                 : null,
             icon: const Icon(Icons.save_alt_rounded, size: 18),
@@ -239,22 +299,16 @@ class _EndWorkoutEarlySheet extends StatelessWidget {
 
           const SizedBox(height: 8),
 
-          // ── Discard ──────────────────────────────────────────────────────
+          // ── Discard (Launches DiscardWorkoutModal) ────────────────────────
           OutlinedButton.icon(
-            onPressed: () async {
-              final confirmed = await _showConfirmDialog(
+            onPressed: () {
+              // Close this sheet and present modern DiscardWorkoutModal
+              Navigator.of(context).pop();
+              showDiscardWorkoutModal(
                 context,
-                title: 'Discard workout?',
-                message:
-                    'All progress will be permanently lost. This cannot be undone.',
-                confirmLabel: 'Discard',
-                confirmColor: const Color(0xFFef4444),
-                confirmTextColor: Colors.white,
+                state: state,
+                onDiscard: onDiscard,
               );
-              if (confirmed && context.mounted) {
-                Navigator.of(context).pop();
-                onDiscard();
-              }
             },
             icon: const Icon(Icons.delete_outline_rounded, size: 18),
             label: const Text(
@@ -289,109 +343,50 @@ class _EndWorkoutEarlySheet extends StatelessWidget {
     );
   }
 
-  Future<bool> _showConfirmDialog(
-    BuildContext context, {
-    required String title,
-    required String message,
-    required String confirmLabel,
-    required Color confirmColor,
-    required Color confirmTextColor,
-  }) async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w800,
-            fontSize: 18,
-            color: Color(0xFF0f172a),
-          ),
-        ),
-        content: Text(
-          message,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Color(0xFF64748b),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(
-                color: Color(0xFF64748b),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: confirmColor,
-              foregroundColor: confirmTextColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: Text(
-              confirmLabel,
-              style: const TextStyle(fontWeight: FontWeight.w800),
-            ),
-          ),
-        ],
-      ),
-    );
-    return result ?? false;
-  }
-
   Widget _vDivider() => Container(
         width: 1,
         height: 36,
-        color: const Color(0xFFf1f5f9),
+        color: const Color(0xFFe2e8f0),
       );
 }
 
+// ── Quick stat widget ─────────────────────────────────────────────────────────
+
 class _QuickStat extends StatelessWidget {
   const _QuickStat({
-    required this.icon,
-    required this.color,
     required this.label,
     required this.value,
+    required this.icon,
+    required this.color,
   });
 
-  final IconData icon;
-  final Color color;
   final String label;
   final String value;
+  final IconData icon;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: Column(
         children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(height: 5),
+          Icon(icon, size: 16, color: color),
+          const SizedBox(height: 4),
           Text(
             value,
             style: const TextStyle(
+              color: Color(0xFF0f172a),
               fontWeight: FontWeight.w800,
               fontSize: 14,
-              color: Color(0xFF0f172a),
-              fontFeatures: [FontFeature.tabularFigures()],
             ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
             style: const TextStyle(
+              color: Color(0xFF94a3b8),
               fontSize: 10,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF94a3b8),
             ),
           ),
         ],

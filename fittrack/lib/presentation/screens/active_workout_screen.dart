@@ -111,7 +111,10 @@ class _ActiveWorkoutScreenState
                     elevation: 0,
                     scrolledUnderElevation: 1,
                     automaticallyImplyLeading: false,
-                    title: _WorkoutHeader(state: state),
+                    title: _WorkoutHeader(
+                      state: state,
+                      onSettingsTap: () => _showSessionOptions(context, state, notifier),
+                    ),
                   ),
 
                   SliverPadding(
@@ -261,19 +264,30 @@ class _ActiveWorkoutScreenState
         await notifier.stopSession();
       },
       onDiscard: () {
-        notifier.stopSession().then((_) {
-          if (context.mounted) context.go('/dashboard');
-        });
+        notifier.discardSession();
+        if (context.mounted) context.go('/dashboard');
       },
     );
+  }
+
+  void _showSessionOptions(
+    BuildContext context,
+    ActiveWorkoutState state,
+    ActiveWorkoutNotifier notifier,
+  ) {
+    _showEndEarly(context, state, notifier);
   }
 }
 
 // ── Header ────────────────────────────────────────────────────────────────────
 
 class _WorkoutHeader extends StatelessWidget {
-  const _WorkoutHeader({required this.state});
+  const _WorkoutHeader({
+    required this.state,
+    this.onSettingsTap,
+  });
   final ActiveWorkoutState state;
+  final VoidCallback? onSettingsTap;
 
   @override
   Widget build(BuildContext context) {
@@ -365,7 +379,7 @@ class _WorkoutHeader extends StatelessWidget {
 
         // Settings cog
         GestureDetector(
-          onTap: () {},
+          onTap: onSettingsTap,
           child: Container(
             width: 36,
             height: 36,

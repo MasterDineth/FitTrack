@@ -452,6 +452,14 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
 
   // ── Stop / Finish Session ──────────────────────────────────────────────────
 
+  /// Cancels timers and terminates the session immediately without saving to history.
+  void discardSession() {
+    _cancelTimers();
+    _sessionStartTime = null;
+    _skipReasons.clear();
+    state = state.copyWith(phase: WorkoutPhase.finished);
+  }
+
   Future<void> stopSession() async {
     _cancelTimers();
     state = state.copyWith(phase: WorkoutPhase.finished);
