@@ -18,6 +18,8 @@ import '../screens/workout_schedules_screen.dart';
 import '../screens/workout_detail_screen.dart';
 import '../screens/create_schedule_screen.dart';
 import '../screens/create_custom_exercise_screen.dart';
+import '../screens/active_workout_screen.dart';
+import '../screens/exercise_guide_details_screen.dart';
 import '../screens/placeholder_screen.dart';
 import '../widgets/bottom_nav_shell.dart';
 
@@ -137,8 +139,15 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/workouts/active/:scheduleId',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => PlaceholderScreen(
-          title: 'Active Workout: ${state.pathParameters['scheduleId']}',
+        builder: (context, state) => ActiveWorkoutScreen(
+          scheduleId: state.pathParameters['scheduleId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/workouts/guide/:exerciseId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => ExerciseGuideDetailsScreen(
+          exerciseId: state.pathParameters['exerciseId']!,
         ),
       ),
       StatefulShellRoute.indexedStack(
