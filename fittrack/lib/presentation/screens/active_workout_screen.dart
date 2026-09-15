@@ -481,9 +481,8 @@ class _ActiveExerciseCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFF166534), width: 2),
         boxShadow: [
-          // Small dark green ambient glow matching the border
+          // Small dark green ambient glow
           BoxShadow(
             color: const Color(0xFF166534).withValues(alpha: 0.20),
             blurRadius: 18,

@@ -73,14 +73,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // Verify circular card container has dark green border and glow
+    // Verify circular card container has no border and has dark green glow
     final containerFinder = find.byWidgetPredicate((widget) {
       if (widget is Container && widget.decoration is BoxDecoration) {
         final dec = widget.decoration as BoxDecoration;
-        if (dec.border is Border) {
-          final border = dec.border as Border;
-          return border.top.color == const Color(0xFF166534) &&
-              border.top.width == 2.0;
+        if (dec.border == null && dec.boxShadow != null) {
+          return dec.boxShadow!.any((s) => s.color == const Color(0xFF166534).withValues(alpha: 0.20));
         }
       }
       return false;
@@ -90,7 +88,7 @@ void main() {
 
     final container = tester.widget<Container>(containerFinder);
     final dec = container.decoration as BoxDecoration;
-    expect(dec.boxShadow, isNotNull);
+    expect(dec.border, isNull);
     expect(
       dec.boxShadow!.any((s) => s.color == const Color(0xFF166534).withValues(alpha: 0.20)),
       isTrue,
@@ -136,19 +134,14 @@ void main() {
     expect(find.text('Pause'), findsOneWidget);
     expect(find.text('Stop Session'), findsOneWidget);
 
-    // Verify the active workout card has dark green border and glow
+    // Verify the active workout card has no border and has dark green glow
     final activeCardContainer = find.byWidgetPredicate((widget) {
       if (widget is Container && widget.decoration is BoxDecoration) {
         final dec = widget.decoration as BoxDecoration;
-        if (dec.border is Border) {
-          final border = dec.border as Border;
-          if (border.top.color == const Color(0xFF166534) &&
-              border.top.width == 2.0) {
-            return dec.boxShadow?.any(
-                  (s) => s.color == const Color(0xFF166534).withValues(alpha: 0.20),
-                ) ??
-                false;
-          }
+        if (dec.border == null && dec.boxShadow != null) {
+          return dec.boxShadow!.any(
+            (s) => s.color == const Color(0xFF166534).withValues(alpha: 0.20),
+          );
         }
       }
       return false;
