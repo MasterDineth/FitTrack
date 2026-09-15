@@ -19,131 +19,225 @@ class WorkoutHistoryScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: _bg,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        bottom: false,
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
             // ── Top header ───────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'ACTIVITY LOG',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF94a3b8),
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        const Text(
-                          'Workout History',
-                          style: TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w900,
-                            color: Color(0xFF0f172a),
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      _IconBtn(
-                        icon: Icons.search_rounded,
-                        onTap: () {},
-                        tooltip: 'Search',
-                      ),
-                      const SizedBox(width: 6),
-                      _IconBtn(
-                        icon: Icons.calendar_month_rounded,
-                        onTap: () {},
-                        tooltip: 'Calendar',
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // ── KPI Summary Banner ──────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: _KpiBanner(
-                workouts: histState.totalWorkouts,
-                totalMinutes: histState.totalMinutes,
-                totalCalories: histState.totalCalories,
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // ── Filter pills ────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _FilterPill(
-                      label: 'All',
-                      icon: Icons.check_rounded,
-                      active: histState.filter == HistoryFilter.all,
-                      onTap: () => notifier.setFilter(HistoryFilter.all),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'ACTIVITY LOG',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF94a3b8),
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          const Text(
+                            'Workout History',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF0f172a),
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    _FilterPill(
-                      label: 'This Week',
-                      active: histState.filter == HistoryFilter.thisWeek,
-                      onTap: () =>
-                          notifier.setFilter(HistoryFilter.thisWeek),
-                    ),
-                    const SizedBox(width: 8),
-                    _FilterPill(
-                      label: 'This Month',
-                      active: histState.filter == HistoryFilter.thisMonth,
-                      onTap: () =>
-                          notifier.setFilter(HistoryFilter.thisMonth),
-                    ),
+                    _buildHeaderActions(),
                   ],
                 ),
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
+            // ── KPI Summary Banner ──────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _KpiBanner(
+                  workouts: histState.totalWorkouts,
+                  totalMinutes: histState.totalMinutes,
+                  totalCalories: histState.totalCalories,
+                ),
+              ),
+            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
+            // ── Filter pills ────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _FilterPill(
+                        label: 'All',
+                        icon: Icons.check_rounded,
+                        active: histState.filter == HistoryFilter.all,
+                        onTap: () => notifier.setFilter(HistoryFilter.all),
+                      ),
+                      const SizedBox(width: 8),
+                      _FilterPill(
+                        label: 'This Week',
+                        active: histState.filter == HistoryFilter.thisWeek,
+                        onTap: () =>
+                            notifier.setFilter(HistoryFilter.thisWeek),
+                      ),
+                      const SizedBox(width: 8),
+                      _FilterPill(
+                        label: 'This Month',
+                        active: histState.filter == HistoryFilter.thisMonth,
+                        onTap: () =>
+                            notifier.setFilter(HistoryFilter.thisMonth),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 14)),
 
             // ── Session list ────────────────────────────────────────────
-            Expanded(
-              child: histState.filtered.isEmpty
-                  ? _EmptyState()
-                  : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                      itemCount: histState.filtered.length,
-                      separatorBuilder: (_, _) =>
-                          const SizedBox(height: 10),
-                      itemBuilder: (ctx, i) {
-                        final session = histState.filtered[i];
-                        return _SessionCard(
+            if (histState.filtered.isEmpty)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(top: 40),
+                  child: _EmptyState(),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (ctx, i) {
+                      final session = histState.filtered[i];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _SessionCard(
                           session: session,
                           onTap: () => context.push(
                             '/history/detail/${session.id}',
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
+                    childCount: histState.filtered.length,
+                  ),
+                ),
+              ),
+
+            // Bottom padding for nav bar
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 120),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildHeaderActions() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Notification bell
+        Stack(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFFe2e8f0)),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF0f172a).withValues(alpha: 0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.notifications_outlined,
+                  color: Color(0xFF64748b), size: 18),
+            ),
+            Positioned(
+              top: 7,
+              right: 7,
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00d68f),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(width: 10),
+        // User avatar
+        Stack(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1e293b), Color(0xFF334155)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: const Center(
+                child: Text(
+                  'D',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00d68f),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
@@ -172,12 +266,24 @@ class _KpiBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFe2e8f0)),
         boxShadow: [
+          // Dark green ambient glow matching active workout card
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: const Color(0xFF166534).withValues(alpha: 0.18),
             blurRadius: 16,
-            offset: const Offset(0, 4),
+            spreadRadius: 0,
+            offset: const Offset(0, 3),
+          ),
+          BoxShadow(
+            color: const Color(0xFF166534).withValues(alpha: 0.08),
+            blurRadius: 24,
+            spreadRadius: 1,
+            offset: const Offset(0, 5),
+          ),
+          const BoxShadow(
+            color: Color(0x08000000),
+            blurRadius: 16,
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -595,46 +701,12 @@ class _QuickChip extends StatelessWidget {
   }
 }
 
-// ── Icon Button ───────────────────────────────────────────────────────────────
-
-class _IconBtn extends StatelessWidget {
-  const _IconBtn({
-    required this.icon,
-    required this.onTap,
-    this.tooltip = '',
-  });
-
-  final IconData icon;
-  final VoidCallback onTap;
-  final String tooltip;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          border: Border.all(color: const Color(0xFFe2e8f0)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-            ),
-          ],
-        ),
-        child: Icon(icon, size: 18, color: const Color(0xFF64748b)),
-      ),
-    );
-  }
-}
 
 // ── Empty State ───────────────────────────────────────────────────────────────
 
 class _EmptyState extends StatelessWidget {
+  const _EmptyState();
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -644,8 +716,8 @@ class _EmptyState extends StatelessWidget {
           Container(
             width: 80,
             height: 80,
-            decoration: BoxDecoration(
-              color: const Color(0xFFf0fdf4),
+            decoration: const BoxDecoration(
+              color: Color(0xFFf0fdf4),
               shape: BoxShape.circle,
             ),
             child: const Icon(

@@ -117,13 +117,14 @@ class _ActiveWorkoutScreenState
             children: [
               // ── Scrollable body ─────────────────────────────────────────
               CustomScrollView(
+                clipBehavior: Clip.none,
                 slivers: [
                   // Sticky header
                   SliverAppBar(
                     pinned: true,
                     backgroundColor: _bg.withValues(alpha: 0.95),
                     elevation: 0,
-                    scrolledUnderElevation: 1,
+                    scrolledUnderElevation: 0,
                     automaticallyImplyLeading: false,
                     title: _WorkoutHeader(
                       state: state,
@@ -132,7 +133,7 @@ class _ActiveWorkoutScreenState
                   ),
 
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 120),
                     sliver: SliverList(
                       delegate: SliverChildListDelegate([
                         // Render the entire list: Past, Active, and Upcoming
@@ -482,18 +483,18 @@ class _ActiveExerciseCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          // Small dark green ambient glow
+          // Dark green ambient glow
           BoxShadow(
-            color: const Color(0xFF166534).withValues(alpha: 0.20),
-            blurRadius: 18,
-            spreadRadius: 1,
-            offset: const Offset(0, 2),
+            color: const Color(0xFF166534).withValues(alpha: 0.18),
+            blurRadius: 16,
+            spreadRadius: 0,
+            offset: const Offset(0, 3),
           ),
           BoxShadow(
             color: const Color(0xFF166534).withValues(alpha: 0.08),
-            blurRadius: 30,
-            spreadRadius: 2,
-            offset: const Offset(0, 4),
+            blurRadius: 22,
+            spreadRadius: 1,
+            offset: const Offset(0, 5),
           ),
           const BoxShadow(
             color: Color(0x08000000),

@@ -23,7 +23,8 @@ import '../screens/exercise_guide_details_screen.dart';
 import '../screens/workout_summary_screen.dart';
 import '../screens/workout_history_screen.dart';
 import '../screens/workout_history_detail_screen.dart';
-import '../screens/placeholder_screen.dart';
+import '../screens/settings_screen.dart';
+import '../screens/settings/settings_subscreens.dart';
 import '../widgets/bottom_nav_shell.dart';
 
 part 'app_router.g.dart';
@@ -165,6 +166,61 @@ GoRouter router(Ref ref) {
           sessionId: state.pathParameters['sessionId']!,
         ),
       ),
+      GoRoute(
+        path: '/settings/profile',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/settings/account',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AccountDetailsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/security',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const SecurityAppLockScreen(),
+      ),
+      GoRoute(
+        path: '/settings/password',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const PasswordSecurityScreen(),
+      ),
+      GoRoute(
+        path: '/settings/appearance',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AppearanceSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/notifications',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const NotificationsSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/data',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const DataManagementScreen(),
+      ),
+      GoRoute(
+        path: '/settings/workout-preferences',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const WorkoutPreferencesScreen(),
+      ),
+      GoRoute(
+        path: '/settings/units-equipment',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const UnitsEquipmentScreen(),
+      ),
+      GoRoute(
+        path: '/settings/help',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const HelpCenterScreen(),
+      ),
+      GoRoute(
+        path: '/settings/about',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AboutScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return BottomNavShell(navigationShell: navigationShell);
@@ -202,7 +258,7 @@ GoRouter router(Ref ref) {
             routes: [
               GoRoute(
                 path: '/settings',
-                builder: (context, state) => const PlaceholderScreen(title: 'Settings'),
+                builder: (context, state) => const SettingsScreen(),
               ),
             ],
           ),

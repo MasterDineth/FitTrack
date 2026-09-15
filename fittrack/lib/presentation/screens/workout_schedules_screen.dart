@@ -334,48 +334,35 @@ class _CycleProgressSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Badge row
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: const Color(0xFFdae2fd),
-                borderRadius: BorderRadius.circular(20),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: const Color(0xFFdae2fd),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF006c46),
+                  shape: BoxShape.circle,
+                ),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF006c46),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  const Text(
-                    'WEEK 3 · PUSH-PULL-LEGS',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF3f465c),
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
+              const SizedBox(width: 6),
+              const Text(
+                'WEEK 3 · PUSH-PULL-LEGS',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF3f465c),
+                  letterSpacing: 0.5,
+                ),
               ),
-            ),
-            Row(
-              children: [
-                _IconActionBtn(icon: Icons.tune_rounded, onTap: () {}),
-                const SizedBox(width: 6),
-                _IconActionBtn(
-                    icon: Icons.calendar_today_rounded, onTap: () {}),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: 12),
 
@@ -1285,30 +1272,6 @@ class _MuscleChip extends StatelessWidget {
   }
 }
 
-// ── Shared small icon buttons ─────────────────────────────────────────────────
-
-
-class _IconActionBtn extends StatelessWidget {
-  const _IconActionBtn({required this.icon, required this.onTap});
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: const Color(0xFFe6e8ea),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, size: 16, color: const Color(0xFF3c4a41)),
-      ),
-    );
-  }
-}
 
 class _HeroLoading extends StatelessWidget {
   const _HeroLoading();
