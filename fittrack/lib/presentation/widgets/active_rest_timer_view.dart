@@ -34,11 +34,20 @@ class ActiveRestTimerView extends ConsumerWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFF166534), width: 2),
             boxShadow: [
+              // Small dark green ambient glow matching the active workout card
               BoxShadow(
-                color: const Color(0xFF00D68F).withValues(alpha: 0.12),
-                blurRadius: 40,
-                spreadRadius: -5,
+                color: const Color(0xFF166534).withValues(alpha: 0.20),
+                blurRadius: 18,
+                spreadRadius: 1,
+                offset: const Offset(0, 2),
+              ),
+              BoxShadow(
+                color: const Color(0xFF166534).withValues(alpha: 0.08),
+                blurRadius: 30,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
               ),
               const BoxShadow(
                 color: Color(0x0A0F172A),

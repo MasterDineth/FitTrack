@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -481,10 +482,23 @@ class _ActiveExerciseCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: const Color(0xFF166534), width: 2),
-        boxShadow: const [
+        boxShadow: [
+          // Small dark green ambient glow matching the border
           BoxShadow(
+            color: const Color(0xFF166534).withValues(alpha: 0.20),
+            blurRadius: 18,
+            spreadRadius: 1,
+            offset: const Offset(0, 2),
+          ),
+          BoxShadow(
+            color: const Color(0xFF166534).withValues(alpha: 0.08),
+            blurRadius: 30,
+            spreadRadius: 2,
+            offset: const Offset(0, 4),
+          ),
+          const BoxShadow(
             color: Color(0x08000000),
-            blurRadius: 20,
+            blurRadius: 16,
             offset: Offset(0, 4),
           ),
         ],
@@ -1086,90 +1100,104 @@ class _SessionFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     final isPaused = state.phase == WorkoutPhase.paused;
 
-    return Container(
-      padding:
-          const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.95),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x10000000),
-            blurRadius: 16,
-            offset: Offset(0, -4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Metrics row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _MetricChip(
-                label: 'DONE',
-                value:
-                    '${state.completedSetCount}/${state.totalSetCount}',
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.85),
+            border: Border(
+              top: BorderSide(
+                color: Colors.white.withValues(alpha: 0.8),
+                width: 1,
               ),
-              _MetricChip(
-                label: 'KCAL',
-                value: '~${state.estimatedCalories}',
-              ),
-              _MetricChip(
-                label: 'TIME',
-                value: state.elapsedFormatted,
-                mono: true,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.08),
+                blurRadius: 20,
+                offset: const Offset(0, -4),
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          // Action buttons
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: isPaused ? notifier.resumeSession : onPause,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF0f172a),
-                    side: const BorderSide(color: Color(0xFFe2e8f0)),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                  ),
-                  icon: Icon(
-                    isPaused ? Icons.play_arrow : Icons.pause,
-                    size: 18,
-                  ),
-                  label: Text(
-                    isPaused ? 'Resume' : 'Pause',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w700, fontSize: 13),
-                  ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Metrics row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _MetricChip(
+                      label: 'DONE',
+                      value:
+                          '${state.completedSetCount}/${state.totalSetCount}',
+                    ),
+                    _MetricChip(
+                      label: 'KCAL',
+                      value: '~${state.estimatedCalories}',
+                    ),
+                    _MetricChip(
+                      label: 'TIME',
+                      value: state.elapsedFormatted,
+                      mono: true,
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: onStop,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFef4444),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                    elevation: 0,
-                  ),
-                  icon: const Icon(Icons.stop, size: 18),
-                  label: const Text(
-                    'Stop Session',
-                    style: TextStyle(
-                        fontWeight: FontWeight.w700, fontSize: 13),
-                  ),
+                const SizedBox(height: 10),
+                // Action buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: isPaused ? notifier.resumeSession : onPause,
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.white.withValues(alpha: 0.90),
+                          foregroundColor: const Color(0xFF0f172a),
+                          side: const BorderSide(color: Color(0xFFe2e8f0)),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
+                        ),
+                        icon: Icon(
+                          isPaused ? Icons.play_arrow : Icons.pause,
+                          size: 18,
+                        ),
+                        label: Text(
+                          isPaused ? 'Resume' : 'Pause',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w700, fontSize: 13),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: onStop,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFef4444),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
+                          elevation: 0,
+                        ),
+                        icon: const Icon(Icons.stop, size: 18),
+                        label: const Text(
+                          'Stop Session',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w700, fontSize: 13),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1189,7 +1217,7 @@ class _MetricChip extends StatelessWidget {
         Text(
           label,
           style: const TextStyle(
-            color: Color(0xFF94a3b8),
+            color: Color(0xFF64748b),
             fontSize: 9,
             fontWeight: FontWeight.w800,
             letterSpacing: 1.2,
