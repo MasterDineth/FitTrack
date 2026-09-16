@@ -112,29 +112,19 @@ class _ActiveWorkoutScreenState
       },
       child: Scaffold(
         backgroundColor: _bg,
-        body: SafeArea(
-          child: Stack(
-            children: [
-              // ── Scrollable body ─────────────────────────────────────────
-              CustomScrollView(
-                clipBehavior: Clip.none,
-                slivers: [
-                  // Sticky header
-                  SliverAppBar(
-                    pinned: true,
-                    backgroundColor: _bg.withValues(alpha: 0.95),
-                    elevation: 0,
-                    scrolledUnderElevation: 0,
-                    automaticallyImplyLeading: false,
-                    title: _WorkoutHeader(
-                      state: state,
-                      onSettingsTap: () => _showSessionOptions(context, state, notifier),
-                    ),
+        body: Stack(
+          children: [
+            // ── Scrollable body ─────────────────────────────────────────
+            CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    MediaQuery.paddingOf(context).top + 68,
+                    16,
+                    MediaQuery.paddingOf(context).bottom + 130,
                   ),
-
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 120),
-                    sliver: SliverList(
+                  sliver: SliverList(
                       delegate: SliverChildListDelegate([
                         // Render the entire list: Past, Active, and Upcoming
                         ...state.entries.asMap().entries.map((mapEntry) {
@@ -234,20 +224,30 @@ class _ActiveWorkoutScreenState
                 ],
               ),
 
-              // ── Sticky footer ───────────────────────────────────────────
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: _SessionFooter(
-                  state: state,
-                  notifier: notifier,
-                  onPause: () => _showPaused(context, state, notifier),
-                  onStop: () => _showEndEarly(context, state, notifier),
-                ),
+            // ── Sticky header ───────────────────────────────────────────
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: _WorkoutHeader(
+                state: state,
+                onSettingsTap: () => _showSessionOptions(context, state, notifier),
               ),
-            ],
-          ),
+            ),
+
+            // ── Sticky footer ───────────────────────────────────────────
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _SessionFooter(
+                state: state,
+                notifier: notifier,
+                onPause: () => _showPaused(context, state, notifier),
+                onStop: () => _showEndEarly(context, state, notifier),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -307,107 +307,137 @@ class _WorkoutHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPaused = state.phase == WorkoutPhase.paused;
+    final topPadding = MediaQuery.paddingOf(context).top;
 
-    return Row(
-      children: [
-        // Minimize
-        GestureDetector(
-          onTap: () => context.pop(),
-          child: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFFe2e8f0)),
-              boxShadow: const [
-                BoxShadow(
-                    color: Color(0x0A000000), blurRadius: 4, offset: Offset(0, 2)),
-              ],
-            ),
-            child: const Icon(Icons.keyboard_arrow_down,
-                color: Color(0xFF475569), size: 22),
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
+        child: Container(
+          padding: EdgeInsets.only(
+            top: topPadding + 12,
+            left: 16,
+            right: 16,
+            bottom: 12,
           ),
-        ),
-        const SizedBox(width: 10),
-
-        // Title + timer pill
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                state.schedule.name,
-                style: const TextStyle(
-                  color: Color(0xFF0f172a),
-                  fontWeight: FontWeight.w800,
-                  fontSize: 13,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF7F9FB).withValues(alpha: 0.85),
+            border: Border(
+              bottom: BorderSide(
+                color: Colors.white.withValues(alpha: 0.8),
+                width: 1,
               ),
-              const SizedBox(height: 2),
-              Row(
-                children: [
-                  if (!isPaused)
-                    _PulseDot()
-                  else
-                    const Icon(Icons.pause_circle,
-                        color: Color(0xFFf59e0b), size: 10),
-                  const SizedBox(width: 4),
-                  Text(
-                    state.elapsedFormatted,
-                    style: const TextStyle(
-                      color: Color(0xFF475569),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 11,
-                      fontFeatures: [FontFeature.tabularFigures()],
-                    ),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+                blurRadius: 12,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Minimize
+              GestureDetector(
+                onTap: () => context.pop(),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: const Color(0xFFe2e8f0)),
+                    boxShadow: const [
+                      BoxShadow(
+                          color: Color(0x0A000000), blurRadius: 4, offset: Offset(0, 2)),
+                    ],
                   ),
-                  const SizedBox(width: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: isPaused
-                          ? const Color(0xFFfef3c7)
-                          : const Color(0xFFe6faf3),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      isPaused ? 'PAUSED' : 'ACTIVE',
-                      style: TextStyle(
-                        color: isPaused
-                            ? const Color(0xFFd97706)
-                            : const Color(0xFF00875a),
-                        fontSize: 9,
+                  child: const Icon(Icons.keyboard_arrow_down,
+                      color: Color(0xFF475569), size: 22),
+                ),
+              ),
+              const SizedBox(width: 10),
+
+              // Title + timer pill
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      state.schedule.name,
+                      style: const TextStyle(
+                        color: Color(0xFF0f172a),
                         fontWeight: FontWeight.w800,
-                        letterSpacing: 0.8,
+                        fontSize: 13,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        if (!isPaused)
+                          _PulseDot()
+                        else
+                          const Icon(Icons.pause_circle,
+                              color: Color(0xFFf59e0b), size: 10),
+                        const SizedBox(width: 4),
+                        Text(
+                          state.elapsedFormatted,
+                          style: const TextStyle(
+                            color: Color(0xFF475569),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 11,
+                            fontFeatures: [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: isPaused
+                                ? const Color(0xFFfef3c7)
+                                : const Color(0xFFe6faf3),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            isPaused ? 'PAUSED' : 'ACTIVE',
+                            style: TextStyle(
+                              color: isPaused
+                                  ? const Color(0xFFd97706)
+                                  : const Color(0xFF00875a),
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Settings cog
+              GestureDetector(
+                onTap: onSettingsTap,
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: const Color(0xFFe2e8f0)),
                   ),
-                ],
+                  child: const Icon(Icons.settings_outlined,
+                      color: Color(0xFF475569), size: 18),
+                ),
               ),
             ],
           ),
         ),
-
-        // Settings cog
-        GestureDetector(
-          onTap: onSettingsTap,
-          child: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFFe2e8f0)),
-            ),
-            child: const Icon(Icons.settings_outlined,
-                color: Color(0xFF475569), size: 18),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -1099,14 +1129,20 @@ class _SessionFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPaused = state.phase == WorkoutPhase.paused;
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          padding: EdgeInsets.only(
+            left: 16,
+            top: 12,
+            right: 16,
+            bottom: bottomPadding + 16,
+          ),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.85),
+            color: const Color(0xFFF7F9FB).withValues(alpha: 0.85),
             border: Border(
               top: BorderSide(
                 color: Colors.white.withValues(alpha: 0.8),
@@ -1121,81 +1157,78 @@ class _SessionFooter extends StatelessWidget {
               ),
             ],
           ),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Metrics row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _MetricChip(
-                      label: 'DONE',
-                      value:
-                          '${state.completedSetCount}/${state.totalSetCount}',
-                    ),
-                    _MetricChip(
-                      label: 'KCAL',
-                      value: '~${state.estimatedCalories}',
-                    ),
-                    _MetricChip(
-                      label: 'TIME',
-                      value: state.elapsedFormatted,
-                      mono: true,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                // Action buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: isPaused ? notifier.resumeSession : onPause,
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: Colors.white.withValues(alpha: 0.90),
-                          foregroundColor: const Color(0xFF0f172a),
-                          side: const BorderSide(color: Color(0xFFe2e8f0)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
-                        ),
-                        icon: Icon(
-                          isPaused ? Icons.play_arrow : Icons.pause,
-                          size: 18,
-                        ),
-                        label: Text(
-                          isPaused ? 'Resume' : 'Pause',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 13),
-                        ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Metrics row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _MetricChip(
+                    label: 'DONE',
+                    value:
+                        '${state.completedSetCount}/${state.totalSetCount}',
+                  ),
+                  _MetricChip(
+                    label: 'KCAL',
+                    value: '~${state.estimatedCalories}',
+                  ),
+                  _MetricChip(
+                    label: 'TIME',
+                    value: state.elapsedFormatted,
+                    mono: true,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              // Action buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: isPaused ? notifier.resumeSession : onPause,
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: Colors.white.withValues(alpha: 0.90),
+                        foregroundColor: const Color(0xFF0f172a),
+                        side: const BorderSide(color: Color(0xFFe2e8f0)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                      ),
+                      icon: Icon(
+                        isPaused ? Icons.play_arrow : Icons.pause,
+                        size: 18,
+                      ),
+                      label: Text(
+                        isPaused ? 'Resume' : 'Pause',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 13),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: onStop,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFef4444),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
-                          elevation: 0,
-                        ),
-                        icon: const Icon(Icons.stop, size: 18),
-                        label: const Text(
-                          'Stop Session',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 13),
-                        ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: onStop,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFef4444),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                        elevation: 0,
+                      ),
+                      icon: const Icon(Icons.stop, size: 18),
+                      label: const Text(
+                        'Stop Session',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 13),
                       ),
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
