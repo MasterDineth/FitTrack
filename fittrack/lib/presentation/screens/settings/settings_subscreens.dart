@@ -1,4 +1,4 @@
-export 'profile_screen.dart';
+export '../profile_screen.dart';
 export 'account_details_screen.dart';
 export 'security_app_lock_screen.dart';
 export 'password_security_screen.dart';

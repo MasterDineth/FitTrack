@@ -33,6 +33,7 @@ final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final shellNavigatorDashboardKey = GlobalKey<NavigatorState>(debugLabel: 'shellDashboard');
 final shellNavigatorWorkoutsKey = GlobalKey<NavigatorState>(debugLabel: 'shellWorkouts');
 final shellNavigatorHistoryKey = GlobalKey<NavigatorState>(debugLabel: 'shellHistory');
+final shellNavigatorProfileKey = GlobalKey<NavigatorState>(debugLabel: 'shellProfile');
 final shellNavigatorSettingsKey = GlobalKey<NavigatorState>(debugLabel: 'shellSettings');
 
 class GoRouterNotifier extends ChangeNotifier {
@@ -167,11 +168,6 @@ GoRouter router(Ref ref) {
         ),
       ),
       GoRoute(
-        path: '/settings/profile',
-        parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const ProfileScreen(),
-      ),
-      GoRoute(
         path: '/settings/account',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const AccountDetailsScreen(),
@@ -250,6 +246,15 @@ GoRouter router(Ref ref) {
               GoRoute(
                 path: '/history',
                 builder: (context, state) => const WorkoutHistoryScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: shellNavigatorProfileKey,
+            routes: [
+              GoRoute(
+                path: '/profile',
+                builder: (context, state) => const ProfileScreen(),
               ),
             ],
           ),

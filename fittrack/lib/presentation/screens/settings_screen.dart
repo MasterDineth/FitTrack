@@ -429,7 +429,7 @@ class SettingsScreen extends StatelessWidget {
   // ── Profile & Account Header Card ───────────────────────────────────────
   Widget _buildProfileCard(BuildContext context) {
     return InkWell(
-      onTap: () => context.push('/settings/profile'),
+      onTap: () => context.go('/profile'),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
