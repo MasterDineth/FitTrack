@@ -276,15 +276,19 @@ class ProfileScreen extends ConsumerWidget {
         // User name with verified badge
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              profile.name,
-              style: const TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.4,
-                color: _slateDark,
+            Flexible(
+              child: Text(
+                profile.name,
+                style: const TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.4,
+                  color: _slateDark,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(width: 6),
@@ -485,7 +489,7 @@ class ProfileScreen extends ConsumerWidget {
     Color? badgeColor,
   }) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(16),
@@ -497,51 +501,63 @@ class ProfileScreen extends ConsumerWidget {
           Row(
             children: [
               Container(
-                width: 28,
-                height: 28,
+                width: 24,
+                height: 24,
                 decoration: BoxDecoration(
                   color: iconBg,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Center(
-                  child: Icon(icon, size: 16, color: iconColor),
+                  child: Icon(icon, size: 14, color: iconColor),
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
+              const SizedBox(width: 6),
+              Flexible(
+                flex: badge != null ? 1 : 1,
                 child: Text(
                   label,
                   style: const TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
                     color: _slateMuted,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              if (badge != null)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: badgeBg ?? const Color(0xFFD1FAE5),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    badge,
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.4,
-                      color: badgeColor ?? const Color(0xFF047857),
+              if (badge != null) ...[
+                const SizedBox(width: 4),
+                Flexible(
+                  flex: 2,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: badgeBg ?? const Color(0xFFD1FAE5),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        badge,
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
+                          color: badgeColor ?? const Color(0xFF047857),
+                        ),
+                      ),
                     ),
                   ),
                 ),
+              ],
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
@@ -550,7 +566,7 @@ class ProfileScreen extends ConsumerWidget {
                 value,
                 style: const TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
-                  fontSize: 24,
+                  fontSize: 22,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.5,
                   color: _slateDark,
@@ -558,13 +574,16 @@ class ProfileScreen extends ConsumerWidget {
               ),
               if (unit != null) ...[
                 const SizedBox(width: 4),
-                Text(
-                  unit,
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: unitColor ?? _slateLight,
+                Expanded(
+                  child: Text(
+                    unit,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: unitColor ?? _slateLight,
+                    ),
                   ),
                 ),
               ],
@@ -879,6 +898,7 @@ class ProfileScreen extends ConsumerWidget {
     bool isEditable = false,
     bool hasChevron = false,
     VoidCallback? onTap,
+    int maxLines = 2,
   }) {
     return InkWell(
       onTap: onTap,
@@ -886,7 +906,7 @@ class ProfileScreen extends ConsumerWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
               label,
@@ -897,11 +917,11 @@ class ProfileScreen extends ConsumerWidget {
                 color: _slateMuted,
               ),
             ),
-            const SizedBox(width: 8),
-            Flexible(
+            const SizedBox(width: 12),
+            Expanded(
               child: Row(
-                mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   if (customValueWidget != null)
                     Flexible(child: customValueWidget)
@@ -910,17 +930,20 @@ class ProfileScreen extends ConsumerWidget {
                       child: Text(
                         value,
                         textAlign: TextAlign.end,
+                        maxLines: maxLines,
+                        softWrap: true,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: _slateDark,
+                          height: 1.25,
                         ),
                       ),
                     ),
                   if (isEditable) ...[
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     const Icon(
                       Icons.edit_outlined,
                       size: 14,
@@ -928,7 +951,7 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                   ],
                   if (hasChevron) ...[
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 4),
                     const Icon(
                       Icons.chevron_right_rounded,
                       size: 18,
