@@ -37,7 +37,7 @@ final class SecuritySettingsNotifierProvider
 }
 
 String _$securitySettingsNotifierHash() =>
-    r'baa63613aaec73342efaa8e10bbaf3aee82f6fb9';
+    r'0fb36dfc39d34efcdd599f9087bb730260d13fba';
 
 /// Riverpod notifier managing [SecuritySettings] state and persistence.
 

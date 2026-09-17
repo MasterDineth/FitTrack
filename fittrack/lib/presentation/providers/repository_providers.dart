@@ -13,6 +13,9 @@ import '../../data/datasources/local/database_helper.dart';
 
 import '../../domain/repositories/i_security_repository.dart';
 import '../../data/repositories/security_repository_impl.dart';
+import '../../domain/repositories/i_theme_repository.dart';
+import '../../data/repositories/theme_repository_impl.dart';
+import 'shared_preferences_provider.dart';
 
 part 'repository_providers.g.dart';
 
@@ -44,5 +47,11 @@ IExerciseRepository exerciseRepository(Ref ref) {
 @riverpod
 ISecurityRepository securityRepository(Ref ref) {
   return SecurityRepositoryImpl();
+}
+
+@riverpod
+IThemeRepository themeRepository(Ref ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return ThemeRepositoryImpl(prefs);
 }
 
