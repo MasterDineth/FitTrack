@@ -11,6 +11,9 @@ import '../../data/repositories/sqlite_workout_session_repository.dart';
 import '../../data/repositories/sqlite_exercise_repository.dart';
 import '../../data/datasources/local/database_helper.dart';
 
+import '../../domain/repositories/i_security_repository.dart';
+import '../../data/repositories/security_repository_impl.dart';
+
 part 'repository_providers.g.dart';
 
 @riverpod
@@ -37,3 +40,9 @@ IWorkoutSessionRepository workoutSessionRepository(Ref ref) {
 IExerciseRepository exerciseRepository(Ref ref) {
   return SqliteExerciseRepository(DatabaseHelper.instance);
 }
+
+@riverpod
+ISecurityRepository securityRepository(Ref ref) {
+  return SecurityRepositoryImpl();
+}
+

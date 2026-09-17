@@ -236,3 +236,51 @@ final class ExerciseRepositoryProvider
 
 String _$exerciseRepositoryHash() =>
     r'a484562bb533b2e343472675ab332a13a7426327';
+
+@ProviderFor(securityRepository)
+final securityRepositoryProvider = SecurityRepositoryProvider._();
+
+final class SecurityRepositoryProvider
+    extends
+        $FunctionalProvider<
+          ISecurityRepository,
+          ISecurityRepository,
+          ISecurityRepository
+        >
+    with $Provider<ISecurityRepository> {
+  SecurityRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'securityRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$securityRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<ISecurityRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  ISecurityRepository create(Ref ref) {
+    return securityRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ISecurityRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ISecurityRepository>(value),
+    );
+  }
+}
+
+String _$securityRepositoryHash() =>
+    r'fbdc023a9206056afc2ce6860944fe3485bbaf28';
