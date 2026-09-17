@@ -8,8 +8,8 @@ part of 'security_settings.dart';
 
 _SecuritySettings _$SecuritySettingsFromJson(Map<String, dynamic> json) =>
     _SecuritySettings(
-      isAppLockEnabled: json['isAppLockEnabled'] as bool? ?? true,
-      isBiometricEnabled: json['isBiometricEnabled'] as bool? ?? true,
+      isAppLockEnabled: json['isAppLockEnabled'] as bool? ?? false,
+      isBiometricEnabled: json['isBiometricEnabled'] as bool? ?? false,
       isPasscodeFallbackEnabled:
           json['isPasscodeFallbackEnabled'] as bool? ?? true,
       lockTimeout:

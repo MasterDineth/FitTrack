@@ -8,7 +8,7 @@ import '../../theme/app_colors.dart';
 /// Security & App Lock Screen implemented to match Stitch specifications.
 ///
 /// Provides master toggle, biometric unlock settings, hardware verification test,
-/// auto-timeout options, and privacy guards.
+/// auto-timeout options, privacy guards, and scrolling save action.
 class SecurityAppLockScreen extends ConsumerStatefulWidget {
   const SecurityAppLockScreen({super.key});
 
@@ -52,6 +52,10 @@ class _SecurityAppLockScreenState extends ConsumerState<SecurityAppLockScreen>
     final notifier = ref.read(securitySettingsNotifierProvider.notifier);
 
     final success = await notifier.testBiometrics();
+    final message = notifier.lastAuthMessage ??
+        (success
+            ? 'Hardware Token Authenticated: Sub-millisecond response confirmed.'
+            : 'Biometric unlock cancelled or unavailable on this device.');
 
     if (!mounted) return;
     setState(() => _isTestingBiometrics = false);
@@ -69,9 +73,7 @@ class _SecurityAppLockScreenState extends ConsumerState<SecurityAppLockScreen>
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                success
-                    ? 'Hardware Token Authenticated: Sub-millisecond response confirmed.'
-                    : 'Biometric unlock cancelled or unavailable on this device.',
+                message,
                 style: const TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: 13,
@@ -85,7 +87,7 @@ class _SecurityAppLockScreenState extends ConsumerState<SecurityAppLockScreen>
         backgroundColor: success ? const Color(0xFF006C46) : AppColors.slate800,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 4),
       ),
     );
   }
@@ -144,38 +146,36 @@ class _SecurityAppLockScreenState extends ConsumerState<SecurityAppLockScreen>
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTopHeader(context),
-                    const SizedBox(height: 16),
-                    _buildScreenHeading(),
-                    const SizedBox(height: 20),
-                    _buildMasterLockCard(settings, notifier),
-                    const SizedBox(height: 24),
-                    _buildBiometricsSection(settings, notifier),
-                    const SizedBox(height: 24),
-                    _buildRequireLockSection(settings, notifier),
-                    const SizedBox(height: 24),
-                    _buildPrivacyDataGuardSection(settings, notifier),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),
-            ),
-            _buildBottomBar(),
-          ],
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTopHeader(context, settings),
+              const SizedBox(height: 16),
+              _buildScreenHeading(),
+              const SizedBox(height: 20),
+              _buildMasterLockCard(settings, notifier),
+              const SizedBox(height: 24),
+              _buildBiometricsSection(settings, notifier),
+              const SizedBox(height: 24),
+              _buildRequireLockSection(settings, notifier),
+              const SizedBox(height: 24),
+              _buildPrivacyDataGuardSection(settings, notifier),
+              const SizedBox(height: 28),
+              _buildSaveAndComplianceCard(),
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildTopHeader(BuildContext context) {
+  Widget _buildTopHeader(BuildContext context, SecuritySettings settings) {
+    final isLocked = settings.isAppLockEnabled;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -216,39 +216,51 @@ class _SecurityAppLockScreenState extends ConsumerState<SecurityAppLockScreen>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: const Color(0xFF54FEB3),
+            color: isLocked ? const Color(0xFF54FEB3) : const Color(0xFFE2E8F0),
             borderRadius: BorderRadius.circular(20),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x1A006C46),
-                blurRadius: 6,
-                offset: Offset(0, 2),
-              ),
-            ],
+            boxShadow: isLocked
+                ? const [
+                    BoxShadow(
+                      color: Color(0x1A006C46),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              FadeTransition(
-                opacity: _pulseAnimation,
-                child: Container(
+              if (isLocked)
+                FadeTransition(
+                  opacity: _pulseAnimation,
+                  child: Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF006C46),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                )
+              else
+                Container(
                   width: 7,
                   height: 7,
                   decoration: const BoxDecoration(
-                    color: Color(0xFF006C46),
+                    color: AppColors.slate400,
                     shape: BoxShape.circle,
                   ),
                 ),
-              ),
               const SizedBox(width: 6),
-              const Text(
-                'PROTECTED',
+              Text(
+                isLocked ? 'PROTECTED' : 'UNLOCKED',
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.6,
-                  color: Color(0xFF005234),
+                  color: isLocked ? const Color(0xFF005234) : AppColors.slate600,
                 ),
               ),
             ],
@@ -290,6 +302,8 @@ class _SecurityAppLockScreenState extends ConsumerState<SecurityAppLockScreen>
     SecuritySettings settings,
     SecuritySettingsNotifier notifier,
   ) {
+    final isEnabled = settings.isAppLockEnabled;
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
@@ -304,11 +318,16 @@ class _SecurityAppLockScreenState extends ConsumerState<SecurityAppLockScreen>
             offset: Offset(0, 4),
           ),
         ],
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFFF2FBF7),
-            AppColors.cardWhite,
-          ],
+        gradient: LinearGradient(
+          colors: isEnabled
+              ? const [
+                  Color(0xFFF2FBF7),
+                  AppColors.cardWhite,
+                ]
+              : const [
+                  AppColors.cardWhite,
+                  AppColors.cardWhite,
+                ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -321,20 +340,22 @@ class _SecurityAppLockScreenState extends ConsumerState<SecurityAppLockScreen>
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: const Color(0xFF54FEB3),
+              color: isEnabled ? const Color(0xFF54FEB3) : const Color(0xFFECEEF0),
               borderRadius: BorderRadius.circular(12),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x2000D68F),
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
-                ),
-              ],
+              boxShadow: isEnabled
+                  ? const [
+                      BoxShadow(
+                        color: Color(0x2000D68F),
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ]
+                  : null,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.shield_rounded,
               size: 24,
-              color: Color(0xFF005234),
+              color: isEnabled ? const Color(0xFF005234) : AppColors.slate400,
             ),
           ),
           const SizedBox(width: 12),
@@ -342,7 +363,11 @@ class _SecurityAppLockScreenState extends ConsumerState<SecurityAppLockScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                // Use Wrap to eliminate horizontal layout overflow on narrow displays
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 6,
+                  runSpacing: 4,
                   children: [
                     const Text(
                       'Enable App Lock',
@@ -353,23 +378,26 @@ class _SecurityAppLockScreenState extends ConsumerState<SecurityAppLockScreen>
                         color: AppColors.slateDark,
                       ),
                     ),
-                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 6,
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFDAE2FD),
+                        color: isEnabled
+                            ? const Color(0xFFDAE2FD)
+                            : const Color(0xFFE2E8F0),
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: const Text(
-                        'Active',
+                      child: Text(
+                        isEnabled ? 'Active' : 'Disabled',
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF1E293B),
+                          color: isEnabled
+                              ? const Color(0xFF1E293B)
+                              : AppColors.slate500,
                         ),
                       ),
                     ),
@@ -673,7 +701,10 @@ class _SecurityAppLockScreenState extends ConsumerState<SecurityAppLockScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        runSpacing: 4,
                         children: [
                           Text(
                             timeout.title,
@@ -684,8 +715,7 @@ class _SecurityAppLockScreenState extends ConsumerState<SecurityAppLockScreen>
                               color: AppColors.slateDark,
                             ),
                           ),
-                          if (timeout.badge != null) ...[
-                            const SizedBox(width: 8),
+                          if (timeout.badge != null)
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
@@ -705,7 +735,6 @@ class _SecurityAppLockScreenState extends ConsumerState<SecurityAppLockScreen>
                                 ),
                               ),
                             ),
-                          ],
                         ],
                       ),
                       const SizedBox(height: 3),
@@ -901,90 +930,73 @@ class _SecurityAppLockScreenState extends ConsumerState<SecurityAppLockScreen>
     );
   }
 
-  Widget _buildBottomBar() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-      decoration: BoxDecoration(
-        color: AppColors.cardWhite.withValues(alpha: 0.95),
-        border: const Border(
-          top: BorderSide(color: Color(0xFFE0E3E5), width: 0.6),
-        ),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D0F172A),
-            blurRadius: 16,
-            offset: Offset(0, -4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton.icon(
-              onPressed: _isSavingPreferences ? null : _handleSavePreferences,
-              icon: _isSavingPreferences
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.2,
-                        color: Color(0xFF003823),
-                      ),
-                    )
-                  : const Icon(
-                      Icons.check_circle_rounded,
-                      size: 20,
+  Widget _buildSaveAndComplianceCard() {
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: ElevatedButton.icon(
+            onPressed: _isSavingPreferences ? null : _handleSavePreferences,
+            icon: _isSavingPreferences
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.2,
                       color: Color(0xFF003823),
                     ),
-              label: Text(
-                _isSavingPreferences
-                    ? 'Saved Securely'
-                    : 'Save Security Preferences',
-                style: const TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF003823),
-                ),
+                  )
+                : const Icon(
+                    Icons.check_circle_rounded,
+                    size: 20,
+                    color: Color(0xFF003823),
+                  ),
+            label: Text(
+              _isSavingPreferences
+                  ? 'Saved Securely'
+                  : 'Save Security Preferences',
+              style: const TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF003823),
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.kineticMint,
-                elevation: 3,
-                shadowColor: AppColors.kineticMint.withValues(alpha: 0.35),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.kineticMint,
+              elevation: 2,
+              shadowColor: AppColors.kineticMint.withValues(alpha: 0.35),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
               ),
             ),
           ),
-          const SizedBox(height: 10),
-          const Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                Icons.info_outline_rounded,
-                size: 15,
-                color: AppColors.slate400,
-              ),
-              SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  'Device credentials and biometric templates are managed exclusively by Secure Enclave / Android KeyStore. FitTrack never transmits, logs, or stores raw biometric telemetry.',
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: 11,
-                    height: 1.35,
-                    color: AppColors.slate500,
-                  ),
+        ),
+        const SizedBox(height: 12),
+        const Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.info_outline_rounded,
+              size: 15,
+              color: AppColors.slate400,
+            ),
+            SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                'Device credentials and biometric templates are managed exclusively by Secure Enclave / Android KeyStore. FitTrack never transmits, logs, or stores raw biometric telemetry.',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: 11,
+                  height: 1.35,
+                  color: AppColors.slate500,
                 ),
               ),
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

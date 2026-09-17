@@ -11,6 +11,10 @@ part 'security_settings_provider.g.dart';
 @Riverpod(keepAlive: true)
 class SecuritySettingsNotifier extends _$SecuritySettingsNotifier {
   final LocalAuthentication _localAuth = LocalAuthentication();
+  String? _lastAuthMessage;
+
+  /// Diagnostic message from the most recent biometric verification attempt.
+  String? get lastAuthMessage => _lastAuthMessage;
 
   @override
   FutureOr<SecuritySettings> build() async {
@@ -87,20 +91,36 @@ class SecuritySettingsNotifier extends _$SecuritySettingsNotifier {
       final isSupported = await _localAuth.isDeviceSupported();
       final canCheck = await _localAuth.canCheckBiometrics;
 
-      if (!isSupported && !canCheck) {
-        debugPrint('LocalAuth: Biometric hardware is not available on this device/simulator.');
-      }
+      debugPrint('LocalAuth: isSupported=$isSupported, canCheck=$canCheck');
 
       final didAuthenticate = await _localAuth.authenticate(
         localizedReason:
             'Authenticate using biometrics to verify instant zero-latency FitTrack unlock',
       );
+
+      if (didAuthenticate) {
+        _lastAuthMessage =
+            'Hardware Token Authenticated: Sub-millisecond response confirmed.';
+      } else {
+        _lastAuthMessage =
+            'Biometric verification cancelled or not completed.';
+      }
       return didAuthenticate;
     } on PlatformException catch (e) {
       debugPrint('LocalAuth PlatformException: ${e.code} - ${e.message}');
+      if (e.code == 'NotEnrolled') {
+        _lastAuthMessage =
+            'No biometric credentials enrolled. Please register a fingerprint or face in Android settings.';
+      } else if (e.code == 'LockedOut') {
+        _lastAuthMessage =
+            'Biometric sensor locked out due to failed attempts. Please unlock with PIN first.';
+      } else {
+        _lastAuthMessage = e.message ?? 'Biometric authentication failed (${e.code}).';
+      }
       return false;
     } catch (e) {
       debugPrint('LocalAuth Error: $e');
+      _lastAuthMessage = 'Authentication error: $e';
       return false;
     }
   }

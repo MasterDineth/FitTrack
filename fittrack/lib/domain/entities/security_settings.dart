@@ -50,8 +50,8 @@ abstract class SecuritySettings with _$SecuritySettings {
   const SecuritySettings._();
 
   const factory SecuritySettings({
-    @Default(true) bool isAppLockEnabled,
-    @Default(true) bool isBiometricEnabled,
+    @Default(false) bool isAppLockEnabled,
+    @Default(false) bool isBiometricEnabled,
     @Default(true) bool isPasscodeFallbackEnabled,
     @Default(LockTimeout.immediate) LockTimeout lockTimeout,
     @Default(true) bool hideContent,

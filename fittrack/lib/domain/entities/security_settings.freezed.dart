@@ -221,7 +221,7 @@ return $default(_that.isAppLockEnabled,_that.isBiometricEnabled,_that.isPasscode
 @JsonSerializable()
 
 class _SecuritySettings extends SecuritySettings {
-  const _SecuritySettings({this.isAppLockEnabled = true, this.isBiometricEnabled = true, this.isPasscodeFallbackEnabled = true, this.lockTimeout = LockTimeout.immediate, this.hideContent = true, this.requireForSensitive = true, this.failedAttemptsCooldown = true}): super._();
+  const _SecuritySettings({this.isAppLockEnabled = false, this.isBiometricEnabled = false, this.isPasscodeFallbackEnabled = true, this.lockTimeout = LockTimeout.immediate, this.hideContent = true, this.requireForSensitive = true, this.failedAttemptsCooldown = true}): super._();
   factory _SecuritySettings.fromJson(Map<String, dynamic> json) => _$SecuritySettingsFromJson(json);
 
 @override@JsonKey() final  bool isAppLockEnabled;
