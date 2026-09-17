@@ -14,56 +14,47 @@ import '../widgets/modals/modal_backdrop_helper.dart';
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
-  // ── Theme tokens matching Stitch specification ─────────────────────────
-  static const Color _bg = Color(0xFFF7F9FB);
-  static const Color _cardBg = Colors.white;
-  static const Color _mint = Color(0xFF00D68F);
-  static const Color _darkGreen = Color(0xFF006C46);
-  static const Color _slateDark = Color(0xFF0F172A);
-  static const Color _slateMuted = Color(0xFF64748B);
-  static const Color _slateLight = Color(0xFF94A3B8);
-  static const Color _border = Color(0xFFE2E8F0);
-  static const Color _iconBg = Color(0xFFF1F5F9);
-  static const Color _errorRed = Color(0xFFBA1A1A);
-  static const Color _proLifterBg = Color(0xFFDAE2FD);
-  static const Color _proLifterText = Color(0xFF1E293B);
-
   void _showLogoutDialog(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final cardBg = theme.cardTheme.color ?? colorScheme.surface;
+    const errorRed = Color(0xFFBA1A1A);
+
     showDialog<void>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          backgroundColor: _cardBg,
+          backgroundColor: cardBg,
           surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
-          title: const Text(
+          title: Text(
             'Log Out',
             style: TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: _slateDark,
+              color: colorScheme.onSurface,
             ),
           ),
-          content: const Text(
+          content: Text(
             'Are you sure you want to log out of your FitTrack account?',
             style: TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontSize: 14,
-              color: _slateMuted,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text(
+              child: Text(
                 'Cancel',
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontWeight: FontWeight.w600,
-                  color: _slateMuted,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
@@ -77,7 +68,7 @@ class SettingsScreen extends StatelessWidget {
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontWeight: FontWeight.w700,
-                  color: _errorRed,
+                  color: errorRed,
                 ),
               ),
             ),
@@ -88,52 +79,61 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showRatingSheet(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final cardBg = theme.cardTheme.color ?? colorScheme.surface;
+
     showBlurBottomSheet<void>(
       context: context,
       child: Container(
-        decoration: const BoxDecoration(
-          color: _cardBg,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 40,
+                  width: 36,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: _border,
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Icon(
-                  Icons.star_rate_rounded,
-                  color: Color(0xFFF59E0B),
-                  size: 48,
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.star_rounded, size: 28, color: Color(0xFFF59E0B)),
+                    Icon(Icons.star_rounded, size: 28, color: Color(0xFFF59E0B)),
+                    Icon(Icons.star_rounded, size: 28, color: Color(0xFFF59E0B)),
+                    Icon(Icons.star_rounded, size: 28, color: Color(0xFFF59E0B)),
+                    Icon(Icons.star_rounded, size: 28, color: Color(0xFFF59E0B)),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                const Text(
+                const SizedBox(height: 14),
+                Text(
                   'Enjoying FitTrack?',
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: _slateDark,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
+                Text(
                   'Your feedback helps us continuously improve the lifting and tracking experience.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: 13,
-                    color: _slateMuted,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -142,7 +142,7 @@ class SettingsScreen extends StatelessWidget {
                   height: 46,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _mint,
+                      backgroundColor: colorScheme.primary,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -160,16 +160,16 @@ class SettingsScreen extends StatelessWidget {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          backgroundColor: _slateDark,
+                          backgroundColor: colorScheme.surfaceContainerHighest,
                         ),
                       );
                     },
-                    child: const Text(
+                    child: Text(
                       'Rate on App Store',
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontWeight: FontWeight.w700,
-                        color: _slateDark,
+                        color: colorScheme.onPrimary,
                       ),
                     ),
                   ),
@@ -184,8 +184,11 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         bottom: false,
         child: CustomScrollView(
@@ -197,24 +200,24 @@ class SettingsScreen extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
                 child: Row(
                   children: [
-                    // Mint dot indicator
+                    // Dynamic accent dot indicator
                     Container(
                       width: 10,
                       height: 10,
-                      decoration: const BoxDecoration(
-                        color: _mint,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary,
                         shape: BoxShape.circle,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Text(
+                    Text(
                       'Settings',
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.015 * 22,
-                        color: _slateDark,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -228,7 +231,7 @@ class SettingsScreen extends StatelessWidget {
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   // Search Bar
-                  _buildSearchBar(),
+                  _buildSearchBar(context),
                   const SizedBox(height: 16),
 
                   // Profile & Account Header Card
@@ -236,9 +239,9 @@ class SettingsScreen extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // Section 1: ACCOUNT & SECURITY
-                  _buildSectionHeader('Account & Security'),
+                  _buildSectionHeader(context, 'Account & Security'),
                   const SizedBox(height: 8),
-                  _buildSectionCard([
+                  _buildSectionCard(context, [
                     _SettingsTile(
                       icon: Icons.badge_outlined,
                       title: 'Account Details',
@@ -251,8 +254,8 @@ class SettingsScreen extends StatelessWidget {
                       subtitle: 'App lock, Biometrics unlock, 2FA',
                       trailingBadge: _BadgePill(
                         label: 'Biometrics On',
-                        backgroundColor: _mint.withValues(alpha: 0.18),
-                        textColor: const Color(0xFF005737),
+                        backgroundColor: colorScheme.primary.withValues(alpha: 0.15),
+                        textColor: colorScheme.primary,
                       ),
                       onTap: () => context.push('/settings/security'),
                     ),
@@ -266,9 +269,9 @@ class SettingsScreen extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // Section 2: WORKOUT & TIMERS
-                  _buildSectionHeader('Workout & Timers'),
+                  _buildSectionHeader(context, 'Workout & Timers'),
                   const SizedBox(height: 8),
-                  _buildSectionCard([
+                  _buildSectionCard(context, [
                     _SettingsTile(
                       icon: Icons.timer_outlined,
                       title: 'Workout Preferences',
@@ -285,9 +288,9 @@ class SettingsScreen extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // Section 3: APP PREFERENCES
-                  _buildSectionHeader('App Preferences'),
+                  _buildSectionHeader(context, 'App Preferences'),
                   const SizedBox(height: 8),
-                  _buildSectionCard([
+                  _buildSectionCard(context, [
                     _SettingsTile(
                       icon: Icons.palette_outlined,
                       title: 'Appearance & Display',
@@ -298,10 +301,10 @@ class SettingsScreen extends StatelessWidget {
                       icon: Icons.notifications_active_outlined,
                       title: 'Notifications & Reminders',
                       subtitle: 'Workout reminders, streak alerts',
-                      trailingBadge: const _BadgePill(
+                      trailingBadge: _BadgePill(
                         label: 'Enabled',
-                        backgroundColor: _proLifterBg,
-                        textColor: _proLifterText,
+                        backgroundColor: colorScheme.primary.withValues(alpha: 0.15),
+                        textColor: colorScheme.primary,
                       ),
                       onTap: () => context.push('/settings/notifications'),
                     ),
@@ -315,26 +318,26 @@ class SettingsScreen extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // Section 4: SUPPORT & ABOUT
-                  _buildSectionHeader('Support & About'),
+                  _buildSectionHeader(context, 'Support & About'),
                   const SizedBox(height: 8),
-                  _buildSectionCard([
+                  _buildSectionCard(context, [
                     _SettingsTile(
                       icon: Icons.help_outline_rounded,
-                      iconColor: _slateMuted,
+                      iconColor: colorScheme.onSurfaceVariant,
                       title: 'Help Center & FAQs',
                       subtitle: 'Guides, tutorials, contact support',
                       onTap: () => context.push('/settings/help'),
                     ),
                     _SettingsTile(
                       icon: Icons.star_rate_rounded,
-                      iconColor: _slateMuted,
+                      iconColor: colorScheme.onSurfaceVariant,
                       title: 'Share & Rate FitTrack',
                       subtitle: 'Support our development with a review',
                       onTap: () => _showRatingSheet(context),
                     ),
                     _SettingsTile(
                       icon: Icons.info_outline_rounded,
-                      iconColor: _slateMuted,
+                      iconColor: colorScheme.onSurfaceVariant,
                       title: 'About FitTrack',
                       subtitle: 'v1.4.2 (Latest)',
                       onTap: () => context.push('/settings/about'),
@@ -354,16 +357,23 @@ class SettingsScreen extends StatelessWidget {
   }
 
   // ── Search Bar Component ────────────────────────────────────────────────
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final cardBg = theme.cardTheme.color ?? colorScheme.surface;
+    final border = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final iconBg = isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
+
     return Container(
       height: 44,
       decoration: BoxDecoration(
-        color: _cardBg,
+        color: cardBg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _border),
+        border: Border.all(color: border),
         boxShadow: [
           BoxShadow(
-            color: _slateDark.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
             blurRadius: 6,
             offset: const Offset(0, 1),
           ),
@@ -371,28 +381,28 @@ class SettingsScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Icon(
               Icons.search_rounded,
               size: 20,
-              color: _slateMuted,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
-          const Expanded(
+          Expanded(
             child: TextField(
               enabled: false,
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: 14,
-                color: _slateDark,
+                color: colorScheme.onSurface,
               ),
               decoration: InputDecoration(
                 hintText: 'Search settings...',
                 hintStyle: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: 14,
-                  color: _slateLight,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                 ),
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
@@ -407,16 +417,16 @@ class SettingsScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: _iconBg,
+                color: iconBg,
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: const Text(
+              child: Text(
                 '⌘K',
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
-                  color: _slateMuted,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
@@ -428,18 +438,24 @@ class SettingsScreen extends StatelessWidget {
 
   // ── Profile & Account Header Card ───────────────────────────────────────
   Widget _buildProfileCard(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final cardBg = theme.cardTheme.color ?? colorScheme.surface;
+    final border = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+
     return InkWell(
       onTap: () => context.push('/settings/profile'),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: _cardBg,
+          color: cardBg,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _border),
+          border: Border.all(color: border),
           boxShadow: [
             BoxShadow(
-              color: _slateDark.withValues(alpha: 0.04),
+              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -454,22 +470,26 @@ class SettingsScreen extends StatelessWidget {
                 Container(
                   width: 56,
                   height: 56,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
                       begin: Alignment.bottomLeft,
                       end: Alignment.topRight,
-                      colors: [_darkGreen, _mint],
+                      colors: [
+                        colorScheme.primary,
+                        colorScheme.primary.withValues(alpha: 0.75),
+                        colorScheme.tertiary,
+                      ],
                     ),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Text(
                       'D',
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: colorScheme.onPrimary,
                       ),
                     ),
                   ),
@@ -481,15 +501,15 @@ class SettingsScreen extends StatelessWidget {
                     width: 18,
                     height: 18,
                     decoration: BoxDecoration(
-                      color: _mint,
+                      color: colorScheme.primary,
                       shape: BoxShape.circle,
-                      border: Border.all(color: _cardBg, width: 2),
+                      border: Border.all(color: cardBg, width: 2),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Icon(
                         Icons.check_rounded,
                         size: 11,
-                        color: Color(0xFF003922),
+                        color: colorScheme.onPrimary,
                       ),
                     ),
                   ),
@@ -505,14 +525,14 @@ class SettingsScreen extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Flexible(
+                      Flexible(
                         child: Text(
                           'Dineth',
                           style: TextStyle(
                             fontFamily: 'Plus Jakarta Sans',
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: _slateDark,
+                            color: colorScheme.onSurface,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -524,33 +544,33 @@ class SettingsScreen extends StatelessWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: _proLifterBg,
+                          color: colorScheme.primary.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(100),
                         ),
-                        child: const Text(
+                        child: Text(
                           'PRO LIFTER',
                           style: TextStyle(
                             fontFamily: 'Plus Jakarta Sans',
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.6,
-                            color: _proLifterText,
+                            color: colorScheme.primary,
                           ),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 2),
-                  const Text(
+                  Text(
                     '@dineth.fit',
                     style: TextStyle(
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: 13,
-                      color: _slateMuted,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Row(
+                  Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
@@ -559,14 +579,14 @@ class SettingsScreen extends StatelessWidget {
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: _darkGreen,
+                          color: colorScheme.primary,
                         ),
                       ),
-                      SizedBox(width: 2),
+                      const SizedBox(width: 2),
                       Icon(
                         Icons.arrow_forward_ios_rounded,
                         size: 9,
-                        color: _darkGreen,
+                        color: colorScheme.primary,
                       ),
                     ],
                   ),
@@ -574,10 +594,10 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
 
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
               size: 20,
-              color: _slateLight,
+              color: colorScheme.onSurfaceVariant,
             ),
           ],
         ),
@@ -586,32 +606,40 @@ class SettingsScreen extends StatelessWidget {
   }
 
   // ── Section Header ──────────────────────────────────────────────────────
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(left: 4),
       child: Text(
         title.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontFamily: 'Plus Jakarta Sans',
           fontSize: 11,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.06 * 11,
-          color: _slateMuted,
+          color: colorScheme.onSurfaceVariant,
         ),
       ),
     );
   }
 
   // ── Section Container Card ──────────────────────────────────────────────
-  Widget _buildSectionCard(List<Widget> tiles) {
+  Widget _buildSectionCard(BuildContext context, List<Widget> tiles) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final cardBg = theme.cardTheme.color ?? colorScheme.surface;
+    final border = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final dividerColor = isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9);
+
     return Container(
       decoration: BoxDecoration(
-        color: _cardBg,
+        color: cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _border),
+        border: Border.all(color: border),
         boxShadow: [
           BoxShadow(
-            color: _slateDark.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -623,10 +651,10 @@ class SettingsScreen extends StatelessWidget {
           children: [
             for (int i = 0; i < tiles.length; i++) ...[
               if (i > 0)
-                const Divider(
+                Divider(
                   height: 1,
                   thickness: 1,
-                  color: Color(0xFFF1F5F9),
+                  color: dividerColor,
                 ),
               tiles[i],
             ],
@@ -638,6 +666,11 @@ class SettingsScreen extends StatelessWidget {
 
   // ── Outlined Log Out Button ─────────────────────────────────────────────
   Widget _buildLogoutButton(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final cardBg = theme.cardTheme.color ?? colorScheme.surface;
+    const errorRed = Color(0xFFBA1A1A);
+
     return InkWell(
       onTap: () => _showLogoutDialog(context),
       borderRadius: BorderRadius.circular(12),
@@ -645,15 +678,15 @@ class SettingsScreen extends StatelessWidget {
         width: double.infinity,
         height: 48,
         decoration: BoxDecoration(
-          color: _cardBg,
+          color: cardBg,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: _errorRed.withValues(alpha: 0.25),
+            color: errorRed.withValues(alpha: 0.25),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: _errorRed.withValues(alpha: 0.04),
+              color: errorRed.withValues(alpha: 0.04),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -665,7 +698,7 @@ class SettingsScreen extends StatelessWidget {
             Icon(
               Icons.logout_rounded,
               size: 20,
-              color: _errorRed,
+              color: errorRed,
             ),
             SizedBox(width: 8),
             Text(
@@ -674,7 +707,7 @@ class SettingsScreen extends StatelessWidget {
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: _errorRed,
+                color: errorRed,
               ),
             ),
           ],
@@ -704,6 +737,11 @@ class _SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final iconBg = isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
+
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -715,13 +753,13 @@ class _SettingsTile extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
+                color: iconBg,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 icon,
                 size: 22,
-                color: iconColor ?? const Color(0xFF006C46),
+                color: iconColor ?? colorScheme.primary,
               ),
             ),
             const SizedBox(width: 14),
@@ -733,20 +771,20 @@ class _SettingsTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF0F172A),
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: 12.5,
-                      color: Color(0xFF64748B),
+                      color: colorScheme.onSurfaceVariant,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -761,10 +799,10 @@ class _SettingsTile extends StatelessWidget {
             ],
 
             // Trailing chevron
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
               size: 20,
-              color: Color(0xFF94A3B8),
+              color: colorScheme.onSurfaceVariant,
             ),
           ],
         ),

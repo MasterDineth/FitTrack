@@ -22,7 +22,6 @@ class DashboardScreen extends ConsumerWidget {
   // ── Brand colours ──────────────────────────────────────────────────────
   static const Color _mint = Color(0xFF00d68f);
   static const Color _dark = Color(0xFF0f172a);
-  static const Color _bg = Color(0xFFf7f9fb);
   static const Color _cardBg = Colors.white;
   static const Color _muted = Color(0xFF64748b);
   static const Color _softBorder = Color(0xFFe2e8f0);
@@ -42,9 +41,11 @@ class DashboardScreen extends ConsumerWidget {
       splitRecommendationProvider(scheduleRepo, sessionRepo),
     );
     final userProfileAsync = ref.watch(userProfileProvider);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         bottom: false,
         child: CustomScrollView(
@@ -73,7 +74,7 @@ class DashboardScreen extends ConsumerWidget {
                   ),
                   loading: () => _MetricsBanner(
                       daysTrained: 0, workoutsCompleted: 0, caloriesBurned: 0),
-                  error: (_, __) => _MetricsBanner(
+                  error: (_, _) => _MetricsBanner(
                       daysTrained: 0, workoutsCompleted: 0, caloriesBurned: 0),
                 ),
               ),
@@ -86,7 +87,7 @@ class DashboardScreen extends ConsumerWidget {
                 child: calendarAsync.when(
                   data: (dates) => _ActivityCalendar(activeDates: dates),
                   loading: () => _ActivityCalendar(activeDates: const []),
-                  error: (_, __) => _ActivityCalendar(activeDates: const []),
+                  error: (_, _) => _ActivityCalendar(activeDates: const []),
                 ),
               ),
             ),
@@ -99,7 +100,7 @@ class DashboardScreen extends ConsumerWidget {
                   data: (schedule) =>
                       _TodayRecommendationCard(schedule: schedule),
                   loading: () => const _RecommendationLoading(),
-                  error: (_, __) =>
+                  error: (_, _) =>
                       const _TodayRecommendationCard(schedule: null),
                 ),
               ),
@@ -109,7 +110,7 @@ class DashboardScreen extends ConsumerWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                child: _buildSectionHeader('Recent Workouts', 'See All'),
+                child: _buildSectionHeader(context, 'Recent Workouts', 'See All'),
               ),
             ),
             SliverPadding(
@@ -121,7 +122,7 @@ class DashboardScreen extends ConsumerWidget {
                     timeAgo: '23 hours ago',
                     duration: '45:00',
                     calories: '350.5 kcal',
-                    accentColor: _mint,
+                    accentColor: colorScheme.primary,
                   ),
                   const SizedBox(height: 10),
                   _RecentWorkoutCard(
@@ -139,7 +140,7 @@ class DashboardScreen extends ConsumerWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                child: _buildSectionHeader('Tutorials & Guides', 'See All'),
+                child: _buildSectionHeader(context, 'Tutorials & Guides', 'See All'),
               ),
             ),
             SliverPadding(
@@ -183,6 +184,7 @@ class DashboardScreen extends ConsumerWidget {
 
   // ── Header Builder ──────────────────────────────────────────────────────
   Widget _buildHeader(BuildContext context, AsyncValue<UserProfile> userProfileAsync) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
       child: Row(
@@ -192,26 +194,26 @@ class DashboardScreen extends ConsumerWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: const Color(0xFF00d68f).withValues(alpha: 0.12),
+              color: colorScheme.primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.fitness_center_rounded,
-                color: _mint, size: 18),
+            child: Icon(Icons.fitness_center_rounded,
+                color: colorScheme.primary, size: 18),
           ),
           const SizedBox(width: 8),
           RichText(
-            text: const TextSpan(
-              style: TextStyle(
+            text: TextSpan(
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
                 color: _dark,
                 letterSpacing: -0.5,
               ),
               children: [
-                TextSpan(text: 'Fit'),
+                const TextSpan(text: 'Fit'),
                 TextSpan(
                     text: 'Track',
-                    style: TextStyle(color: _mint)),
+                    style: TextStyle(color: colorScheme.primary)),
               ],
             ),
           ),
@@ -244,7 +246,7 @@ class DashboardScreen extends ConsumerWidget {
                   width: 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: _mint,
+                    color: colorScheme.primary,
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 1.5),
                   ),
@@ -305,7 +307,7 @@ class DashboardScreen extends ConsumerWidget {
                     width: 10,
                     height: 10,
                     decoration: BoxDecoration(
-                      color: _mint,
+                      color: colorScheme.primary,
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 1.5),
                     ),
@@ -369,7 +371,7 @@ class DashboardScreen extends ConsumerWidget {
     return '${weekdays[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}, ${now.year}';
   }
 
-  Widget _buildSectionHeader(String title, String action) {
+  Widget _buildSectionHeader(BuildContext context, String title, String action) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -384,10 +386,10 @@ class DashboardScreen extends ConsumerWidget {
         ),
         Text(
           action,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: _mint,
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
       ],
@@ -479,7 +481,6 @@ class _MetricsBanner extends StatelessWidget {
 
   static const Color _mint = Color(0xFF00d68f);
   static const Color _dark = Color(0xFF0f172a);
-  static const Color _muted = Color(0xFF64748b);
   static const Color _softBorder = Color(0xFFe2e8f0);
 
   @override
@@ -532,7 +533,7 @@ class _MetricsBanner extends StatelessWidget {
                 iconColor: const Color(0xFFf97316),
                 label: 'Burned',
                 value: caloriesBurned > 0
-                    ? '${(caloriesBurned / 10.0).toStringAsFixed(1)}'
+                    ? (caloriesBurned / 10.0).toStringAsFixed(1)
                     : '0',
                 suffix: 'kcal',
               ),
@@ -622,7 +623,6 @@ class _ActivityCalendar extends StatelessWidget {
 
   final List<DateTime> activeDates;
 
-  static const Color _mint = Color(0xFF00d68f);
   static const Color _dark = Color(0xFF0f172a);
   static const Color _softBorder = Color(0xFFe2e8f0);
   static const Color _muted = Color(0xFF64748b);
@@ -689,7 +689,7 @@ class _ActivityCalendar extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: _softBorder.withValues(alpha: 0.7)),
             boxShadow: [
@@ -738,17 +738,18 @@ class _ActivityCalendar extends StatelessWidget {
                   final isToday = day == now.day;
                   final isActive = activeDayNums.contains(day);
 
+                  final colorScheme = Theme.of(context).colorScheme;
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     decoration: BoxDecoration(
                       color: isActive
-                          ? _mint
+                          ? colorScheme.primary
                           : isToday
-                              ? const Color(0xFFecfdf5)
+                              ? colorScheme.primary.withValues(alpha: 0.15)
                               : const Color(0xFFf8fafc),
                       borderRadius: BorderRadius.circular(10),
                       border: isToday
-                          ? Border.all(color: _mint, width: 2)
+                          ? Border.all(color: colorScheme.primary, width: 2)
                           : null,
                     ),
                     child: Column(
@@ -762,9 +763,9 @@ class _ActivityCalendar extends StatelessWidget {
                                 ? FontWeight.w800
                                 : FontWeight.w600,
                             color: isActive
-                                ? Colors.white
+                                ? colorScheme.onPrimary
                                 : isToday
-                                    ? const Color(0xFF047857)
+                                    ? colorScheme.primary
                                     : const Color(0xFF475569),
                           ),
                         ),
@@ -775,8 +776,8 @@ class _ActivityCalendar extends StatelessWidget {
                             margin: const EdgeInsets.only(top: 2),
                             decoration: BoxDecoration(
                               color: isActive
-                                  ? Colors.white
-                                  : _mint,
+                                  ? colorScheme.onPrimary
+                                  : colorScheme.primary,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -825,10 +826,7 @@ class _TodayRecommendationCard extends ConsumerWidget {
 
   final Schedule? schedule;
 
-  static const Color _mint = Color(0xFF00d68f);
   static const Color _dark = Color(0xFF0f172a);
-  static const Color _muted = Color(0xFF64748b);
-  static const Color _softBorder = Color(0xFFe2e8f0);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -844,8 +842,8 @@ class _TodayRecommendationCard extends ConsumerWidget {
                 Container(
                   width: 8,
                   height: 8,
-                  decoration: const BoxDecoration(
-                    color: _mint,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -867,7 +865,7 @@ class _TodayRecommendationCard extends ConsumerWidget {
                 color: const Color(0xFFecfdf5),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: _mint.withValues(alpha: 0.3),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                 ),
               ),
               child: const Text(
@@ -898,7 +896,6 @@ class _ScheduleHeroCard extends ConsumerWidget {
   const _ScheduleHeroCard({required this.schedule});
   final Schedule schedule;
 
-  static const Color _mint = Color(0xFF00d68f);
   static const Color _dark = Color(0xFF0f172a);
   static const Color _muted = Color(0xFF64748b);
   static const Color _softBorder = Color(0xFFe2e8f0);
@@ -911,7 +908,7 @@ class _ScheduleHeroCard extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: _softBorder.withValues(alpha: 0.7)),
         boxShadow: [
@@ -1061,7 +1058,7 @@ class _ScheduleHeroCard extends ConsumerWidget {
                           ],
                         ),
                         loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
+                        error: (_, _) => const SizedBox.shrink(),
                       ),
                       // Start button
                       GestureDetector(
@@ -1071,24 +1068,19 @@ class _ScheduleHeroCard extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [
-                                Color(0xFF00d68f),
-                                Color(0xFF00b779),
-                              ],
-                            ),
+                            color: Theme.of(context).colorScheme.primary,
                             borderRadius: BorderRadius.circular(14),
                             boxShadow: [
                               BoxShadow(
                                 color:
-                                    const Color(0xFF00d68f).withValues(alpha: 0.35),
+                                    Theme.of(context).colorScheme.primary.withValues(alpha: 0.35),
                                 blurRadius: 20,
                                 spreadRadius: -2,
                                 offset: const Offset(0, 4),
                               ),
                             ],
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
@@ -1096,12 +1088,12 @@ class _ScheduleHeroCard extends ConsumerWidget {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: Colors.white,
+                                  color: Theme.of(context).colorScheme.onPrimary,
                                 ),
                               ),
-                              SizedBox(width: 4),
+                              const SizedBox(width: 4),
                               Icon(Icons.play_arrow_rounded,
-                                  size: 14, color: Colors.white),
+                                  size: 14, color: Theme.of(context).colorScheme.onPrimary),
                             ],
                           ),
                         ),

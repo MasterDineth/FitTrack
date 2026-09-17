@@ -7,14 +7,12 @@ import '../providers/active_workout_provider.dart';
 class ActiveRestTimerView extends ConsumerWidget {
   const ActiveRestTimerView({super.key});
 
-  static const Color _mint = Color(0xFF00d68f);
-  static const Color _dark = Color(0xFF0f172a);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(activeWorkoutProvider);
     final notifier = ref.read(activeWorkoutProvider.notifier);
     final entry = state.currentEntry;
+    final colorScheme = Theme.of(context).colorScheme;
 
     final totalRest =
         entry?.restDurationSeconds ?? 90;
@@ -32,18 +30,18 @@ class ActiveRestTimerView extends ConsumerWidget {
           margin: const EdgeInsets.symmetric(vertical: 4),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
-              // Dark green ambient glow
+              // Dynamic ambient glow
               BoxShadow(
-                color: const Color(0xFF166534).withValues(alpha: 0.18),
+                color: colorScheme.primary.withValues(alpha: 0.18),
                 blurRadius: 16,
                 spreadRadius: 0,
                 offset: const Offset(0, 3),
               ),
               BoxShadow(
-                color: const Color(0xFF166534).withValues(alpha: 0.08),
+                color: colorScheme.primary.withValues(alpha: 0.08),
                 blurRadius: 22,
                 spreadRadius: 1,
                 offset: const Offset(0, 5),
@@ -83,7 +81,7 @@ class ActiveRestTimerView extends ConsumerWidget {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: _mint.withValues(alpha: 0.2),
+                            color: colorScheme.primary.withValues(alpha: 0.2),
                             blurRadius: 32,
                             spreadRadius: 4,
                           ),
@@ -105,6 +103,7 @@ class ActiveRestTimerView extends ConsumerWidget {
                       painter: _RingPainter(
                         progress: progress,
                         strokeWidth: 12,
+                        primaryColor: colorScheme.primary,
                       ),
                     ),
                     // Center text
@@ -113,11 +112,11 @@ class ActiveRestTimerView extends ConsumerWidget {
                       children: [
                         Text(
                           state.restRemainingFormatted,
-                          style: const TextStyle(
-                            color: _dark,
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.headlineLarge?.color ?? const Color(0xFF0f172a),
                             fontSize: 44,
                             fontWeight: FontWeight.w900,
-                            fontFeatures: [FontFeature.tabularFigures()],
+                            fontFeatures: const [FontFeature.tabularFigures()],
                             height: 1,
                           ),
                         ),
@@ -169,8 +168,8 @@ class ActiveRestTimerView extends ConsumerWidget {
                 child: ElevatedButton(
                   onPressed: notifier.skipRest,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _mint,
-                    foregroundColor: _dark,
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -231,18 +230,19 @@ class _AdjustPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: positive
-              ? const Color(0xFFe6faf3)
+              ? colorScheme.primary.withValues(alpha: 0.12)
               : const Color(0xFFfef2f2),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: positive
-                ? const Color(0xFF00d68f).withValues(alpha: 0.3)
+                ? colorScheme.primary.withValues(alpha: 0.3)
                 : const Color(0xFFfca5a5).withValues(alpha: 0.5),
           ),
         ),
@@ -250,7 +250,7 @@ class _AdjustPill extends StatelessWidget {
           label,
           style: TextStyle(
             color: positive
-                ? const Color(0xFF00875a)
+                ? colorScheme.primary
                 : const Color(0xFFdc2626),
             fontWeight: FontWeight.w800,
             fontSize: 12,
@@ -267,10 +267,11 @@ class _UpcomingExerciseCue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFf8fafc),
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFe2e8f0)),
       ),
@@ -280,12 +281,12 @@ class _UpcomingExerciseCue extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: const Color(0xFFe6faf3),
+              color: colorScheme.primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.fitness_center,
-              color: Color(0xFF00d68f),
+              color: colorScheme.primary,
               size: 18,
             ),
           ),
@@ -336,13 +337,12 @@ class _RingPainter extends CustomPainter {
     required this.progress,
     this.trackColor,
     this.strokeWidth = 12,
+    this.primaryColor,
   });
   final double progress;
   final Color? trackColor;
   final double strokeWidth;
-
-  static const Color _mint = Color(0xFF00d68f);
-  static const Color _mintDark = Color(0xFF00875a);
+  final Color? primaryColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -358,11 +358,12 @@ class _RingPainter extends CustomPainter {
       paint.color = trackColor!;
       canvas.drawCircle(center, radius, paint);
     } else {
+      final color = primaryColor ?? const Color(0xFF00d68f);
       // Gradient arc
       paint.shader = SweepGradient(
         startAngle: -math.pi / 2,
         endAngle: -math.pi / 2 + 2 * math.pi,
-        colors: const [_mint, _mintDark, _mint],
+        colors: [color, color.withValues(alpha: 0.6), color],
         stops: const [0.0, 0.5, 1.0],
       ).createShader(Rect.fromCircle(center: center, radius: radius));
 
@@ -378,7 +379,9 @@ class _RingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_RingPainter old) =>
-      old.progress != progress || old.trackColor != trackColor;
+      old.progress != progress ||
+      old.trackColor != trackColor ||
+      old.primaryColor != primaryColor;
 }
 
 class _SetProgressionCarousel extends StatelessWidget {
@@ -394,6 +397,7 @@ class _SetProgressionCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -409,7 +413,7 @@ class _SetProgressionCarousel extends StatelessWidget {
                   width: 20,
                   height: 2,
                   color: isCompleted || isNext
-                      ? const Color(0xFF00d68f)
+                      ? colorScheme.primary
                       : const Color(0xFFe2e8f0),
                   margin: const EdgeInsets.symmetric(horizontal: 8),
                 ),
@@ -421,13 +425,15 @@ class _SetProgressionCarousel extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: isCompleted
-                          ? const Color(0xFF0f172a)
+                          ? (Theme.of(context).brightness == Brightness.dark
+                              ? colorScheme.surfaceContainerHigh
+                              : const Color(0xFF0f172a))
                           : isNext
-                              ? Colors.white
+                              ? colorScheme.surface
                               : const Color(0xFFf8fafc),
                       border: Border.all(
                         color: isNext
-                            ? const Color(0xFF00d68f)
+                            ? colorScheme.primary
                             : (isCompleted
                                 ? const Color(0xFF0f172a)
                                 : const Color(0xFFe2e8f0)),
@@ -441,7 +447,7 @@ class _SetProgressionCarousel extends StatelessWidget {
                               '${index + 1}',
                               style: TextStyle(
                                 color: isNext
-                                    ? const Color(0xFF0f172a)
+                                    ? (Theme.of(context).textTheme.bodyLarge?.color ?? const Color(0xFF0f172a))
                                     : const Color(0xFF64748b),
                                 fontWeight: FontWeight.w800,
                                 fontSize: 16,
@@ -454,7 +460,7 @@ class _SetProgressionCarousel extends StatelessWidget {
                     isNext ? 'NEXT' : 'Set ${index + 1}',
                     style: TextStyle(
                       color: isNext
-                          ? const Color(0xFF00d68f)
+                          ? colorScheme.primary
                           : const Color(0xFF94a3b8),
                       fontWeight: FontWeight.w800,
                       fontSize: 10,

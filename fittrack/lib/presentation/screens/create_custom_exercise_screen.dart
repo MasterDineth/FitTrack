@@ -570,22 +570,18 @@ class _TextField extends StatelessWidget {
   const _TextField({
     required this.hint,
     required this.onChanged,
-    this.maxLines = 1,
     this.keyboardType,
     this.prefixIcon,
   });
   final String hint;
   final ValueChanged<String> onChanged;
-  final int maxLines;
   final TextInputType? keyboardType;
   final Widget? prefixIcon;
-
-  static const Color _mint = Color(0xFF00d68f);
 
   @override
   Widget build(BuildContext context) {
     return TextField(
-      maxLines: maxLines,
+      maxLines: 1,
       onChanged: onChanged,
       keyboardType: keyboardType,
       decoration: InputDecoration(
@@ -604,7 +600,7 @@ class _TextField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _mint, width: 1.5),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14, vertical: 12,
@@ -817,7 +813,6 @@ class _MuscleActivationTile extends StatelessWidget {
   final ValueChanged<int> onIntensityChanged;
   final VoidCallback onRemove;
 
-  static const Color _mint = Color(0xFF00d68f);
   static const Color _dark = Color(0xFF0f172a);
 
   static Color _roleColor(MuscleRole role) => switch (role) {

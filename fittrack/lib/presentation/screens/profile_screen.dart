@@ -12,55 +12,46 @@ import '../widgets/modals/text_input_modal.dart';
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
-  // ── Kinetic Slate Design Tokens ─────────────────────────────────────────
-  static const Color _bg = Color(0xFFF7F9FB);
-  static const Color _cardBg = Colors.white;
-  static const Color _mint = Color(0xFF00D68F);
-  static const Color _mintDark = Color(0xFF00A86B);
-  static const Color _mintLight = Color(0xFFE6FAF3);
-  static const Color _slateDark = Color(0xFF0F172A);
-  static const Color _slate700 = Color(0xFF334155);
-  static const Color _slateMuted = Color(0xFF64748B);
-  static const Color _slateLight = Color(0xFF94A3B8);
-  static const Color _border = Color(0xFFE2E8F0);
-  static const Color _errorRed = Color(0xFFF43F5E);
-
   void _showSignOutDialog(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final cardBg = theme.cardTheme.color ?? colorScheme.surface;
+
     showDialog<void>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          backgroundColor: _cardBg,
+          backgroundColor: cardBg,
           surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: const Text(
+          title: Text(
             'Sign Out',
             style: TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: _slateDark,
+              color: colorScheme.onSurface,
             ),
           ),
-          content: const Text(
+          content: Text(
             'Are you sure you want to sign out of FitTrack?',
             style: TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontSize: 14,
-              color: _slateMuted,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text(
+              child: Text(
                 'Cancel',
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontWeight: FontWeight.w600,
-                  color: _slateMuted,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
@@ -74,7 +65,7 @@ class ProfileScreen extends ConsumerWidget {
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontWeight: FontWeight.w700,
-                  color: _errorRed,
+                  color: Color(0xFFF43F5E),
                 ),
               ),
             ),
@@ -86,6 +77,8 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final userProfileAsync = ref.watch(userProfileProvider);
     final profile = userProfileAsync.value ??
         const UserProfile(
@@ -100,21 +93,21 @@ class ProfileScreen extends ConsumerWidget {
         );
 
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: _bg,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: const BackButton(color: _slateDark),
+        leading: BackButton(color: colorScheme.onSurface),
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Profile',
           style: TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontSize: 18,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.2,
-            color: _slateDark,
+            color: colorScheme.onSurface,
           ),
         ),
       ),
@@ -136,7 +129,7 @@ class ProfileScreen extends ConsumerWidget {
                 child: Column(
                   children: [
                     // Overview Stats Card (2x2 Grid with dynamic BMI)
-                    _buildOverviewCard(profile),
+                    _buildOverviewCard(context, profile),
                     const SizedBox(height: 16),
 
                     // Personal Info Card (7 editable items)
@@ -165,6 +158,12 @@ class ProfileScreen extends ConsumerWidget {
     WidgetRef ref,
     UserProfile profile,
   ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final cardBg = theme.cardTheme.color ?? colorScheme.surface;
+    final tileBg = isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC);
+
     final hasCustomImage = profile.profileImagePath != null &&
         File(profile.profileImagePath!).existsSync();
 
@@ -185,26 +184,33 @@ class ProfileScreen extends ConsumerWidget {
               width: 112,
               height: 112,
               padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
-                  colors: [_mint, Color(0xFF6EE7B7), Color(0xFF2DD4BF)],
+                  colors: [
+                    colorScheme.primary,
+                    colorScheme.primary.withValues(alpha: 0.75),
+                    colorScheme.tertiary,
+                  ],
                   begin: Alignment.bottomLeft,
                   end: Alignment.topRight,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Color(0x3300D68F),
+                    color: colorScheme.primary.withValues(alpha: 0.25),
                     blurRadius: 18,
-                    offset: Offset(0, 6),
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
               child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
+                  color: tileBg,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2.5),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF334155) : Colors.white,
+                    width: 2.5,
+                  ),
                 ),
                 child: ClipOval(
                   child: hasCustomImage
@@ -217,11 +223,11 @@ class ProfileScreen extends ConsumerWidget {
                       : Center(
                           child: Text(
                             initials,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Plus Jakarta Sans',
                               fontSize: 38,
                               fontWeight: FontWeight.w800,
-                              color: _slateDark,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                         ),
@@ -247,22 +253,22 @@ class ProfileScreen extends ConsumerWidget {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: _mint,
+                      color: colorScheme.primary,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.all(color: cardBg, width: 2),
                       boxShadow: [
                         BoxShadow(
-                          color: _slateDark.withValues(alpha: 0.12),
+                          color: Colors.black.withValues(alpha: 0.15),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
                       ],
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Icon(
                         Icons.camera_alt_outlined,
                         size: 16,
-                        color: _slateDark,
+                        color: colorScheme.onPrimary,
                       ),
                     ),
                   ),
@@ -281,21 +287,21 @@ class ProfileScreen extends ConsumerWidget {
             Flexible(
               child: Text(
                 profile.name,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.4,
-                  color: _slateDark,
+                  color: colorScheme.onSurface,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(width: 6),
-            const Icon(
+            Icon(
               Icons.verified_rounded,
               size: 20,
-              color: _mintDark,
+              color: colorScheme.primary,
             ),
           ],
         ),
@@ -304,33 +310,33 @@ class ProfileScreen extends ConsumerWidget {
         // Handle & join metadata
         Text(
           '$handle • Member since 2026',
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: _slateMuted,
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: 12),
 
-        // Level Badge (PRO badge removed per requirements)
+        // Level Badge
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
           decoration: BoxDecoration(
-            color: _mintLight,
+            color: colorScheme.primary.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(100),
             border: Border.all(
-              color: const Color(0xFF6EE7B7).withValues(alpha: 0.6),
+              color: colorScheme.primary.withValues(alpha: 0.35),
             ),
           ),
           child: Text(
             '${profile.experienceLevel.toUpperCase()} LIFTER',
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.6,
-              color: Color(0xFF008F5C),
+              color: colorScheme.primary,
             ),
           ),
         ),
@@ -339,7 +345,13 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   // ── Overview Card: 2x2 Grid of Performance Metrics ───────────────────────
-  Widget _buildOverviewCard(UserProfile profile) {
+  Widget _buildOverviewCard(BuildContext context, UserProfile profile) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final cardBg = theme.cardTheme.color ?? colorScheme.surface;
+    final border = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+
     final bmi = profile.calculateBMI;
     final bmiCategory = profile.getBMICategory;
 
@@ -350,10 +362,10 @@ class ProfileScreen extends ConsumerWidget {
     final Color iconColor;
 
     if (bmiCategory == 'NORMAL') {
-      badgeBg = const Color(0xFFD1FAE5);
-      badgeColor = const Color(0xFF047857);
-      iconBg = const Color(0xFFCCFBF1);
-      iconColor = const Color(0xFF0F766E);
+      badgeBg = colorScheme.primary.withValues(alpha: 0.15);
+      badgeColor = colorScheme.primary;
+      iconBg = colorScheme.primary.withValues(alpha: 0.15);
+      iconColor = colorScheme.primary;
     } else if (bmiCategory == 'OVERWEIGHT') {
       badgeBg = const Color(0xFFFFE4E6);
       badgeColor = const Color(0xFFE11D48);
@@ -370,12 +382,12 @@ class ProfileScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: _cardBg,
+        color: cardBg,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _border),
+        border: Border.all(color: border),
         boxShadow: [
           BoxShadow(
-            color: _slateDark.withValues(alpha: 0.04),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -387,28 +399,28 @@ class ProfileScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Overview',
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: _slateDark,
+                  color: colorScheme.onSurface,
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFECFDF5),
+                  color: colorScheme.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text(
+                child: Text(
                   'This Month',
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: _mintDark,
+                    color: colorScheme.primary,
                   ),
                 ),
               ),
@@ -421,9 +433,10 @@ class ProfileScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: _buildMetricTile(
+                  context: context,
                   icon: Icons.calendar_today_rounded,
-                  iconBg: const Color(0xFFE6FAF3),
-                  iconColor: const Color(0xFF008F5C),
+                  iconBg: colorScheme.primary.withValues(alpha: 0.15),
+                  iconColor: colorScheme.primary,
                   label: 'Days Trained',
                   value: '1',
                   unit: 'day streak',
@@ -432,13 +445,14 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildMetricTile(
+                  context: context,
                   icon: Icons.fitness_center_rounded,
                   iconBg: const Color(0xFFDBEAFE),
                   iconColor: const Color(0xFF2563EB),
                   label: 'Workouts',
                   value: '1',
                   unit: 'Session',
-                  unitColor: _mintDark,
+                  unitColor: colorScheme.primary,
                 ),
               ),
             ],
@@ -448,6 +462,7 @@ class ProfileScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: _buildMetricTile(
+                  context: context,
                   icon: Icons.local_fire_department_rounded,
                   iconBg: const Color(0xFFFEF3C7),
                   iconColor: const Color(0xFFD97706),
@@ -459,6 +474,7 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildMetricTile(
+                  context: context,
                   icon: Icons.speed_rounded,
                   iconBg: iconBg,
                   iconColor: iconColor,
@@ -477,6 +493,7 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   Widget _buildMetricTile({
+    required BuildContext context,
     required IconData icon,
     required Color iconBg,
     required Color iconColor,
@@ -488,12 +505,18 @@ class ProfileScreen extends ConsumerWidget {
     Color? badgeBg,
     Color? badgeColor,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final tileBg = isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC);
+    final border = isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: tileBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
+        border: Border.all(color: border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -516,11 +539,11 @@ class ProfileScreen extends ConsumerWidget {
                 flex: badge != null ? 1 : 1,
                 child: Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: 11.5,
                     fontWeight: FontWeight.w600,
-                    color: _slateMuted,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -538,7 +561,7 @@ class ProfileScreen extends ConsumerWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: badgeBg ?? const Color(0xFFD1FAE5),
+                        color: badgeBg ?? colorScheme.primary.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -548,7 +571,7 @@ class ProfileScreen extends ConsumerWidget {
                           fontSize: 8.5,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.2,
-                          color: badgeColor ?? const Color(0xFF047857),
+                          color: badgeColor ?? colorScheme.primary,
                         ),
                       ),
                     ),
@@ -564,12 +587,12 @@ class ProfileScreen extends ConsumerWidget {
             children: [
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.5,
-                  color: _slateDark,
+                  color: colorScheme.onSurface,
                 ),
               ),
               if (unit != null) ...[
@@ -582,7 +605,7 @@ class ProfileScreen extends ConsumerWidget {
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: unitColor ?? _slateLight,
+                      color: unitColor ?? colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),
@@ -600,15 +623,22 @@ class ProfileScreen extends ConsumerWidget {
     WidgetRef ref,
     UserProfile profile,
   ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final cardBg = theme.cardTheme.color ?? colorScheme.surface;
+    final border = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final dividerColor = isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: _cardBg,
+        color: cardBg,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _border),
+        border: Border.all(color: border),
         boxShadow: [
           BoxShadow(
-            color: _slateDark.withValues(alpha: 0.04),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -620,13 +650,13 @@ class ProfileScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Personal Info',
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: _slateDark,
+                  color: colorScheme.onSurface,
                 ),
               ),
               InkWell(
@@ -645,15 +675,15 @@ class ProfileScreen extends ConsumerWidget {
                   }
                 },
                 borderRadius: BorderRadius.circular(6),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   child: Text(
                     'Tap to edit',
                     style: TextStyle(
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: _slateLight,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),
@@ -664,6 +694,7 @@ class ProfileScreen extends ConsumerWidget {
 
           // 1. Name
           _buildInfoRow(
+            context: context,
             label: 'Name',
             value: profile.name,
             isEditable: true,
@@ -682,10 +713,11 @@ class ProfileScreen extends ConsumerWidget {
               }
             },
           ),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          Divider(height: 1, color: dividerColor),
 
           // 2. Age
           _buildInfoRow(
+            context: context,
             label: 'Age',
             value: '${profile.age} yrs',
             isEditable: true,
@@ -708,10 +740,11 @@ class ProfileScreen extends ConsumerWidget {
               }
             },
           ),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          Divider(height: 1, color: dividerColor),
 
           // 3. Weight
           _buildInfoRow(
+            context: context,
             label: 'Weight',
             value: '${profile.weightKg.toStringAsFixed(1)} kg',
             isEditable: true,
@@ -735,10 +768,11 @@ class ProfileScreen extends ConsumerWidget {
               }
             },
           ),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          Divider(height: 1, color: dividerColor),
 
           // 4. Height
           _buildInfoRow(
+            context: context,
             label: 'Height',
             value: '${profile.heightCm.toStringAsFixed(1)} cm',
             isEditable: true,
@@ -762,24 +796,25 @@ class ProfileScreen extends ConsumerWidget {
               }
             },
           ),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          Divider(height: 1, color: dividerColor),
 
           // 5. Experience Level
           _buildInfoRow(
+            context: context,
             label: 'Experience Level',
             customValueWidget: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: _mintLight,
+                color: colorScheme.primary.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 profile.experienceLevel,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF008F5C),
+                  color: colorScheme.primary,
                 ),
               ),
             ),
@@ -804,10 +839,11 @@ class ProfileScreen extends ConsumerWidget {
               }
             },
           ),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          Divider(height: 1, color: dividerColor),
 
           // 6. Primary Goal
           _buildInfoRow(
+            context: context,
             label: 'Primary Goal',
             value: profile.primaryGoal,
             hasChevron: true,
@@ -832,10 +868,11 @@ class ProfileScreen extends ConsumerWidget {
               }
             },
           ),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          Divider(height: 1, color: dividerColor),
 
           // 7. Weekly Target
           _buildInfoRow(
+            context: context,
             label: 'Weekly Target',
             customValueWidget: Row(
               mainAxisSize: MainAxisSize.min,
@@ -843,19 +880,19 @@ class ProfileScreen extends ConsumerWidget {
                 Container(
                   width: 8,
                   height: 8,
-                  decoration: const BoxDecoration(
-                    color: _mint,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
                     shape: BoxShape.circle,
                   ),
                 ),
                 const SizedBox(width: 6),
                 Text(
                   '${profile.weeklyTargetDays} Days',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: _slateDark,
+                    color: colorScheme.onSurface,
                   ),
                 ),
               ],
@@ -892,6 +929,7 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   Widget _buildInfoRow({
+    required BuildContext context,
     required String label,
     String? value,
     Widget? customValueWidget,
@@ -900,6 +938,9 @@ class ProfileScreen extends ConsumerWidget {
     VoidCallback? onTap,
     int maxLines = 2,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
@@ -910,11 +951,11 @@ class ProfileScreen extends ConsumerWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: _slateMuted,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(width: 12),
@@ -933,29 +974,29 @@ class ProfileScreen extends ConsumerWidget {
                         maxLines: maxLines,
                         softWrap: true,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: _slateDark,
+                          color: colorScheme.onSurface,
                           height: 1.25,
                         ),
                       ),
                     ),
                   if (isEditable) ...[
                     const SizedBox(width: 6),
-                    const Icon(
+                    Icon(
                       Icons.edit_outlined,
                       size: 14,
-                      color: _slateLight,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ],
                   if (hasChevron) ...[
                     const SizedBox(width: 4),
-                    const Icon(
+                    Icon(
                       Icons.chevron_right_rounded,
                       size: 18,
-                      color: _slateLight,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ],
                 ],
@@ -969,15 +1010,22 @@ class ProfileScreen extends ConsumerWidget {
 
   // ── Preferences & Security Card ─────────────────────────────────────────
   Widget _buildPreferencesCard(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final cardBg = theme.cardTheme.color ?? colorScheme.surface;
+    final border = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final tileBg = isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: _cardBg,
+        color: cardBg,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _border),
+        border: Border.all(color: border),
         boxShadow: [
           BoxShadow(
-            color: _slateDark.withValues(alpha: 0.04),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -986,22 +1034,23 @@ class ProfileScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Preferences & Security',
             style: TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: _slateDark,
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 12),
 
           // 1. Workout Preferences
           _buildActionRow(
+            context: context,
             icon: Icons.tune_rounded,
-            iconBg: const Color(0xFFF1F5F9),
-            iconColor: _slate700,
+            iconBg: tileBg,
+            iconColor: colorScheme.onSurfaceVariant,
             title: 'Workout Preferences',
             onTap: () => context.push('/settings/workout-preferences'),
           ),
@@ -1009,18 +1058,20 @@ class ProfileScreen extends ConsumerWidget {
 
           // 2. Health Sync (Connected)
           _buildActionRow(
+            context: context,
             icon: Icons.favorite_rounded,
             iconBg: const Color(0xFFFFE4E6),
-            iconColor: _errorRed,
+            iconColor: const Color(0xFFF43F5E),
             title: 'Health Sync',
             subtitle: 'Connected',
-            subtitleColor: _mintDark,
+            subtitleColor: colorScheme.primary,
             onTap: () => context.push('/settings/data'),
           ),
           const SizedBox(height: 6),
 
           // 3. Account Security
           _buildActionRow(
+            context: context,
             icon: Icons.shield_outlined,
             iconBg: const Color(0xFFEEF2FF),
             iconColor: const Color(0xFF4F46E5),
@@ -1033,6 +1084,7 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   Widget _buildActionRow({
+    required BuildContext context,
     required IconData icon,
     required Color iconBg,
     required Color iconColor,
@@ -1041,6 +1093,9 @@ class ProfileScreen extends ConsumerWidget {
     Color? subtitleColor,
     required VoidCallback onTap,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -1066,11 +1121,11 @@ class ProfileScreen extends ConsumerWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: _slate700,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   if (subtitle != null) ...[
@@ -1081,17 +1136,17 @@ class ProfileScreen extends ConsumerWidget {
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: subtitleColor ?? _mintDark,
+                        color: subtitleColor ?? colorScheme.primary,
                       ),
                     ),
                   ],
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
               size: 18,
-              color: _slateLight,
+              color: colorScheme.onSurfaceVariant,
             ),
           ],
         ),
@@ -1101,6 +1156,7 @@ class ProfileScreen extends ConsumerWidget {
 
   // ── Ghost Sign Out Button ───────────────────────────────────────────────
   Widget _buildSignOutButton(BuildContext context) {
+    const errorRed = Color(0xFFF43F5E);
     return InkWell(
       onTap: () => _showSignOutDialog(context),
       borderRadius: BorderRadius.circular(12),
@@ -1112,7 +1168,7 @@ class ProfileScreen extends ConsumerWidget {
             Icon(
               Icons.logout_rounded,
               size: 16,
-              color: _errorRed.withValues(alpha: 0.9),
+              color: errorRed.withValues(alpha: 0.9),
             ),
             const SizedBox(width: 8),
             Text(
@@ -1121,7 +1177,7 @@ class ProfileScreen extends ConsumerWidget {
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: _errorRed.withValues(alpha: 0.9),
+                color: errorRed.withValues(alpha: 0.9),
               ),
             ),
           ],

@@ -1,3 +1,4 @@
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,13 +37,27 @@ class FitTrackApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
     final themeSettings = ref.watch(themeNotifierProvider);
 
-    return MaterialApp.router(
-      title: 'FitTrack',
-      debugShowCheckedModeBanner: false,
-      theme: buildLightTheme(themeSettings),
-      darkTheme: buildDarkTheme(themeSettings),
-      themeMode: themeSettings.themeMode,
-      routerConfig: router,
+    return DynamicColorBuilder(
+      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+        ColorScheme? lightScheme;
+        ColorScheme? darkScheme;
+
+        if (themeSettings.useDynamicAccent &&
+            lightDynamic != null &&
+            darkDynamic != null) {
+          lightScheme = lightDynamic;
+          darkScheme = darkDynamic;
+        }
+
+        return MaterialApp.router(
+          title: 'FitTrack',
+          debugShowCheckedModeBanner: false,
+          theme: buildLightTheme(themeSettings, lightScheme),
+          darkTheme: buildDarkTheme(themeSettings, darkScheme),
+          themeMode: themeSettings.themeMode,
+          routerConfig: router,
+        );
+      },
     );
   }
 }

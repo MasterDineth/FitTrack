@@ -7,13 +7,14 @@ ThemeData buildAppTheme([ThemeSettings? settings]) {
   return buildLightTheme(settings ?? const ThemeSettings());
 }
 
-/// Builds the Light theme based on [ThemeSettings].
-ThemeData buildLightTheme(ThemeSettings settings) {
+/// Builds the Light theme based on [ThemeSettings] and optional [dynamicScheme].
+ThemeData buildLightTheme(ThemeSettings settings, [ColorScheme? dynamicScheme]) {
   final seedColor = Color(settings.accentColorValue);
-  final colorScheme = ColorScheme.fromSeed(
-    seedColor: seedColor,
-    brightness: Brightness.light,
-  );
+  final colorScheme = dynamicScheme ??
+      ColorScheme.fromSeed(
+        seedColor: seedColor,
+        brightness: Brightness.light,
+      );
 
   return ThemeData(
     useMaterial3: true,
@@ -95,7 +96,7 @@ ThemeData buildLightTheme(ThemeSettings settings) {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: seedColor, width: 2),
+        borderSide: BorderSide(color: colorScheme.primary, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -105,28 +106,36 @@ ThemeData buildLightTheme(ThemeSettings settings) {
   );
 }
 
-/// Builds the Dark theme based on [ThemeSettings].
-ThemeData buildDarkTheme(ThemeSettings settings) {
+/// Builds the Dark theme based on [ThemeSettings] and optional [dynamicScheme].
+ThemeData buildDarkTheme(ThemeSettings settings, [ColorScheme? dynamicScheme]) {
   final seedColor = Color(settings.accentColorValue);
   final isOled = settings.useOledBlack;
-  final surface = isOled ? const Color(0xFF000000) : const Color(0xFF1E293B);
-  final scaffoldBg = isOled ? const Color(0xFF000000) : const Color(0xFF0F172A);
 
-  var colorScheme = ColorScheme.fromSeed(
-    seedColor: seedColor,
-    brightness: Brightness.dark,
-  );
+  var colorScheme = dynamicScheme ??
+      ColorScheme.fromSeed(
+        seedColor: seedColor,
+        brightness: Brightness.dark,
+      );
 
   if (isOled) {
     colorScheme = colorScheme.copyWith(
       surface: const Color(0xFF000000),
+      surfaceTint: Colors.transparent,
+      surfaceContainerLowest: const Color(0xFF000000),
+      surfaceContainerLow: const Color(0xFF000000),
+      surfaceContainer: const Color(0xFF000000),
     );
   }
 
   return ThemeData(
     useMaterial3: true,
     colorScheme: colorScheme,
-    scaffoldBackgroundColor: scaffoldBg,
+    scaffoldBackgroundColor: isOled ? const Color(0xFF000000) : const Color(0xFF0F172A),
+    cardColor: isOled ? const Color(0xFF000000) : const Color(0xFF1E293B),
+    cardTheme: CardThemeData(
+      color: isOled ? const Color(0xFF000000) : const Color(0xFF1E293B),
+      surfaceTintColor: isOled ? Colors.transparent : null,
+    ),
     textTheme: const TextTheme(
       displayLarge: TextStyle(
         fontFamily: 'Plus Jakarta Sans',
@@ -191,7 +200,7 @@ ThemeData buildDarkTheme(ThemeSettings settings) {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: surface,
+      fillColor: isOled ? const Color(0xFF000000) : const Color(0xFF1E293B),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -203,7 +212,7 @@ ThemeData buildDarkTheme(ThemeSettings settings) {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: seedColor, width: 2),
+        borderSide: BorderSide(color: colorScheme.primary, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

@@ -18,16 +18,11 @@ class WorkoutDetailScreen extends ConsumerWidget {
 
   final String scheduleId;
 
-  // ── Brand colours ──────────────────────────────────────────────────────
-  static const Color _mint = Color(0xFF00d68f);
-  static const Color _dark = Color(0xFF0f172a);
-  static const Color _bg = Color(0xFFf7f9fb);
-  static const Color _cardBg = Colors.white;
-  static const Color _softBorder = Color(0xFFe2e8f0);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheduleRepo = ref.watch(scheduleRepositoryProvider);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     final scheduleAsync = ref.watch(
       _scheduleByIdProvider((scheduleRepo, scheduleId)),
@@ -37,7 +32,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: theme.scaffoldBackgroundColor,
       // ── Sticky Start Workout CTA ────────────────────────────────────
       bottomNavigationBar: _StickyStartDock(
         onStartTap: () {
@@ -58,12 +53,12 @@ class WorkoutDetailScreen extends ConsumerWidget {
                 ref: ref,
               ),
               loading: () =>
-                  const Center(child: CircularProgressIndicator(color: _mint)),
+                  Center(child: CircularProgressIndicator(color: colorScheme.primary)),
               error: (e, _) => _ErrorBody(error: e, onBack: () => context.pop()),
             );
           },
           loading: () =>
-              const Center(child: CircularProgressIndicator(color: _mint)),
+              Center(child: CircularProgressIndicator(color: colorScheme.primary)),
           error: (e, _) => _ErrorBody(error: e, onBack: () => context.pop()),
         ),
       ),
@@ -98,8 +93,6 @@ class _DetailBody extends StatelessWidget {
   final Schedule schedule;
   final List<ScheduleExercise> exercises;
   final WidgetRef ref;
-
-  static const Color _mint = Color(0xFF00d68f);
 
   int get _totalSets =>
       exercises.fold(0, (sum, e) => sum + e.targetSets);
@@ -171,7 +164,7 @@ class _DetailBody extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: _mint,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ],
@@ -503,12 +496,12 @@ class _MetricStatCell extends StatelessWidget {
   final String value;
   final String label;
 
-  static const Color _mintDark = Color(0xFF00b779);
   static const Color _dark = Color(0xFF0f172a);
   static const Color _muted = Color(0xFF64748b);
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Expanded(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -517,10 +510,10 @@ class _MetricStatCell extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: const Color(0xFFf0fdfa),
+              color: colorScheme.primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, size: 16, color: _mintDark),
+            child: Icon(icon, size: 16, color: colorScheme.primary),
           ),
           const SizedBox(height: 6),
           Text(
@@ -586,7 +579,7 @@ class _ExerciseCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: _softBorder.withValues(alpha: 0.7)),
         boxShadow: [
@@ -781,8 +774,10 @@ class _StickyStartDock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
-      color: Colors.white.withValues(alpha: 0.95),
+      color: colorScheme.surface.withValues(alpha: 0.95),
       padding: EdgeInsets.only(
         left: 20,
         right: 20,
@@ -799,16 +794,11 @@ class _StickyStartDock extends StatelessWidget {
               width: double.infinity,
               height: 56,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFF00d68f),
-                    Color(0xFF00b779),
-                  ],
-                ),
+                color: colorScheme.primary,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF00d68f).withValues(alpha: 0.28),
+                    color: colorScheme.primary.withValues(alpha: 0.28),
                     blurRadius: 32,
                     spreadRadius: -4,
                     offset: const Offset(0, 12),
@@ -822,19 +812,19 @@ class _StickyStartDock extends StatelessWidget {
                     width: 28,
                     height: 28,
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.1),
+                      color: colorScheme.onPrimary.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.play_arrow_rounded,
-                        size: 18, color: Color(0xFF0f172a)),
+                    child: Icon(Icons.play_arrow_rounded,
+                        size: 18, color: colorScheme.onPrimary),
                   ),
                   const SizedBox(width: 10),
-                  const Text(
+                  Text(
                     'Start Workout',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF0f172a),
+                      color: colorScheme.onPrimary,
                       letterSpacing: -0.2,
                     ),
                   ),
@@ -883,8 +873,8 @@ class _NotFoundBody extends StatelessWidget {
           const SizedBox(height: 20),
           TextButton(
             onPressed: onBack,
-            child: const Text('Go Back',
-                style: TextStyle(color: Color(0xFF00d68f))),
+            child: Text('Go Back',
+                style: TextStyle(color: Theme.of(context).colorScheme.primary)),
           ),
         ],
       ),
@@ -917,8 +907,8 @@ class _ErrorBody extends StatelessWidget {
           const SizedBox(height: 20),
           TextButton(
             onPressed: onBack,
-            child: const Text('Go Back',
-                style: TextStyle(color: Color(0xFF00d68f))),
+            child: Text('Go Back',
+                style: TextStyle(color: Theme.of(context).colorScheme.primary)),
           ),
         ],
       ),

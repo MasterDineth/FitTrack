@@ -20,8 +20,6 @@ class ActiveWorkoutScreen extends ConsumerStatefulWidget {
 
 class _ActiveWorkoutScreenState
     extends ConsumerState<ActiveWorkoutScreen> {
-  static const Color _bg = Color(0xFFf7f9fb);
-
   bool _initialized = false;
 
   @override
@@ -41,13 +39,15 @@ class _ActiveWorkoutScreenState
   Widget build(BuildContext context) {
     final state = ref.watch(activeWorkoutProvider);
     final notifier = ref.read(activeWorkoutProvider.notifier);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     // ── Loading ──────────────────────────────────────────────────────────────
     if (state.phase == WorkoutPhase.loading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFFf7f9fb),
+      return Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFF00d68f)),
+          child: CircularProgressIndicator(color: colorScheme.primary),
         ),
       );
     }
@@ -55,7 +55,7 @@ class _ActiveWorkoutScreenState
     // ── Error ────────────────────────────────────────────────────────────────
     if (state.phase == WorkoutPhase.error) {
       return Scaffold(
-        backgroundColor: _bg,
+        backgroundColor: theme.scaffoldBackgroundColor,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -81,10 +81,10 @@ class _ActiveWorkoutScreenState
         if (mounted) context.pushReplacement('/workouts/summary');
       });
       // Show a transient loading scaffold while navigation happens
-      return const Scaffold(
-        backgroundColor: Color(0xFFf7f9fb),
+      return Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFF00d68f)),
+          child: CircularProgressIndicator(color: colorScheme.primary),
         ),
       );
     }
@@ -94,10 +94,10 @@ class _ActiveWorkoutScreenState
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) context.go('/dashboard');
       });
-      return const Scaffold(
-        backgroundColor: Color(0xFFf7f9fb),
+      return Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFF00d68f)),
+          child: CircularProgressIndicator(color: colorScheme.primary),
         ),
       );
     }
@@ -111,7 +111,7 @@ class _ActiveWorkoutScreenState
         _showPaused(context, state, notifier);
       },
       child: Scaffold(
-        backgroundColor: _bg,
+        backgroundColor: theme.scaffoldBackgroundColor,
         body: Stack(
           children: [
             // ── Scrollable body ─────────────────────────────────────────
@@ -320,7 +320,7 @@ class _WorkoutHeader extends StatelessWidget {
             bottom: 12,
           ),
           decoration: BoxDecoration(
-            color: const Color(0xFFF7F9FB).withValues(alpha: 0.85),
+            color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
             border: Border(
               bottom: BorderSide(
                 color: Colors.white.withValues(alpha: 0.8),
@@ -472,6 +472,7 @@ class _PulseDotState extends State<_PulseDot>
 
   @override
   Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
     return AnimatedBuilder(
       animation: _anim,
       builder: (context, child) => Opacity(
@@ -479,8 +480,8 @@ class _PulseDotState extends State<_PulseDot>
         child: Container(
           width: 8,
           height: 8,
-          decoration: const BoxDecoration(
-            color: Color(0xFF00d68f),
+          decoration: BoxDecoration(
+            color: primary,
             shape: BoxShape.circle,
           ),
         ),
@@ -508,20 +509,22 @@ class _ActiveExerciseCard extends StatelessWidget {
     final setIndex = state.currentSetIndex;
     final totalSets = entry.totalSets;
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          // Dark green ambient glow
+          // Theme ambient glow
           BoxShadow(
-            color: const Color(0xFF166534).withValues(alpha: 0.18),
+            color: colorScheme.primary.withValues(alpha: 0.18),
             blurRadius: 16,
             spreadRadius: 0,
             offset: const Offset(0, 3),
           ),
           BoxShadow(
-            color: const Color(0xFF166534).withValues(alpha: 0.08),
+            color: colorScheme.primary.withValues(alpha: 0.08),
             blurRadius: 22,
             spreadRadius: 1,
             offset: const Offset(0, 5),
@@ -769,8 +772,8 @@ class _ActiveExerciseCard extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: notifier.completeSet,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF166534),
-                foregroundColor: Colors.white,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 18),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -817,7 +820,7 @@ class _ActiveExerciseCard extends StatelessWidget {
                 showSkipExerciseModal(context, args: args);
               },
               style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF166534),
+                foregroundColor: colorScheme.primary,
               ),
               icon: const Icon(Icons.skip_next, size: 14),
               label: const Text(
@@ -919,21 +922,22 @@ class _SetBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     Color bg;
     Color fg;
     Widget child;
 
     if (isCompleted) {
-      bg = const Color(0xFF166534);
-      fg = Colors.white;
-      child = const Icon(Icons.check, size: 16, color: Colors.white);
+      bg = colorScheme.primary;
+      fg = colorScheme.onPrimary;
+      child = Icon(Icons.check, size: 16, color: colorScheme.onPrimary);
     } else if (isActive) {
-      bg = const Color(0xFF166534);
-      fg = Colors.white;
+      bg = colorScheme.primary;
+      fg = colorScheme.onPrimary;
       child = Text(
         '$setNumber',
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: colorScheme.onPrimary,
           fontWeight: FontWeight.w900,
           fontSize: 13,
         ),
@@ -961,8 +965,8 @@ class _SetBadge extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: isActive
                 ? [
-                    const BoxShadow(
-                      color: Color(0x5000d68f),
+                    BoxShadow(
+                      color: colorScheme.primary.withValues(alpha: 0.35),
                       blurRadius: 10,
                       spreadRadius: 2,
                     )
@@ -980,7 +984,7 @@ class _SetBadge extends StatelessWidget {
                   : '$weightLabel kg',
           style: TextStyle(
             color: isActive
-                ? const Color(0xFF166534)
+                ? colorScheme.primary
                 : const Color(0xFF64748b),
             fontSize: 9,
             fontWeight: FontWeight.w700,
@@ -1015,7 +1019,7 @@ class _PastCard extends StatelessWidget {
               width: 6,
               height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFF00d68f),
+                color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
@@ -1044,7 +1048,7 @@ class _PastCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.check_circle, color: Color(0xFF00d68f)),
+            Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary),
           ],
         ),
       ),
@@ -1061,7 +1065,7 @@ class _UpcomingCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
           BoxShadow(
@@ -1142,7 +1146,7 @@ class _SessionFooter extends StatelessWidget {
             bottom: bottomPadding + 16,
           ),
           decoration: BoxDecoration(
-            color: const Color(0xFFF7F9FB).withValues(alpha: 0.85),
+            color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
             border: Border(
               top: BorderSide(
                 color: Colors.white.withValues(alpha: 0.8),

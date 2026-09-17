@@ -405,7 +405,7 @@ class _PingDotState extends State<_PingDot>
         children: [
           AnimatedBuilder(
             animation: _c,
-            builder: (_, __) => Transform.scale(
+            builder: (_, _) => Transform.scale(
               scale: 1 + _c.value,
               child: Container(
                 width: 8,
@@ -460,7 +460,7 @@ class _PulsingDotState extends State<_PulsingDot>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _c,
-      builder: (_, __) => Container(
+      builder: (_, _) => Container(
         width: 6,
         height: 6,
         decoration: BoxDecoration(

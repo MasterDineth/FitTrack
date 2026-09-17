@@ -11,15 +11,14 @@ import '../../domain/entities/workout_session.dart';
 class WorkoutHistoryScreen extends ConsumerWidget {
   const WorkoutHistoryScreen({super.key});
 
-  static const Color _bg = Color(0xFFf8fafc);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final histState = ref.watch(workoutHistoryProvider);
     final notifier = ref.read(workoutHistoryProvider.notifier);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         bottom: false,
         child: CustomScrollView(
@@ -247,10 +246,10 @@ class WorkoutHistoryScreen extends ConsumerWidget {
                 bottom: 0,
                 right: 0,
                 child: Container(
-                  width: 10,
-                  height: 10,
+                  width: 8,
+                  height: 8,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF00d68f),
+                    color: Theme.of(context).colorScheme.primary,
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 1.5),
                   ),
@@ -283,21 +282,22 @@ class _KpiBanner extends StatelessWidget {
     final mins = totalMinutes % 60;
     final timeStr = hours > 0 ? '${hours}h ${mins}m' : '${mins}m';
 
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          // Dark green ambient glow matching active workout card
+          // Ambient glow
           BoxShadow(
-            color: const Color(0xFF166534).withValues(alpha: 0.18),
+            color: colorScheme.primary.withValues(alpha: 0.18),
             blurRadius: 16,
             spreadRadius: 0,
             offset: const Offset(0, 3),
           ),
           BoxShadow(
-            color: const Color(0xFF166534).withValues(alpha: 0.08),
+            color: colorScheme.primary.withValues(alpha: 0.08),
             blurRadius: 24,
             spreadRadius: 1,
             offset: const Offset(0, 5),
@@ -317,8 +317,8 @@ class _KpiBanner extends StatelessWidget {
               Container(
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF00d68f),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -341,8 +341,8 @@ class _KpiBanner extends StatelessWidget {
             children: [
               _KpiCell(
                 icon: Icons.fitness_center_rounded,
-                iconColor: const Color(0xFF00d68f),
-                iconBg: const Color(0xFFf0fdf4),
+                iconColor: colorScheme.primary,
+                iconBg: colorScheme.primary.withValues(alpha: 0.12),
                 value: '$workouts',
                 label: 'Workouts',
               ),
@@ -450,21 +450,22 @@ class _FilterPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: active ? const Color(0xFF00d68f) : Colors.white,
+          color: active ? colorScheme.primary : colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: active ? const Color(0xFF00d68f) : const Color(0xFFe2e8f0),
+            color: active ? colorScheme.primary : const Color(0xFFe2e8f0),
           ),
           boxShadow: active
               ? [
                   BoxShadow(
-                    color: const Color(0xFF00d68f).withValues(alpha: 0.25),
+                    color: colorScheme.primary.withValues(alpha: 0.25),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   )
@@ -478,7 +479,7 @@ class _FilterPill extends StatelessWidget {
               Icon(
                 icon,
                 size: 13,
-                color: const Color(0xFF0f172a),
+                color: colorScheme.onPrimary,
               ),
               const SizedBox(width: 4),
             ],
@@ -488,7 +489,7 @@ class _FilterPill extends StatelessWidget {
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: active
-                    ? const Color(0xFF0f172a)
+                    ? colorScheme.onPrimary
                     : const Color(0xFF64748b),
               ),
             ),
@@ -547,13 +548,14 @@ class _SessionCard extends StatelessWidget {
     final dateStr =
         DateFormat('EEE, MMM d').format(session.startTime);
     final timeStr = DateFormat('h:mm a').format(session.startTime);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: const Color(0xFFf1f5f9)),
           boxShadow: [
@@ -573,12 +575,12 @@ class _SessionCard extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFf0fdf4),
+                    color: colorScheme.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.fitness_center_rounded,
-                    color: Color(0xFF00d68f),
+                    color: colorScheme.primary,
                     size: 20,
                   ),
                 ),
@@ -738,14 +740,14 @@ class _EmptyState extends StatelessWidget {
           Container(
             width: 80,
             height: 80,
-            decoration: const BoxDecoration(
-              color: Color(0xFFf0fdf4),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.history_rounded,
               size: 40,
-              color: Color(0xFF00d68f),
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
           const SizedBox(height: 16),

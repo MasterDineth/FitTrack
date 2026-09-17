@@ -14,10 +14,8 @@ class CreateScheduleScreen extends ConsumerStatefulWidget {
 }
 
 class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
-  // ── Brand colours ──────────────────────────────────────────────────────────
-  static const Color _mint = Color(0xFF00d68f);
+  // ── Brand colours ──────────────────────────────────────────
   static const Color _dark = Color(0xFF0f172a);
-  static const Color _bg = Color(0xFFf7f9fb);
   static const Color _muted = Color(0xFF64748b);
   static const Color _border = Color(0xFFe2e8f0);
 
@@ -46,22 +44,24 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(scheduleEditorProvider);
     final notifier = ref.read(scheduleEditorProvider.notifier);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: _dark),
+          icon: Icon(Icons.arrow_back_rounded, color: theme.textTheme.headlineMedium?.color ?? _dark),
           onPressed: () => context.pop(),
         ),
-        title: const Text(
+        title: Text(
           'Create Schedule',
           style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
-            color: _dark,
+            color: theme.textTheme.headlineMedium?.color ?? _dark,
           ),
         ),
         centerTitle: true,
@@ -128,15 +128,15 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
                                 horizontal: 8, vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: _mint,
+                                color: colorScheme.primary,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
                                 '${state.targetMuscles.length}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
-                                  color: _dark,
+                                  color: colorScheme.onPrimary,
                                 ),
                               ),
                             ),
@@ -157,11 +157,11 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
                               ),
                               decoration: BoxDecoration(
                                 color: selected
-                                    ? _mint
-                                    : Colors.white,
+                                    ? colorScheme.primary
+                                    : colorScheme.surface,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: selected ? _mint : _border,
+                                  color: selected ? colorScheme.primary : _border,
                                 ),
                               ),
                               child: Text(
@@ -169,7 +169,7 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: selected ? _dark : _muted,
+                                  color: selected ? colorScheme.onPrimary : _muted,
                                 ),
                               ),
                             ),
@@ -207,10 +207,10 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
                                   vertical: 10,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: isActive ? _mint : Colors.white,
+                                  color: isActive ? colorScheme.primary : colorScheme.surface,
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
-                                    color: isActive ? _mint : _border,
+                                    color: isActive ? colorScheme.primary : _border,
                                   ),
                                 ),
                                 child: Column(
@@ -221,7 +221,7 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
                                         fontSize: 12,
                                         fontWeight: FontWeight.w700,
                                         color:
-                                            isActive ? _dark : _muted,
+                                            isActive ? colorScheme.onPrimary : _muted,
                                       ),
                                     ),
                                     if (isActive) ...[
@@ -230,7 +230,7 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
                                         width: 5,
                                         height: 5,
                                         decoration: BoxDecoration(
-                                          color: _dark,
+                                          color: colorScheme.onPrimary,
                                           shape: BoxShape.circle,
                                         ),
                                       ),
@@ -261,15 +261,15 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
                             horizontal: 8, vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: _mint,
+                            color: colorScheme.primary,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             '${state.exercises.length}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: _dark,
+                              color: colorScheme.onPrimary,
                             ),
                           ),
                         ),
@@ -293,6 +293,7 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                   sliver: SliverReorderableList(
+                    // ignore: deprecated_member_use
                     onReorder: notifier.reorderExercises,
                     itemCount: state.exercises.length,
                     itemBuilder: (context, index) {
@@ -814,7 +815,7 @@ class _ExerciseCard extends StatelessWidget {
                                 .toDouble()),
                         display: entry.targetWeightKg == 0
                             ? 'BW'
-                            : '${entry.targetWeightKg.toStringAsFixed(entry.targetWeightKg % 1 == 0 ? 0 : 1)}',
+                            : entry.targetWeightKg.toStringAsFixed(entry.targetWeightKg % 1 == 0 ? 0 : 1),
                         onEdit: () => _showEditDialog(
                             context,
                             'Weight (kg)',
@@ -908,7 +909,6 @@ class _StepperCell extends StatelessWidget {
   final VoidCallback? onEdit;
 
   static const Color _dark = Color(0xFF0f172a);
-  static const Color _mint = Color(0xFF00d68f);
 
   @override
   Widget build(BuildContext context) {
@@ -997,17 +997,15 @@ class _SaveBar extends StatelessWidget {
   final String? saveError;
   final VoidCallback onSave;
 
-  static const Color _mint = Color(0xFF00d68f);
-  static const Color _dark = Color(0xFF0f172a);
-
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: EdgeInsets.fromLTRB(
         20, 14, 20, 14 + MediaQuery.of(context).padding.bottom,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -1036,8 +1034,8 @@ class _SaveBar extends StatelessWidget {
             child: ElevatedButton(
               onPressed: (isValid && !isSaving) ? onSave : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: _mint,
-                foregroundColor: _dark,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
                 disabledBackgroundColor: const Color(0xFFe2e8f0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -1045,10 +1043,13 @@ class _SaveBar extends StatelessWidget {
                 elevation: 0,
               ),
               child: isSaving
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 22,
                       height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colorScheme.onPrimary,
+                      ),
                     )
                   : const Text(
                       'Save Schedule',

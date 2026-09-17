@@ -570,7 +570,7 @@ class _PingBadgeState extends State<_PingBadge>
         children: [
           AnimatedBuilder(
             animation: _c,
-            builder: (_, __) => Transform.scale(
+            builder: (_, _) => Transform.scale(
               scale: 1 + _c.value,
               child: Container(
                 width: 14,
