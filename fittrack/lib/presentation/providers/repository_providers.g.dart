@@ -91,7 +91,7 @@ final class UserRepositoryProvider
   }
 }
 
-String _$userRepositoryHash() => r'568d084ff40cfcde34fbcae41bd36cdbba5d1118';
+String _$userRepositoryHash() => r'52341a8219e1f9f697e0111873cd3bca44d342cf';
 
 @ProviderFor(scheduleRepository)
 final scheduleRepositoryProvider = ScheduleRepositoryProvider._();

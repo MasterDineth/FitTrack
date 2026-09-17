@@ -110,11 +110,6 @@ class _FloatingDock extends StatelessWidget {
       activeIcon: Icons.history_rounded,
     ),
     _NavTab(
-      label: 'Profile',
-      icon: Icons.person_outline_rounded,
-      activeIcon: Icons.person_rounded,
-    ),
-    _NavTab(
       label: 'Settings',
       icon: Icons.settings_outlined,
       activeIcon: Icons.settings_rounded,

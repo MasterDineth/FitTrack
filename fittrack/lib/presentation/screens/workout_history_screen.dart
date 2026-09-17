@@ -1,9 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../providers/workout_history_provider.dart';
+import '../providers/user_profile_provider.dart';
 import '../../domain/entities/workout_session.dart';
 
 class WorkoutHistoryScreen extends ConsumerWidget {
@@ -57,7 +59,7 @@ class WorkoutHistoryScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    _buildHeaderActions(),
+                    _buildHeaderActions(ref, context),
                   ],
                 ),
               ),
@@ -155,7 +157,14 @@ class WorkoutHistoryScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeaderActions() {
+  Widget _buildHeaderActions(WidgetRef ref, BuildContext context) {
+    final userProfileAsync = ref.watch(userProfileProvider);
+    final hasCustomImage = userProfileAsync.value?.profileImagePath != null &&
+        File(userProfileAsync.value!.profileImagePath!).existsSync();
+    final initial = (userProfileAsync.value?.name.trim().isNotEmpty == true)
+        ? userProfileAsync.value!.name.trim()[0].toUpperCase()
+        : 'D';
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -197,45 +206,58 @@ class WorkoutHistoryScreen extends ConsumerWidget {
         ),
         const SizedBox(width: 10),
         // User avatar
-        Stack(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF1e293b), Color(0xFF334155)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+        InkWell(
+          onTap: () => context.push('/settings/profile'),
+          borderRadius: BorderRadius.circular(18),
+          child: Stack(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF1e293b), Color(0xFF334155)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
                 ),
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
+                child: ClipOval(
+                  child: hasCustomImage
+                      ? Image.file(
+                          File(userProfileAsync.value!.profileImagePath!),
+                          width: 36,
+                          height: 36,
+                          fit: BoxFit.cover,
+                        )
+                      : Center(
+                          child: Text(
+                            initial,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                ),
               ),
-              child: const Center(
-                child: Text(
-                  'D',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF00d68f),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 1.5),
                   ),
                 ),
               ),
-            ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF00d68f),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 1.5),
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,7 @@ import '../providers/repository_providers.dart';
 import '../providers/workout_logic_providers.dart';
 import '../providers/user_profile_provider.dart';
 import '../../domain/entities/schedule.dart';
+import '../../domain/entities/user_profile.dart';
 
 /// Dashboard – the home hub screen shown after onboarding.
 ///
@@ -180,7 +182,7 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   // ── Header Builder ──────────────────────────────────────────────────────
-  Widget _buildHeader(BuildContext context, AsyncValue<UserProfileState> userProfileAsync) {
+  Widget _buildHeader(BuildContext context, AsyncValue<UserProfile> userProfileAsync) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
       child: Row(
@@ -252,45 +254,65 @@ class DashboardScreen extends ConsumerWidget {
           ),
           const SizedBox(width: 10),
           // User avatar
-          Stack(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF1e293b), Color(0xFF334155)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+          InkWell(
+            onTap: () => context.push('/settings/profile'),
+            borderRadius: BorderRadius.circular(18),
+            child: Stack(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1e293b), Color(0xFF334155)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
                   ),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+                  child: ClipOval(
+                    child: (userProfileAsync.value?.profileImagePath != null &&
+                            File(userProfileAsync.value!.profileImagePath!)
+                                .existsSync())
+                        ? Image.file(
+                            File(userProfileAsync.value!.profileImagePath!),
+                            width: 36,
+                            height: 36,
+                            fit: BoxFit.cover,
+                          )
+                        : Center(
+                            child: Text(
+                              (userProfileAsync.value?.name.trim().isNotEmpty ==
+                                      true)
+                                  ? userProfileAsync.value!.name
+                                      .trim()[0]
+                                      .toUpperCase()
+                                  : 'D',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                  ),
                 ),
-                child: const Center(
-                  child: Text(
-                    'D',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: _mint,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5),
                     ),
                   ),
                 ),
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: _mint,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.5),
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -298,19 +320,20 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   // ── Greeting ────────────────────────────────────────────────────────────
-  Widget _buildGreeting(AsyncValue<UserProfileState> profileAsync) {
+  Widget _buildGreeting(AsyncValue<UserProfile> profileAsync) {
     final hour = DateTime.now().hour;
     final greeting = hour < 12
         ? 'Good morning'
         : hour < 17
             ? 'Good afternoon'
             : 'Good evening';
+    final name = profileAsync.value?.name ?? 'Dineth';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '$greeting, Dineth!',
+          '$greeting, $name!',
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w800,

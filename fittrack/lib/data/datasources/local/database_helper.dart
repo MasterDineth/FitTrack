@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
   static const _databaseName = "FitTrack.db";
-  static const _databaseVersion = 3;
+  static const _databaseVersion = 4;
 
   DatabaseHelper._privateConstructor();
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
@@ -32,6 +32,7 @@ class DatabaseHelper {
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
     // Drop all tables
     final tables = [
+      'user_profile',
       'set_logs', 'exercise_logs', 'workout_sessions',
       'schedule_exercises', 'schedules', 'form_cues',
       'execution_steps', 'muscle_activations', 'exercises'
@@ -157,10 +158,37 @@ class DatabaseHelper {
       )
     ''');
 
+    await db.execute('''
+      CREATE TABLE user_profile (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        age INTEGER NOT NULL,
+        weightKg REAL NOT NULL,
+        heightCm REAL NOT NULL,
+        experienceLevel TEXT NOT NULL,
+        primaryGoal TEXT NOT NULL,
+        weeklyTargetDays INTEGER NOT NULL,
+        profileImagePath TEXT
+      )
+    ''');
+
     await _seedInitialData(db);
   }
 
   Future<void> _seedInitialData(Database db) async {
+    // Default User Profile
+    await db.insert('user_profile', {
+      'id': '1',
+      'name': 'Dineth',
+      'age': 20,
+      'weightKg': 80.0,
+      'heightCm': 170.0,
+      'experienceLevel': 'Advanced',
+      'primaryGoal': 'Hypertrophy & Strength',
+      'weeklyTargetDays': 4,
+      'profileImagePath': null,
+    });
+
     // 10 Default Exercises
     final exercises = [
       {'id': 'ex1', 'name': 'BB Bench Press', 'equipment': 'barbell', 'movementClassification': 'compound'},

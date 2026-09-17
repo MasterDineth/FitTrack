@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../providers/repository_providers.dart';
 import '../providers/workout_logic_providers.dart';
+import '../providers/user_profile_provider.dart';
 import '../../domain/entities/schedule.dart';
 
 /// Workout Schedules Screen – shows the active cycle, today's recommended
@@ -175,45 +177,72 @@ class _WorkoutSchedulesScreenState
           ),
           const SizedBox(width: 10),
           // User avatar
-          Stack(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF1e293b), Color(0xFF334155)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
-                child: const Center(
-                  child: Text(
-                    'D',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
+          Builder(
+            builder: (context) {
+              final userProfileAsync = ref.watch(userProfileProvider);
+              final hasCustomImage =
+                  userProfileAsync.value?.profileImagePath != null &&
+                      File(userProfileAsync.value!.profileImagePath!)
+                          .existsSync();
+              final initial =
+                  (userProfileAsync.value?.name.trim().isNotEmpty == true)
+                      ? userProfileAsync.value!.name.trim()[0].toUpperCase()
+                      : 'D';
+
+              return InkWell(
+                onTap: () => context.push('/settings/profile'),
+                borderRadius: BorderRadius.circular(18),
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF1e293b), Color(0xFF334155)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: ClipOval(
+                        child: hasCustomImage
+                            ? Image.file(
+                                File(userProfileAsync.value!.profileImagePath!),
+                                width: 36,
+                                height: 36,
+                                fit: BoxFit.cover,
+                              )
+                            : Center(
+                                child: Text(
+                                  initial,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                      ),
                     ),
-                  ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: _mint,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1.5),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: _mint,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.5),
-                  ),
-                ),
-              ),
-            ],
+              );
+            },
           ),
         ],
       ),
