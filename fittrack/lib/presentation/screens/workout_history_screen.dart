@@ -46,12 +46,12 @@ class WorkoutHistoryScreen extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(height: 2),
-                          const Text(
+                          Text(
                             'Workout History',
                             style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w900,
-                              color: Color(0xFF0f172a),
+                              color: Theme.of(context).colorScheme.onSurface,
                               letterSpacing: -0.5,
                             ),
                           ),
@@ -174,19 +174,19 @@ class WorkoutHistoryScreen extends ConsumerWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: const Color(0xFFe2e8f0)),
+                border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF0f172a).withValues(alpha: 0.04),
+                    color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.04),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
-              child: const Icon(Icons.notifications_outlined,
-                  color: Color(0xFF64748b), size: 18),
+              child: Icon(Icons.notifications_outlined,
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), size: 18),
             ),
             Positioned(
               top: 7,
@@ -195,9 +195,9 @@ class WorkoutHistoryScreen extends ConsumerWidget {
                 width: 8,
                 height: 8,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00d68f),
+                  color: Theme.of(context).colorScheme.primary,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 1.5),
+                  border: Border.all(color: Theme.of(context).colorScheme.surface, width: 1.5),
                 ),
               ),
             ),
@@ -214,13 +214,16 @@ class WorkoutHistoryScreen extends ConsumerWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF1e293b), Color(0xFF334155)],
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(color: Theme.of(context).colorScheme.surface, width: 2),
                 ),
                 child: ClipOval(
                   child: hasCustomImage
@@ -233,8 +236,8 @@ class WorkoutHistoryScreen extends ConsumerWidget {
                       : Center(
                           child: Text(
                             initial,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
                               fontWeight: FontWeight.w700,
                               fontSize: 13,
                             ),
@@ -251,7 +254,7 @@ class WorkoutHistoryScreen extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.primary,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.5),
+                    border: Border.all(color: Theme.of(context).colorScheme.surface, width: 1.5),
                   ),
                 ),
               ),
@@ -411,11 +414,11 @@ class _KpiCell extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF0f172a),
-              fontFeatures: [FontFeature.tabularFigures()],
+              color: Theme.of(context).colorScheme.onSurface,
+              fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
           const SizedBox(height: 2),
@@ -606,10 +609,10 @@ class _SessionCard extends StatelessWidget {
                                   : session.scheduleId.startsWith('sch3')
                                       ? 'Day 3 – Legs & Posterior Chain'
                                       : session.scheduleId,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 13,
-                            color: Color(0xFF0f172a),
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -751,12 +754,12 @@ class _EmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'No workouts yet',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF0f172a),
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 6),

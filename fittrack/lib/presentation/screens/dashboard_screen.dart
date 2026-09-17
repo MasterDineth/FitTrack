@@ -19,12 +19,7 @@ import '../../domain/entities/user_profile.dart';
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
-  // ── Brand colours ──────────────────────────────────────────────────────
-  static const Color _mint = Color(0xFF00d68f);
-  static const Color _dark = Color(0xFF0f172a);
-  static const Color _cardBg = Colors.white;
-  static const Color _muted = Color(0xFF64748b);
-  static const Color _softBorder = Color(0xFFe2e8f0);
+
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -58,7 +53,7 @@ class DashboardScreen extends ConsumerWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                child: _buildGreeting(userProfileAsync),
+                child: _buildGreeting(context, userProfileAsync),
               ),
             ),
 
@@ -151,7 +146,7 @@ class DashboardScreen extends ConsumerWidget {
                     title: 'Mastering the Bench Press',
                     description: 'Shoulder blade retraction, bar path, and leg drive for max power.',
                     badge: 'Video',
-                    badgeColor: _mint,
+                    badgeColor: colorScheme.primary,
                     readTime: '5 min read & watch',
                     iconColor: const Color(0xFFecfdf5),
                   ),
@@ -203,10 +198,10 @@ class DashboardScreen extends ConsumerWidget {
           const SizedBox(width: 8),
           RichText(
             text: TextSpan(
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
-                color: _dark,
+                color: colorScheme.onSurface,
                 letterSpacing: -0.5,
               ),
               children: [
@@ -225,19 +220,19 @@ class DashboardScreen extends ConsumerWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: _cardBg,
+                  color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: _softBorder),
+                  border: Border.all(color: colorScheme.outlineVariant),
                   boxShadow: [
                     BoxShadow(
-                      color: _dark.withValues(alpha: 0.04),
+                      color: colorScheme.shadow.withValues(alpha: 0.04),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     )
                   ],
                 ),
-                child: const Icon(Icons.notifications_outlined,
-                    color: _muted, size: 18),
+                child: Icon(Icons.notifications_outlined,
+                    color: colorScheme.onSurface.withValues(alpha: 0.6), size: 18),
               ),
               Positioned(
                 top: 7,
@@ -248,7 +243,7 @@ class DashboardScreen extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: colorScheme.primary,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.5),
+                    border: Border.all(color: colorScheme.surface, width: 1.5),
                   ),
                 ),
               ),
@@ -265,13 +260,16 @@ class DashboardScreen extends ConsumerWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF1e293b), Color(0xFF334155)],
+                    gradient: LinearGradient(
+                      colors: [
+                        colorScheme.primary,
+                        colorScheme.primary.withValues(alpha: 0.8),
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
+                    border: Border.all(color: colorScheme.surface, width: 2),
                   ),
                   child: ClipOval(
                     child: (userProfileAsync.value?.profileImagePath != null &&
@@ -291,8 +289,8 @@ class DashboardScreen extends ConsumerWidget {
                                       .trim()[0]
                                       .toUpperCase()
                                   : 'D',
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: colorScheme.onPrimary,
                                 fontWeight: FontWeight.w700,
                                 fontSize: 13,
                               ),
@@ -309,7 +307,7 @@ class DashboardScreen extends ConsumerWidget {
                     decoration: BoxDecoration(
                       color: colorScheme.primary,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 1.5),
+                      border: Border.all(color: colorScheme.surface, width: 1.5),
                     ),
                   ),
                 ),
@@ -322,7 +320,7 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   // ── Greeting ────────────────────────────────────────────────────────────
-  Widget _buildGreeting(AsyncValue<UserProfile> profileAsync) {
+  Widget _buildGreeting(BuildContext context, AsyncValue<UserProfile> profileAsync) {
     final hour = DateTime.now().hour;
     final greeting = hour < 12
         ? 'Good morning'
@@ -336,10 +334,10 @@ class DashboardScreen extends ConsumerWidget {
       children: [
         Text(
           '$greeting, $name!',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w800,
-            color: _dark,
+            color: Theme.of(context).colorScheme.onSurface,
             letterSpacing: -0.5,
           ),
         ),
@@ -348,10 +346,10 @@ class DashboardScreen extends ConsumerWidget {
           children: [
             Text(
               _formatDate(DateTime.now()),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: _muted,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
             const SizedBox(width: 6),
@@ -377,10 +375,10 @@ class DashboardScreen extends ConsumerWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: _dark,
+            color: Theme.of(context).colorScheme.onSurface,
             letterSpacing: -0.2,
           ),
         ),
@@ -479,21 +477,18 @@ class _MetricsBanner extends StatelessWidget {
   final int workoutsCompleted;
   final int caloriesBurned;
 
-  static const Color _mint = Color(0xFF00d68f);
-  static const Color _dark = Color(0xFF0f172a);
-  static const Color _softBorder = Color(0xFFe2e8f0);
-
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _softBorder.withValues(alpha: 0.7)),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: _dark.withValues(alpha: 0.04),
+            color: colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 24,
             spreadRadius: -4,
             offset: const Offset(0, 4),
@@ -507,25 +502,25 @@ class _MetricsBanner extends StatelessWidget {
             Expanded(
               child: _MetricCell(
                 icon: Icons.calendar_today_outlined,
-                iconColor: _mint,
+                iconColor: colorScheme.primary,
                 label: 'Days',
                 value: '$daysTrained',
                 suffix: '/4',
               ),
             ),
-            const VerticalDivider(
-                width: 1, color: Color(0xFFf1f5f9), thickness: 1),
+            VerticalDivider(
+                width: 1, color: colorScheme.outlineVariant, thickness: 1),
             // Workouts
             Expanded(
               child: _MetricCell(
                 icon: Icons.bolt_rounded,
-                iconColor: _mint,
+                iconColor: colorScheme.primary,
                 label: 'Workouts',
                 value: '$workoutsCompleted',
               ),
             ),
-            const VerticalDivider(
-                width: 1, color: Color(0xFFf1f5f9), thickness: 1),
+            VerticalDivider(
+                width: 1, color: colorScheme.outlineVariant, thickness: 1),
             // Calories
             Expanded(
               child: _MetricCell(
@@ -560,11 +555,9 @@ class _MetricCell extends StatelessWidget {
   final String value;
   final String? suffix;
 
-  static const Color _dark = Color(0xFF0f172a);
-  static const Color _muted = Color(0xFF64748b);
-
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -575,10 +568,10 @@ class _MetricCell extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               label.toUpperCase(),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
-                color: _muted,
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
                 letterSpacing: 0.5,
               ),
             ),
@@ -592,10 +585,10 @@ class _MetricCell extends StatelessWidget {
           children: [
             Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
-                color: _dark,
+                color: colorScheme.onSurface,
                 letterSpacing: -0.5,
               ),
             ),
@@ -603,10 +596,10 @@ class _MetricCell extends StatelessWidget {
               const SizedBox(width: 2),
               Text(
                 suffix!,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
-                  color: _muted,
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
             ]
@@ -622,10 +615,6 @@ class _ActivityCalendar extends StatelessWidget {
   const _ActivityCalendar({required this.activeDates});
 
   final List<DateTime> activeDates;
-
-  static const Color _dark = Color(0xFF0f172a);
-  static const Color _softBorder = Color(0xFFe2e8f0);
-  static const Color _muted = Color(0xFF64748b);
 
   @override
   Widget build(BuildContext context) {
@@ -644,6 +633,7 @@ class _ActivityCalendar extends StatelessWidget {
       'January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December'
     ];
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -655,29 +645,29 @@ class _ActivityCalendar extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'This Month',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: _dark,
+                    color: colorScheme.onSurface,
                     letterSpacing: -0.2,
                   ),
                 ),
                 Text(
                   '${monthNames[now.month - 1]} ${now.year}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    color: _muted,
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
               ],
             ),
-            Row(
+            const Row(
               children: [
                 _CalendarNavBtn(icon: Icons.chevron_left_rounded),
-                const SizedBox(width: 6),
+                SizedBox(width: 6),
                 _CalendarNavBtn(icon: Icons.chevron_right_rounded),
               ],
             ),
@@ -689,12 +679,12 @@ class _ActivityCalendar extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: _softBorder.withValues(alpha: 0.7)),
+            border: Border.all(color: colorScheme.outlineVariant),
             boxShadow: [
               BoxShadow(
-                color: _dark.withValues(alpha: 0.04),
+                color: colorScheme.shadow.withValues(alpha: 0.04),
                 blurRadius: 24,
                 spreadRadius: -4,
                 offset: const Offset(0, 4),
@@ -710,10 +700,10 @@ class _ActivityCalendar extends StatelessWidget {
                     child: Center(
                       child: Text(
                         d,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          color: _muted,
+                          color: colorScheme.onSurface.withValues(alpha: 0.5),
                         ),
                       ),
                     ),
@@ -800,22 +790,23 @@ class _CalendarNavBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: 28,
       height: 28,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 4,
             offset: const Offset(0, 1),
           )
         ],
       ),
-      child: Icon(icon, size: 16, color: const Color(0xFF64748b)),
+      child: Icon(icon, size: 16, color: colorScheme.onSurface.withValues(alpha: 0.6)),
     );
   }
 }
@@ -826,10 +817,9 @@ class _TodayRecommendationCard extends ConsumerWidget {
 
   final Schedule? schedule;
 
-  static const Color _dark = Color(0xFF0f172a);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -843,17 +833,17 @@ class _TodayRecommendationCard extends ConsumerWidget {
                   width: 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
+                    color: colorScheme.primary,
                     shape: BoxShape.circle,
                   ),
                 ),
                 const SizedBox(width: 6),
-                const Text(
+                Text(
                   "Today's Recommendation",
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: _dark,
+                    color: colorScheme.onSurface,
                     letterSpacing: -0.2,
                   ),
                 ),
@@ -862,18 +852,18 @@ class _TodayRecommendationCard extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: const Color(0xFFecfdf5),
+                color: colorScheme.primaryContainer,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                  color: colorScheme.primary.withValues(alpha: 0.3),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 'SCHEDULED',
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF047857),
+                  color: colorScheme.onPrimaryContainer,
                   letterSpacing: 0.5,
                 ),
               ),
@@ -896,24 +886,21 @@ class _ScheduleHeroCard extends ConsumerWidget {
   const _ScheduleHeroCard({required this.schedule});
   final Schedule schedule;
 
-  static const Color _dark = Color(0xFF0f172a);
-  static const Color _muted = Color(0xFF64748b);
-  static const Color _softBorder = Color(0xFFe2e8f0);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final exercisesAsync = ref.watch(
       _scheduleExercisesProvider(schedule.id),
     );
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: _softBorder.withValues(alpha: 0.7)),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: _dark.withValues(alpha: 0.04),
+            color: colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 24,
             spreadRadius: -4,
             offset: const Offset(0, 4),
@@ -927,12 +914,12 @@ class _ScheduleHeroCard extends ConsumerWidget {
           // Gradient accent bar
           Container(
             height: 6,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color(0xFF00d68f),
-                  Color(0xFF0d9488),
-                  Color(0xFF06b6d4),
+                  colorScheme.primary,
+                  colorScheme.primary.withValues(alpha: 0.8),
+                  colorScheme.secondary,
                 ],
               ),
             ),
@@ -950,29 +937,29 @@ class _ScheduleHeroCard extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFecfdf5),
+                        color: colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         'TODAY • DAY ${schedule.orderIndex + 1}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF047857),
+                          color: colorScheme.onPrimaryContainer,
                         ),
                       ),
                     ),
-                    const Row(
+                    Row(
                       children: [
                         Icon(Icons.trending_up_rounded,
-                            size: 14, color: _muted),
-                        SizedBox(width: 4),
+                            size: 14, color: colorScheme.onSurface.withValues(alpha: 0.6)),
+                        const SizedBox(width: 4),
                         Text(
                           'Hypertrophy',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: _muted,
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                       ],
@@ -984,10 +971,10 @@ class _ScheduleHeroCard extends ConsumerWidget {
                 // Title
                 Text(
                   schedule.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    color: _dark,
+                    color: colorScheme.onSurface,
                     letterSpacing: -0.4,
                   ),
                 ),
@@ -997,10 +984,10 @@ class _ScheduleHeroCard extends ConsumerWidget {
                     schedule.description,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: _muted,
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -1032,27 +1019,27 @@ class _ScheduleHeroCard extends ConsumerWidget {
                       exercisesAsync.when(
                         data: (exercises) => Row(
                           children: [
-                            const Icon(Icons.list_alt_rounded,
-                                size: 14, color: _muted),
+                            Icon(Icons.list_alt_rounded,
+                                size: 14, color: colorScheme.onSurface.withValues(alpha: 0.6)),
                             const SizedBox(width: 4),
                             Text(
                               '${exercises.length} Exercises',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: _muted,
+                                color: colorScheme.onSurface.withValues(alpha: 0.6),
                               ),
                             ),
                             const SizedBox(width: 12),
-                            const Icon(Icons.access_time_rounded,
-                                size: 14, color: _muted),
+                            Icon(Icons.access_time_rounded,
+                                size: 14, color: colorScheme.onSurface.withValues(alpha: 0.6)),
                             const SizedBox(width: 4),
                             Text(
                               '~${_estimateMinutes(exercises)} min',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: _muted,
+                                color: colorScheme.onSurface.withValues(alpha: 0.6),
                               ),
                             ),
                           ],
@@ -1128,18 +1115,19 @@ final _scheduleExercisesProvider = FutureProvider.family<List<dynamic>, String>(
 class _RestDayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFe2e8f0).withValues(alpha: 0.7)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
-      child: const Row(
+      child: Row(
         children: [
           Icon(Icons.bedtime_rounded,
-              size: 36, color: Color(0xFF94a3b8)),
-          SizedBox(width: 16),
+              size: 36, color: colorScheme.onSurface.withValues(alpha: 0.4)),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1149,15 +1137,15 @@ class _RestDayCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF0f172a),
+                    color: colorScheme.onSurface,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   'All scheduled workouts completed this week. Rest up!',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF64748b),
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -1174,16 +1162,17 @@ class _RecommendationLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       height: 180,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFe2e8f0).withValues(alpha: 0.7)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
-      child: const Center(
+      child: Center(
         child: CircularProgressIndicator(
-          color: Color(0xFF00d68f),
+          color: colorScheme.primary,
           strokeWidth: 2,
         ),
       ),
@@ -1264,21 +1253,18 @@ class _RecentWorkoutCard extends StatelessWidget {
   final String calories;
   final Color accentColor;
 
-  static const Color _dark = Color(0xFF0f172a);
-  static const Color _muted = Color(0xFF64748b);
-  static const Color _softBorder = Color(0xFFe2e8f0);
-
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _softBorder.withValues(alpha: 0.7)),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: _dark.withValues(alpha: 0.03),
+            color: colorScheme.shadow.withValues(alpha: 0.03),
             blurRadius: 16,
             spreadRadius: -4,
             offset: const Offset(0, 4),
@@ -1305,10 +1291,10 @@ class _RecentWorkoutCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: _dark,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -1316,21 +1302,21 @@ class _RecentWorkoutCard extends StatelessWidget {
                   children: [
                     Text(
                       timeAgo,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: _muted,
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
-                    const Text(
+                    Text(
                       ' • ',
-                      style: TextStyle(fontSize: 11, color: _muted),
+                      style: TextStyle(fontSize: 11, color: colorScheme.onSurface.withValues(alpha: 0.6)),
                     ),
-                    const Text(
+                    Text(
                       'Completed',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF475569),
+                        color: colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -1343,10 +1329,10 @@ class _RecentWorkoutCard extends StatelessWidget {
             children: [
               Text(
                 duration,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: _dark,
+                  color: colorScheme.onSurface,
                 ),
               ),
               Text(
@@ -1383,21 +1369,18 @@ class _TutorialCard extends StatelessWidget {
   final String readTime;
   final Color iconColor;
 
-  static const Color _dark = Color(0xFF0f172a);
-  static const Color _muted = Color(0xFF64748b);
-  static const Color _softBorder = Color(0xFFe2e8f0);
-
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _softBorder.withValues(alpha: 0.7)),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: _dark.withValues(alpha: 0.03),
+            color: colorScheme.shadow.withValues(alpha: 0.03),
             blurRadius: 16,
             spreadRadius: -4,
             offset: const Offset(0, 4),
@@ -1428,10 +1411,10 @@ class _TutorialCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: _dark,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                     ),
@@ -1462,22 +1445,25 @@ class _TutorialCard extends StatelessWidget {
                   description,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
-                    color: _muted,
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(Icons.access_time_rounded,
-                        size: 11, color: _muted),
+                    Icon(
+                      Icons.access_time_rounded,
+                      size: 11,
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
                     const SizedBox(width: 3),
                     Text(
                       readTime,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: _muted,
+                        color: colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                     ),
                   ],
@@ -1486,7 +1472,11 @@ class _TutorialCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          const Icon(Icons.chevron_right_rounded, color: _muted, size: 20),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: colorScheme.onSurface.withValues(alpha: 0.4),
+            size: 20,
+          ),
         ],
       ),
     );

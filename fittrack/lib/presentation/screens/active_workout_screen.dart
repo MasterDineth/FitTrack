@@ -323,13 +323,13 @@ class _WorkoutHeader extends StatelessWidget {
             color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
             border: Border(
               bottom: BorderSide(
-                color: Colors.white.withValues(alpha: 0.8),
+                color: Theme.of(context).colorScheme.outlineVariant,
                 width: 1,
               ),
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.04),
                 blurRadius: 12,
                 offset: const Offset(0, 2),
               ),
@@ -344,16 +344,16 @@ class _WorkoutHeader extends StatelessWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: const Color(0xFFe2e8f0)),
-                    boxShadow: const [
+                    border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+                    boxShadow: [
                       BoxShadow(
-                          color: Color(0x0A000000), blurRadius: 4, offset: Offset(0, 2)),
+                          color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 2)),
                     ],
                   ),
-                  child: const Icon(Icons.keyboard_arrow_down,
-                      color: Color(0xFF475569), size: 22),
+                  child: Icon(Icons.keyboard_arrow_down,
+                      color: Theme.of(context).colorScheme.onSurface, size: 22),
                 ),
               ),
               const SizedBox(width: 10),
@@ -365,8 +365,8 @@ class _WorkoutHeader extends StatelessWidget {
                   children: [
                     Text(
                       state.schedule.name,
-                      style: const TextStyle(
-                        color: Color(0xFF0f172a),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w800,
                         fontSize: 13,
                       ),
@@ -426,12 +426,12 @@ class _WorkoutHeader extends StatelessWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: const Color(0xFFe2e8f0)),
+                    border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                   ),
-                  child: const Icon(Icons.settings_outlined,
-                      color: Color(0xFF475569), size: 18),
+                  child: Icon(Icons.settings_outlined,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7), size: 18),
                 ),
               ),
             ],
@@ -570,8 +570,8 @@ class _ActiveExerciseCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       entry.name,
-                      style: const TextStyle(
-                        color: Color(0xFF0f172a),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w900,
                         fontSize: 22,
                         height: 1.1,
@@ -630,8 +630,8 @@ class _ActiveExerciseCard extends StatelessWidget {
                         children: [
                           TextSpan(
                             text: 'Set ${setIndex + 1} ',
-                            style: const TextStyle(
-                              color: Color(0xFF0f172a),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontWeight: FontWeight.w900,
                               fontSize: 18,
                             ),
@@ -749,10 +749,10 @@ class _ActiveExerciseCard extends StatelessWidget {
                     ),
                     GestureDetector(
                       onTap: () {},
-                      child: const Text(
+                      child: Text(
                         'Edit',
                         style: TextStyle(
-                          color: Color(0xFF0f172a),
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           decoration: TextDecoration.underline,
@@ -1092,8 +1092,8 @@ class _UpcomingCard extends StatelessWidget {
               children: [
                 Text(
                   entry.name,
-                  style: const TextStyle(
-                    color: Color(0xFF0f172a),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
                   ),
@@ -1149,13 +1149,13 @@ class _SessionFooter extends StatelessWidget {
             color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
             border: Border(
               top: BorderSide(
-                color: Colors.white.withValues(alpha: 0.8),
+                color: Theme.of(context).colorScheme.outlineVariant,
                 width: 1,
               ),
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF0F172A).withValues(alpha: 0.08),
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, -4),
               ),
@@ -1192,9 +1192,9 @@ class _SessionFooter extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: isPaused ? notifier.resumeSession : onPause,
                       style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: 0.90),
-                        foregroundColor: const Color(0xFF0f172a),
-                        side: const BorderSide(color: Color(0xFFe2e8f0)),
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        foregroundColor: Theme.of(context).colorScheme.onSurface,
+                        side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14)),
@@ -1215,8 +1215,8 @@ class _SessionFooter extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: onStop,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFef4444),
-                        foregroundColor: Colors.white,
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                        foregroundColor: Theme.of(context).colorScheme.onError,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14)),
@@ -1264,7 +1264,7 @@ class _MetricChip extends StatelessWidget {
         Text(
           value,
           style: TextStyle(
-            color: const Color(0xFF0f172a),
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.w800,
             fontSize: 15,
             fontFeatures: mono ? const [FontFeature.tabularFigures()] : null,
@@ -1334,15 +1334,16 @@ class _StepperInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFe2e8f0)),
-        boxShadow: const [
+        border: Border.all(color: colorScheme.outlineVariant),
+        boxShadow: [
           BoxShadow(
-              color: Color(0x05000000), blurRadius: 4, offset: Offset(0, 2)),
+              color: colorScheme.shadow.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 2)),
         ],
       ),
       child: Column(
@@ -1352,8 +1353,8 @@ class _StepperInput extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  color: Color(0xFF64748b),
+                style: TextStyle(
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.8,
@@ -1363,13 +1364,13 @@ class _StepperInput extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 5, vertical: 1.5),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFf1f5f9),
+                  color: colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   badge,
-                  style: const TextStyle(
-                    color: Color(0xFF64748b),
+                  style: TextStyle(
+                    color: colorScheme.onSurface.withValues(alpha: 0.7),
                     fontSize: 9,
                     fontWeight: FontWeight.w700,
                   ),
@@ -1384,11 +1385,11 @@ class _StepperInput extends StatelessWidget {
               _StepBtn(icon: Icons.remove, onTap: onDecrement),
               Text(
                 value,
-                style: const TextStyle(
-                  color: Color(0xFF0f172a),
+                style: TextStyle(
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.w900,
                   fontSize: 20,
-                  fontFeatures: [FontFeature.tabularFigures()],
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
               _StepBtn(icon: Icons.add, onTap: onIncrement),

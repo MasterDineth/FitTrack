@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 /// Modern reusable text input modal bottom sheet with frosted-glass backdrop,
-/// autofocusing large styled input field, and kinetic mint save button.
+/// autofocusing large styled input field, and dynamic accent save button.
 class TextInputModal extends StatefulWidget {
   final String title;
   final String initialValue;
@@ -34,7 +34,7 @@ class TextInputModal extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: const Color(0x660F172A),
+      barrierColor: Colors.black.withValues(alpha: 0.45),
       builder: (context) => TextInputModal(
         title: title,
         initialValue: initialValue,
@@ -52,11 +52,6 @@ class TextInputModal extends StatefulWidget {
 
 class _TextInputModalState extends State<TextInputModal> {
   late final TextEditingController _controller;
-
-  static const Color _mint = Color(0xFF00D68F);
-  static const Color _slateDark = Color(0xFF0F172A);
-  static const Color _slateMuted = Color(0xFF64748B);
-  static const Color _border = Color(0xFFE2E8F0);
 
   @override
   void initState() {
@@ -83,20 +78,21 @@ class _TextInputModalState extends State<TextInputModal> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
       child: Container(
         padding: EdgeInsets.fromLTRB(24, 12, 24, bottomInset + 24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           boxShadow: [
             BoxShadow(
-              color: Color(0x1F0F172A),
+              color: colorScheme.shadow.withValues(alpha: 0.12),
               blurRadius: 30,
-              offset: Offset(0, -6),
+              offset: const Offset(0, -6),
             ),
           ],
         ),
@@ -111,7 +107,7 @@ class _TextInputModalState extends State<TextInputModal> {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: _border,
+                  color: colorScheme.outlineVariant,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -127,21 +123,21 @@ class _TextInputModalState extends State<TextInputModal> {
                     children: [
                       Text(
                         widget.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: _slateDark,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                       if (widget.subtitle != null) ...[
                         const SizedBox(height: 2),
                         Text(
                           widget.subtitle!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'Plus Jakarta Sans',
                             fontSize: 12,
-                            color: _slateMuted,
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                       ],
@@ -150,7 +146,10 @@ class _TextInputModalState extends State<TextInputModal> {
                 ),
                 IconButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close_rounded, color: _slateMuted),
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
@@ -161,9 +160,9 @@ class _TextInputModalState extends State<TextInputModal> {
             // Large Styled Input Field
             Container(
               decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
+                color: colorScheme.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: _border),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: TextField(
@@ -172,42 +171,42 @@ class _TextInputModalState extends State<TextInputModal> {
                 keyboardType: widget.keyboardType,
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) => _submit(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
-                  color: _slateDark,
+                  color: colorScheme.onSurface,
                 ),
                 decoration: InputDecoration(
                   border: InputBorder.none,
                   hintText: widget.hintText,
-                  hintStyle: const TextStyle(
+                  hintStyle: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF94A3B8),
+                    color: colorScheme.onSurface.withValues(alpha: 0.4),
                   ),
                   suffixText: widget.suffixText,
-                  suffixStyle: const TextStyle(
+                  suffixStyle: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: _slateMuted,
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
               ),
             ),
             const SizedBox(height: 20),
 
-            // Full-Width Kinetic Mint Save Button
+            // Full-Width Dynamic Accent Save Button
             SizedBox(
               width: double.infinity,
               height: 52,
               child: ElevatedButton(
                 onPressed: _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _mint,
-                  foregroundColor: _slateDark,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),

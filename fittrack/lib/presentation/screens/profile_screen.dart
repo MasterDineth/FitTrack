@@ -60,12 +60,12 @@ class ProfileScreen extends ConsumerWidget {
                 debugPrint('Logout confirmed');
                 Navigator.of(dialogContext).pop();
               },
-              child: const Text(
+              child: Text(
                 'Sign Out',
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFFF43F5E),
+                  color: colorScheme.error,
                 ),
               ),
             ),
@@ -160,9 +160,8 @@ class ProfileScreen extends ConsumerWidget {
   ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
     final cardBg = theme.cardTheme.color ?? colorScheme.surface;
-    final tileBg = isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC);
+    final tileBg = colorScheme.surfaceContainerHighest.withValues(alpha: 0.5);
 
     final hasCustomImage = profile.profileImagePath != null &&
         File(profile.profileImagePath!).existsSync();
@@ -208,7 +207,7 @@ class ProfileScreen extends ConsumerWidget {
                   color: tileBg,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isDark ? const Color(0xFF334155) : Colors.white,
+                    color: colorScheme.surface,
                     width: 2.5,
                   ),
                 ),
@@ -258,7 +257,7 @@ class ProfileScreen extends ConsumerWidget {
                       border: Border.all(color: cardBg, width: 2),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.15),
+                          color: colorScheme.shadow.withValues(alpha: 0.15),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
@@ -350,7 +349,7 @@ class ProfileScreen extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final cardBg = theme.cardTheme.color ?? colorScheme.surface;
-    final border = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final border = colorScheme.outlineVariant;
 
     final bmi = profile.calculateBMI;
     final bmiCategory = profile.getBMICategory;
@@ -387,7 +386,7 @@ class ProfileScreen extends ConsumerWidget {
         border: Border.all(color: border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+            color: colorScheme.shadow.withValues(alpha: isDark ? 0.2 : 0.04),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -507,9 +506,8 @@ class ProfileScreen extends ConsumerWidget {
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-    final tileBg = isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC);
-    final border = isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9);
+    final tileBg = colorScheme.surfaceContainerHighest.withValues(alpha: 0.5);
+    final border = colorScheme.outlineVariant;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
@@ -627,8 +625,8 @@ class ProfileScreen extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final cardBg = theme.cardTheme.color ?? colorScheme.surface;
-    final border = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
-    final dividerColor = isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9);
+    final border = colorScheme.outlineVariant;
+    final dividerColor = colorScheme.outlineVariant;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -638,7 +636,7 @@ class ProfileScreen extends ConsumerWidget {
         border: Border.all(color: border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+            color: colorScheme.shadow.withValues(alpha: isDark ? 0.2 : 0.04),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -1014,8 +1012,8 @@ class ProfileScreen extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final cardBg = theme.cardTheme.color ?? colorScheme.surface;
-    final border = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
-    final tileBg = isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
+    final border = colorScheme.outlineVariant;
+    final tileBg = colorScheme.surfaceContainerHighest.withValues(alpha: 0.5);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -1025,7 +1023,7 @@ class ProfileScreen extends ConsumerWidget {
         border: Border.all(color: border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+            color: colorScheme.shadow.withValues(alpha: isDark ? 0.2 : 0.04),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -1156,7 +1154,7 @@ class ProfileScreen extends ConsumerWidget {
 
   // ── Ghost Sign Out Button ───────────────────────────────────────────────
   Widget _buildSignOutButton(BuildContext context) {
-    const errorRed = Color(0xFFF43F5E);
+    final errorRed = Theme.of(context).colorScheme.error;
     return InkWell(
       onTap: () => _showSignOutDialog(context),
       borderRadius: BorderRadius.circular(12),

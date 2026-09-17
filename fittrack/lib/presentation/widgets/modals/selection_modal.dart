@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 /// Modern reusable selection modal bottom sheet with frosted-glass backdrop,
-/// selectable option tiles with kinetic mint accents, and a full-width save button.
+/// selectable option tiles with dynamic accent, and a full-width save button.
 class SelectionModal extends StatefulWidget {
   final String title;
   final String? subtitle;
@@ -28,7 +28,7 @@ class SelectionModal extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: const Color(0x660F172A),
+      barrierColor: Colors.black.withValues(alpha: 0.45),
       builder: (context) => SelectionModal(
         title: title,
         subtitle: subtitle,
@@ -45,13 +45,6 @@ class SelectionModal extends StatefulWidget {
 class _SelectionModalState extends State<SelectionModal> {
   late String _currentSelection;
 
-  static const Color _mint = Color(0xFF00D68F);
-  static const Color _mintLight = Color(0xFFE6FAF3);
-  static const Color _slateDark = Color(0xFF0F172A);
-  static const Color _slate700 = Color(0xFF334155);
-  static const Color _slateMuted = Color(0xFF64748B);
-  static const Color _border = Color(0xFFE2E8F0);
-
   @override
   void initState() {
     super.initState();
@@ -64,6 +57,7 @@ class _SelectionModalState extends State<SelectionModal> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
     return BackdropFilter(
@@ -73,14 +67,14 @@ class _SelectionModalState extends State<SelectionModal> {
           maxHeight: MediaQuery.sizeOf(context).height * 0.75,
         ),
         padding: EdgeInsets.fromLTRB(24, 12, 24, bottomPadding + 20),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           boxShadow: [
             BoxShadow(
-              color: Color(0x1F0F172A),
+              color: colorScheme.shadow.withValues(alpha: 0.12),
               blurRadius: 30,
-              offset: Offset(0, -6),
+              offset: const Offset(0, -6),
             ),
           ],
         ),
@@ -95,7 +89,7 @@ class _SelectionModalState extends State<SelectionModal> {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: _border,
+                  color: colorScheme.outlineVariant,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -111,21 +105,21 @@ class _SelectionModalState extends State<SelectionModal> {
                     children: [
                       Text(
                         widget.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: _slateDark,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                       if (widget.subtitle != null) ...[
                         const SizedBox(height: 2),
                         Text(
                           widget.subtitle!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'Plus Jakarta Sans',
                             fontSize: 12,
-                            color: _slateMuted,
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                       ],
@@ -134,7 +128,10 @@ class _SelectionModalState extends State<SelectionModal> {
                 ),
                 IconButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close_rounded, color: _slateMuted),
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
@@ -165,10 +162,14 @@ class _SelectionModalState extends State<SelectionModal> {
                         vertical: 14,
                       ),
                       decoration: BoxDecoration(
-                        color: isSelected ? _mintLight : const Color(0xFFF8FAFC),
+                        color: isSelected
+                            ? colorScheme.primaryContainer
+                            : colorScheme.surfaceContainerLow,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                          color: isSelected ? _mint : _border,
+                          color: isSelected
+                              ? colorScheme.primary
+                              : colorScheme.outlineVariant,
                           width: isSelected ? 1.5 : 1,
                         ),
                       ),
@@ -183,7 +184,9 @@ class _SelectionModalState extends State<SelectionModal> {
                                 fontWeight: isSelected
                                     ? FontWeight.w700
                                     : FontWeight.w600,
-                                color: isSelected ? _slateDark : _slate700,
+                                color: isSelected
+                                    ? colorScheme.onPrimaryContainer
+                                    : colorScheme.onSurface,
                               ),
                             ),
                           ),
@@ -191,14 +194,14 @@ class _SelectionModalState extends State<SelectionModal> {
                             Container(
                               width: 22,
                               height: 22,
-                              decoration: const BoxDecoration(
-                                color: _mint,
+                              decoration: BoxDecoration(
+                                color: colorScheme.primary,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.check_rounded,
                                 size: 15,
-                                color: _slateDark,
+                                color: colorScheme.onPrimary,
                               ),
                             )
                           else
@@ -207,7 +210,10 @@ class _SelectionModalState extends State<SelectionModal> {
                               height: 22,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                border: Border.all(color: _border, width: 1.5),
+                                border: Border.all(
+                                  color: colorScheme.outlineVariant,
+                                  width: 1.5,
+                                ),
                               ),
                             ),
                         ],
@@ -219,15 +225,15 @@ class _SelectionModalState extends State<SelectionModal> {
             ),
             const SizedBox(height: 18),
 
-            // Full-Width Kinetic Mint Save Button
+            // Full-Width Dynamic Accent Save Button
             SizedBox(
               width: double.infinity,
               height: 52,
               child: ElevatedButton(
                 onPressed: _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _mint,
-                  foregroundColor: _slateDark,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),

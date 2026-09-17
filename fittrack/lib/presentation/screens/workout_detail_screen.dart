@@ -214,19 +214,18 @@ class _TopNav extends StatelessWidget {
 
   final String title;
 
-  static const Color _bg = Color(0xFFf7f9fb);
-  static const Color _dark = Color(0xFF0f172a);
-  static const Color _muted = Color(0xFF64748b);
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       decoration: BoxDecoration(
-        color: _bg.withValues(alpha: 0.95),
+        color: theme.scaffoldBackgroundColor.withValues(alpha: 0.95),
         border: Border(
           bottom: BorderSide(
-            color: const Color(0xFFe2e8f0).withValues(alpha: 0.5),
+            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
           ),
         ),
       ),
@@ -239,19 +238,19 @@ class _TopNav extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFe2e8f0)),
+                border: Border.all(color: colorScheme.outlineVariant),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: colorScheme.shadow.withValues(alpha: 0.05),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   )
                 ],
               ),
-              child: const Icon(Icons.arrow_back_ios_new_rounded,
-                  size: 16, color: _dark),
+              child: Icon(Icons.arrow_back_ios_new_rounded,
+                  size: 16, color: colorScheme.onSurface),
             ),
           ),
           const SizedBox(width: 12),
@@ -262,10 +261,10 @@ class _TopNav extends StatelessWidget {
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: _muted,
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
                 letterSpacing: -0.2,
               ),
             ),
@@ -290,24 +289,26 @@ class _NavIconBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           shape: BoxShape.circle,
-          border: Border.all(color: const Color(0xFFe2e8f0)),
+          border: Border.all(color: colorScheme.outlineVariant),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: colorScheme.shadow.withValues(alpha: 0.04),
               blurRadius: 4,
               offset: const Offset(0, 1),
             )
           ],
         ),
-        child: Icon(icon, size: 16, color: const Color(0xFF475569)),
+        child: Icon(icon, size: 16, color: colorScheme.onSurface.withValues(alpha: 0.7)),
       ),
     );
   }
@@ -359,10 +360,10 @@ class _WorkoutHeaderSection extends StatelessWidget {
         // Title
         Text(
           schedule.name,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF0f172a),
+            color: Theme.of(context).colorScheme.onSurface,
             letterSpacing: -0.6,
             height: 1.1,
           ),
@@ -432,20 +433,19 @@ class _MetricsBar extends StatelessWidget {
   final int estimatedMinutes;
   final int estimatedCalories;
 
-  static const Color _dark = Color(0xFF0f172a);
-  static const Color _softBorder = Color(0xFFe2e8f0);
-
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _softBorder.withValues(alpha: 0.8)),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: _dark.withValues(alpha: 0.05),
+            color: colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 20,
             spreadRadius: -4,
             offset: const Offset(0, 4),
@@ -496,9 +496,6 @@ class _MetricStatCell extends StatelessWidget {
   final String value;
   final String label;
 
-  static const Color _dark = Color(0xFF0f172a);
-  static const Color _muted = Color(0xFF64748b);
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -518,20 +515,20 @@ class _MetricStatCell extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w800,
-              color: _dark,
+              color: colorScheme.onSurface,
               letterSpacing: -0.3,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             label.toUpperCase(),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 9,
               fontWeight: FontWeight.w600,
-              color: _muted,
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
               letterSpacing: 0.4,
             ),
           ),
@@ -549,7 +546,7 @@ class _VertDivider extends StatelessWidget {
     return Container(
       width: 1,
       height: double.infinity,
-      color: const Color(0xFFf1f5f9),
+      color: Theme.of(context).colorScheme.outlineVariant,
     );
   }
 }
@@ -566,25 +563,21 @@ class _ExerciseCard extends StatelessWidget {
   final ScheduleExercise exercise;
   final bool isFirst;
 
-  static const Color _dark = Color(0xFF0f172a);
-  static const Color _muted = Color(0xFF64748b);
-  static const Color _softBorder = Color(0xFFe2e8f0);
-
   @override
   Widget build(BuildContext context) {
-    // First exercise gets a dark badge per Stitch design
-    final badgeBg = isFirst ? const Color(0xFF1e293b) : const Color(0xFFf1f5f9);
-    final badgeFg = isFirst ? Colors.white : const Color(0xFF475569);
+    final colorScheme = Theme.of(context).colorScheme;
+    final badgeBg = isFirst ? colorScheme.primary : colorScheme.surfaceContainerHighest;
+    final badgeFg = isFirst ? colorScheme.onPrimary : colorScheme.onSurfaceVariant;
 
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _softBorder.withValues(alpha: 0.7)),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0f172a).withValues(alpha: 0.04),
+            color: colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 20,
             spreadRadius: -4,
             offset: const Offset(0, 4),
@@ -602,7 +595,7 @@ class _ExerciseCard extends StatelessWidget {
               shape: BoxShape.circle,
               border: isFirst
                   ? null
-                  : Border.all(color: const Color(0xFFcbd5e1)),
+                  : Border.all(color: colorScheme.outlineVariant),
             ),
             child: Center(
               child: Text(
@@ -626,10 +619,10 @@ class _ExerciseCard extends StatelessWidget {
                   // In a real join we'd resolve exerciseId → Exercise.name.
                   // Here we use a meaningful placeholder derived from the id.
                   _resolveExerciseName(exercise.exerciseId, index),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: _dark,
+                    color: colorScheme.onSurface,
                     letterSpacing: -0.2,
                   ),
                 ),
@@ -640,10 +633,10 @@ class _ExerciseCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       '${exercise.targetSets} sets × ${exercise.targetReps} reps',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: _muted,
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -653,7 +646,8 @@ class _ExerciseCard extends StatelessWidget {
           ),
 
           // ── Chevron ────────────────────────────────────────────────
-          const Icon(Icons.chevron_right_rounded, color: _muted, size: 22),
+          Icon(Icons.chevron_right_rounded,
+              color: colorScheme.onSurface.withValues(alpha: 0.4), size: 22),
         ],
       ),
     );
@@ -733,29 +727,31 @@ class _MuscleBadge extends StatelessWidget {
 class _AddExerciseButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.6),
+        color: colorScheme.surface.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFFcbd5e1),
+          color: colorScheme.outlineVariant,
           width: 2,
           style: BorderStyle.solid,
         ),
       ),
-      child: const Row(
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.add_rounded, size: 18, color: Color(0xFF64748b)),
-          SizedBox(width: 8),
+          Icon(Icons.add_rounded,
+              size: 18, color: colorScheme.onSurface.withValues(alpha: 0.6)),
+          const SizedBox(width: 8),
           Text(
             'ADD AN EXERCISE',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF64748b),
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
               letterSpacing: 0.8,
             ),
           ),
@@ -838,7 +834,7 @@ class _StickyStartDock extends StatelessWidget {
             width: 120,
             height: 4,
             decoration: BoxDecoration(
-              color: const Color(0xFFcbd5e1),
+              color: colorScheme.outlineVariant,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -855,26 +851,27 @@ class _NotFoundBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.search_off_rounded,
-              size: 48, color: Color(0xFF94a3b8)),
+          Icon(Icons.search_off_rounded,
+              size: 48, color: colorScheme.onSurface.withValues(alpha: 0.4)),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Workout not found',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF475569),
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 20),
           TextButton(
             onPressed: onBack,
             child: Text('Go Back',
-                style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+                style: TextStyle(color: colorScheme.primary)),
           ),
         ],
       ),
@@ -889,6 +886,7 @@ class _ErrorBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -899,16 +897,16 @@ class _ErrorBody extends StatelessWidget {
           Text(
             'Error: $error',
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
-              color: Color(0xFF64748b),
+              color: colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 20),
           TextButton(
             onPressed: onBack,
             child: Text('Go Back',
-                style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+                style: TextStyle(color: colorScheme.primary)),
           ),
         ],
       ),

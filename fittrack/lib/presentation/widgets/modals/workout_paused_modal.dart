@@ -44,12 +44,11 @@ class _WorkoutPausedModal extends StatelessWidget {
   final ActiveWorkoutNotifier notifier;
   final VoidCallback onEndWorkout;
 
-  static const Color _mint = Color(0xFF00d68f);
-  static const Color _dark = Color(0xFF0f172a);
-  static const Color _bg = Color(0xFFf7f9fb);
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final completedExercises = state.entries
         .where(
           (e) => state.completedSets.any((s) => s.exerciseId == e.exerciseId),
@@ -58,7 +57,7 @@ class _WorkoutPausedModal extends StatelessWidget {
     final totalExercises = state.entries.length;
 
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -73,9 +72,11 @@ class _WorkoutPausedModal extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFfef3c7),
+                      color: Colors.amber.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFfde68a)),
+                      border: Border.all(
+                        color: Colors.amber.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -84,15 +85,15 @@ class _WorkoutPausedModal extends StatelessWidget {
                           width: 6,
                           height: 6,
                           decoration: const BoxDecoration(
-                            color: Color(0xFFf59e0b),
+                            color: Colors.amber,
                             shape: BoxShape.circle,
                           ),
                         ),
                         const SizedBox(width: 6),
-                        const Text(
+                        Text(
                           'PAUSED',
                           style: TextStyle(
-                            color: Color(0xFF92400e),
+                            color: Colors.amber.shade800,
                             fontWeight: FontWeight.w800,
                             fontSize: 11,
                             letterSpacing: 0.8,
@@ -105,7 +106,7 @@ class _WorkoutPausedModal extends StatelessWidget {
                   Text(
                     state.elapsedFormatted,
                     style: TextStyle(
-                      color: _dark.withValues(alpha: 0.5),
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                       fontWeight: FontWeight.w700,
                       fontSize: 15,
                       fontFeatures: const [FontFeature.tabularFigures()],
@@ -121,11 +122,11 @@ class _WorkoutPausedModal extends StatelessWidget {
                 width: 88,
                 height: 88,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFfef3c7),
+                  color: Colors.amber.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFf59e0b).withValues(alpha: 0.25),
+                      color: Colors.amber.withValues(alpha: 0.25),
                       blurRadius: 24,
                       spreadRadius: 4,
                     ),
@@ -134,7 +135,7 @@ class _WorkoutPausedModal extends StatelessWidget {
                 child: const Icon(
                   Icons.pause_rounded,
                   size: 44,
-                  color: Color(0xFFf59e0b),
+                  color: Colors.amber,
                 ),
               ),
 
@@ -143,7 +144,7 @@ class _WorkoutPausedModal extends StatelessWidget {
               Text(
                 'Workout Paused',
                 style: TextStyle(
-                  color: _dark,
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.w900,
                   fontSize: 26,
                   letterSpacing: -0.5,
@@ -154,7 +155,7 @@ class _WorkoutPausedModal extends StatelessWidget {
                 'Take your time. Your session is safely preserved.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: _dark.withValues(alpha: 0.5),
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -165,9 +166,9 @@ class _WorkoutPausedModal extends StatelessWidget {
               // ── Stats row ────────────────────────────────────────────────
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFe2e8f0)),
+                  border: Border.all(color: colorScheme.outlineVariant),
                 ),
                 padding: const EdgeInsets.symmetric(
                     vertical: 18, horizontal: 8),
@@ -175,28 +176,28 @@ class _WorkoutPausedModal extends StatelessWidget {
                   children: [
                     _StatCell(
                       icon: Icons.timer_outlined,
-                      iconColor: const Color(0xFF0d9488),
+                      iconColor: colorScheme.primary,
                       label: 'Duration',
                       value: state.elapsedFormatted,
                     ),
-                    _divider(),
+                    _divider(colorScheme.outlineVariant),
                     _StatCell(
                       icon: Icons.fitness_center_rounded,
-                      iconColor: _mint,
+                      iconColor: colorScheme.primary,
                       label: 'Exercises',
                       value: '$completedExercises/$totalExercises',
                     ),
-                    _divider(),
+                    _divider(colorScheme.outlineVariant),
                     _StatCell(
                       icon: Icons.local_fire_department_rounded,
-                      iconColor: const Color(0xFFf97316),
+                      iconColor: Colors.orange,
                       label: 'Calories',
                       value: '${state.estimatedCalories}',
                     ),
-                    _divider(),
+                    _divider(colorScheme.outlineVariant),
                     _StatCell(
                       icon: Icons.repeat_rounded,
-                      iconColor: const Color(0xFF8b5cf6),
+                      iconColor: Colors.purple,
                       label: 'Sets',
                       value: '${state.completedSetCount}',
                     ),
@@ -213,7 +214,7 @@ class _WorkoutPausedModal extends StatelessWidget {
                   child: Text(
                     'COMING UP',
                     style: TextStyle(
-                      color: _dark.withValues(alpha: 0.4),
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1,
@@ -230,10 +231,10 @@ class _WorkoutPausedModal extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                          color: const Color(0xFFe2e8f0),
+                          color: colorScheme.outlineVariant,
                         ),
                       ),
                       child: Row(
@@ -242,16 +243,16 @@ class _WorkoutPausedModal extends StatelessWidget {
                             width: 30,
                             height: 30,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFf1f5f9),
+                              color: colorScheme.surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Center(
                               child: Text(
                                 '${state.currentExerciseIndex + idx + 2}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w800,
                                   fontSize: 12,
-                                  color: Color(0xFF475569),
+                                  color: colorScheme.onSurface,
                                 ),
                               ),
                             ),
@@ -263,17 +264,17 @@ class _WorkoutPausedModal extends StatelessWidget {
                               children: [
                                 Text(
                                   e.name,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w700,
                                     fontSize: 13,
-                                    color: Color(0xFF1e293b),
+                                    color: colorScheme.onSurface,
                                   ),
                                 ),
                                 Text(
                                   '${e.totalSets} sets × ${e.targetReps} reps',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 11,
-                                    color: Color(0xFF94a3b8),
+                                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                                   ),
                                 ),
                               ],
@@ -302,8 +303,8 @@ class _WorkoutPausedModal extends StatelessWidget {
                       fontWeight: FontWeight.w800, fontSize: 16),
                 ),
                 style: FilledButton.styleFrom(
-                  backgroundColor: _mint,
-                  foregroundColor: _dark,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                   minimumSize: const Size(double.infinity, 56),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -324,8 +325,8 @@ class _WorkoutPausedModal extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
                 ),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFef4444),
-                  side: const BorderSide(color: Color(0xFFfecaca)),
+                  foregroundColor: colorScheme.error,
+                  side: BorderSide(color: colorScheme.error.withValues(alpha: 0.4)),
                   minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -341,10 +342,10 @@ class _WorkoutPausedModal extends StatelessWidget {
     );
   }
 
-  Widget _divider() => Container(
+  Widget _divider(Color color) => Container(
         width: 1,
         height: 40,
-        color: const Color(0xFFf1f5f9),
+        color: color,
       );
 }
 
@@ -365,6 +366,7 @@ class _StatCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Expanded(
       child: Column(
         children: [
@@ -372,20 +374,20 @@ class _StatCell extends StatelessWidget {
           const SizedBox(height: 5),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w800,
               fontSize: 15,
-              color: Color(0xFF0f172a),
-              fontFeatures: [FontFeature.tabularFigures()],
+              color: colorScheme.onSurface,
+              fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF94a3b8),
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
         ],

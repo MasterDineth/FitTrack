@@ -120,7 +120,6 @@ class _FloatingDock extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final primary = colorScheme.primary;
     final isDark = theme.brightness == Brightness.dark;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
@@ -139,20 +138,18 @@ class _FloatingDock extends StatelessWidget {
           color: colorScheme.surface.withValues(alpha: 0.92),
           borderRadius: BorderRadius.circular(28),
           border: Border.all(
-            color: isDark
-                ? const Color(0xFF334155)
-                : Colors.white.withValues(alpha: 0.8),
+            color: colorScheme.outlineVariant,
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF0F172A).withValues(alpha: isDark ? 0.35 : 0.10),
+              color: colorScheme.shadow.withValues(alpha: isDark ? 0.35 : 0.08),
               blurRadius: 32,
               spreadRadius: -4,
               offset: const Offset(0, 12),
             ),
             BoxShadow(
-              color: const Color(0xFF0F172A).withValues(alpha: isDark ? 0.20 : 0.04),
+              color: colorScheme.shadow.withValues(alpha: isDark ? 0.20 : 0.04),
               blurRadius: 12,
               spreadRadius: -2,
               offset: const Offset(0, 4),
@@ -166,9 +163,8 @@ class _FloatingDock extends StatelessWidget {
             children: List.generate(_tabs.length, (index) {
               final tab = _tabs[index];
               final isActive = currentIndex == index;
-              final unselectedColor = isDark
-                  ? const Color(0xFF94A3B8)
-                  : const Color(0xFF64748B);
+              final unselectedColor =
+                  colorScheme.onSurface.withValues(alpha: 0.6);
 
               return Expanded(
                 child: GestureDetector(
@@ -187,14 +183,14 @@ class _FloatingDock extends StatelessWidget {
                           height: 32,
                           decoration: BoxDecoration(
                             color: isActive
-                                ? primary.withValues(alpha: 0.14)
+                                ? colorScheme.primaryContainer
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
                             isActive ? tab.activeIcon : tab.icon,
                             size: 20,
-                            color: isActive ? primary : unselectedColor,
+                            color: isActive ? colorScheme.onPrimaryContainer : unselectedColor,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -206,7 +202,7 @@ class _FloatingDock extends StatelessWidget {
                             fontWeight: isActive
                                 ? FontWeight.w700
                                 : FontWeight.w500,
-                            color: isActive ? primary : unselectedColor,
+                            color: isActive ? colorScheme.primary : unselectedColor,
                             letterSpacing: -0.2,
                           ),
                           child: Text(tab.label),

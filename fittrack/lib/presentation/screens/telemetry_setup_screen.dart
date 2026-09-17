@@ -2,7 +2,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../theme/app_colors.dart';
 import '../widgets/ft_primary_button.dart';
 import '../widgets/ft_step_indicator.dart';
 import '../providers/auth_provider.dart';
@@ -45,12 +44,12 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
     return 'High';
   }
 
-  Color get _bmiColor {
+  Color _getBmiColor(ColorScheme colorScheme) {
     final b = _bmi;
     if (b < 18.5) return Colors.blueAccent;
-    if (b < 25) return AppColors.kineticMint;
+    if (b < 25) return colorScheme.primary;
     if (b < 30) return const Color(0xFFF59E0B);
-    return AppColors.errorRed;
+    return colorScheme.error;
   }
 
   int get _bmr {
@@ -103,8 +102,12 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final bmiColor = _getBmiColor(colorScheme);
+
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -120,46 +123,47 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppColors.cardWhite,
+                        color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.slate200),
+                        border: Border.all(color: colorScheme.outlineVariant),
                       ),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded,
-                          size: 18, color: AppColors.slate700),
+                      child: Icon(Icons.arrow_back_ios_new_rounded,
+                          size: 18, color: colorScheme.onSurface),
                     ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 5),
                     decoration: BoxDecoration(
-                      color: AppColors.slate200.withValues(alpha: 0.7),
+                      color: colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(99),
                     ),
-                    child: const Text(
+                    child: Text(
                       'STEP 3 OF 4',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.4,
-                        color: AppColors.slate700,
+                        color: colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                   ),
                   TextButton(
                     onPressed: () {},
                     child: Row(
-                      children: const [
+                      children: [
                         Text(
                           'Why we ask',
                           style: TextStyle(
                             fontSize: 11,
-                            color: AppColors.slate500,
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        SizedBox(width: 3),
+                        const SizedBox(width: 3),
                         Icon(Icons.info_outline_rounded,
-                            size: 14, color: AppColors.slate400),
+                            size: 14,
+                            color: colorScheme.onSurface.withValues(alpha: 0.5)),
                       ],
                     ),
                   ),
@@ -174,21 +178,21 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ── Title ────────────────────────────────────────
-                    const Text(
+                    Text(
                       'Tell us about yourself',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.4,
-                        color: AppColors.slateDark,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       'Calibrates your personalized calorie burn, metabolic baseline (BMR), and dynamic target load.',
                       style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.slate500,
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
                         fontWeight: FontWeight.w500,
                         height: 1.5,
                       ),
@@ -199,10 +203,10 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                     Container(
                       padding: const EdgeInsets.all(3),
                       decoration: BoxDecoration(
-                        color: AppColors.slate200.withValues(alpha: 0.6),
+                        color: colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: AppColors.slate200.withValues(alpha: 0.6)),
+                            color: colorScheme.outlineVariant),
                       ),
                       child: Row(
                         children: [
@@ -290,12 +294,12 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: AppColors.cardWhite,
+                        color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.slate200),
+                        border: Border.all(color: colorScheme.outlineVariant),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.slateDark.withValues(alpha: 0.04),
+                            color: colorScheme.shadow.withValues(alpha: 0.04),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -308,22 +312,22 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                             children: [
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
+                                children: [
                                   Text(
                                     'HEIGHT',
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w700,
                                       letterSpacing: 1.4,
-                                      color: AppColors.slate400,
+                                      color: colorScheme.onSurface.withValues(alpha: 0.5),
                                     ),
                                   ),
-                                  SizedBox(height: 2),
+                                  const SizedBox(height: 2),
                                   Text(
                                     'Standing stature',
                                     style: TextStyle(
                                       fontSize: 11,
-                                      color: AppColors.slate400,
+                                      color: colorScheme.onSurface.withValues(alpha: 0.5),
                                     ),
                                   ),
                                 ],
@@ -334,20 +338,20 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                                 children: [
                                   Text(
                                     _heightDisplay,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 30,
                                       fontWeight: FontWeight.w800,
                                       letterSpacing: -0.5,
-                                      color: AppColors.slateDark,
+                                      color: colorScheme.onSurface,
                                     ),
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
                                     _heightUnit,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
-                                      color: AppColors.slate400,
+                                      color: colorScheme.onSurface.withValues(alpha: 0.5),
                                     ),
                                   ),
                                 ],
@@ -357,11 +361,11 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                           const SizedBox(height: 10),
                           SliderTheme(
                             data: SliderTheme.of(context).copyWith(
-                              activeTrackColor: AppColors.kineticMint,
-                              inactiveTrackColor: AppColors.slate200,
-                              thumbColor: AppColors.kineticMint,
+                              activeTrackColor: colorScheme.primary,
+                              inactiveTrackColor: colorScheme.outlineVariant,
+                              thumbColor: colorScheme.primary,
                               overlayColor:
-                                  AppColors.kineticMint.withValues(alpha: 0.15),
+                                  colorScheme.primary.withValues(alpha: 0.15),
                               thumbShape: const RoundSliderThumbShape(
                                   enabledThumbRadius: 11),
                               trackHeight: 5,
@@ -377,36 +381,36 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
+                              Text(
                                 '120 cm',
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.slate400,
+                                  color: colorScheme.onSurface.withValues(alpha: 0.5),
                                 ),
                               ),
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: AppColors.kineticMintLight,
+                                  color: colorScheme.primaryContainer,
                                   borderRadius: BorderRadius.circular(6),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'Avg: 175',
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
-                                    color: Color(0xFF065F46),
+                                    color: colorScheme.onPrimaryContainer,
                                   ),
                                 ),
                               ),
-                              const Text(
+                              Text(
                                 '220 cm',
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.slate400,
+                                  color: colorScheme.onSurface.withValues(alpha: 0.5),
                                 ),
                               ),
                             ],
@@ -420,17 +424,14 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                        color: colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: colorScheme.outlineVariant),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.slateDark.withValues(alpha: 0.3),
+                            color: colorScheme.shadow.withValues(alpha: 0.08),
                             blurRadius: 16,
-                            offset: const Offset(0, 8),
+                            offset: const Offset(0, 4),
                           ),
                         ],
                       ),
@@ -445,26 +446,23 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                                     width: 24,
                                     height: 24,
                                     decoration: BoxDecoration(
-                                      color: AppColors.kineticMint
-                                          .withValues(alpha: 0.2),
-                                      borderRadius:
-                                          BorderRadius.circular(7),
+                                      color: colorScheme.primaryContainer,
+                                      borderRadius: BorderRadius.circular(7),
                                       border: Border.all(
-                                        color: AppColors.kineticMint
-                                            .withValues(alpha: 0.4),
+                                        color: colorScheme.primary.withValues(alpha: 0.4),
                                       ),
                                     ),
-                                    child: const Icon(Icons.bolt_rounded,
-                                        size: 14, color: AppColors.kineticMint),
+                                    child: Icon(Icons.bolt_rounded,
+                                        size: 14, color: colorScheme.primary),
                                   ),
                                   const SizedBox(width: 8),
-                                  const Text(
+                                  Text(
                                     'TELEMETRY ENGINE',
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w700,
                                       letterSpacing: 1.2,
-                                      color: Color(0xFFCBD5E1),
+                                      color: colorScheme.onSurface,
                                     ),
                                   ),
                                 ],
@@ -473,28 +471,26 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF052E16)
-                                      .withValues(alpha: 0.8),
+                                  color: colorScheme.primaryContainer,
                                   borderRadius: BorderRadius.circular(99),
                                   border: Border.all(
-                                    color:
-                                        AppColors.kineticMint.withValues(alpha: 0.3),
+                                    color: colorScheme.primary.withValues(alpha: 0.3),
                                   ),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'REALTIME CALC',
                                   style: TextStyle(
                                     fontSize: 9,
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.w700,
                                     letterSpacing: 1.2,
-                                    color: Color(0xFF4ADE80),
+                                    color: colorScheme.onPrimaryContainer,
                                   ),
                                 ),
                               ),
                             ],
                           ),
-                          const Divider(
-                            color: Color(0xFF334155),
+                          Divider(
+                            color: colorScheme.outlineVariant,
                             height: 20,
                           ),
                           Row(
@@ -504,7 +500,7 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                                   label: 'ESTIMATED BMI',
                                   value: _bmi.toStringAsFixed(1),
                                   subLabel: _bmiStatus,
-                                  subColor: _bmiColor,
+                                  subColor: bmiColor,
                                 ),
                               ),
                               const SizedBox(width: 10),
@@ -523,12 +519,9 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF1E293B)
-                                  .withValues(alpha: 0.5),
+                              color: colorScheme.surface,
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                  color: const Color(0xFF334155)
-                                      .withValues(alpha: 0.4)),
+                              border: Border.all(color: colorScheme.outlineVariant),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -538,17 +531,17 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                                     Container(
                                       width: 6,
                                       height: 6,
-                                      decoration: const BoxDecoration(
+                                      decoration: BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: Color(0xFF22D3EE),
+                                        color: colorScheme.primary,
                                       ),
                                     ),
                                     const SizedBox(width: 6),
-                                    const Text(
+                                    Text(
                                       'Hydration Baseline:',
                                       style: TextStyle(
                                         fontSize: 11,
-                                        color: Color(0xFFCBD5E1),
+                                        color: colorScheme.onSurface.withValues(alpha: 0.7),
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -556,10 +549,10 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                                 ),
                                 Text(
                                   '${_hydration.toStringAsFixed(1)} L / day',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF67E8F9),
+                                    color: colorScheme.primary,
                                   ),
                                 ),
                               ],
@@ -588,13 +581,13 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                                         vertical: 9),
                                     decoration: BoxDecoration(
                                       color: _activityLevel == level
-                                          ? AppColors.kineticMintLight
-                                          : AppColors.cardWhite,
+                                          ? colorScheme.primaryContainer
+                                          : colorScheme.surface,
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
                                         color: _activityLevel == level
-                                            ? AppColors.kineticMint
-                                            : AppColors.slate200,
+                                            ? colorScheme.primary
+                                            : colorScheme.outlineVariant,
                                         width: _activityLevel == level ? 2 : 1,
                                       ),
                                     ),
@@ -607,8 +600,8 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                                             ? FontWeight.w700
                                             : FontWeight.w500,
                                         color: _activityLevel == level
-                                            ? const Color(0xFF065F46)
-                                            : AppColors.slate700,
+                                            ? colorScheme.onPrimaryContainer
+                                            : colorScheme.onSurface.withValues(alpha: 0.7),
                                       ),
                                     ),
                                   ),
@@ -628,9 +621,9 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
             Container(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
               decoration: BoxDecoration(
-                color: AppColors.surface.withValues(alpha: 0.95),
+                color: theme.scaffoldBackgroundColor,
                 border: Border(
-                    top: BorderSide(color: AppColors.slate200, width: 1)),
+                    top: BorderSide(color: colorScheme.outlineVariant, width: 1)),
               ),
               child: Column(
                 children: [
@@ -640,9 +633,9 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                       const FtStepIndicator(totalSteps: 4, currentStep: 2),
                       Text(
                         '75% completed',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
-                          color: AppColors.slate400,
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -653,12 +646,12 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                     children: [
                       TextButton(
                         onPressed: () => context.pop(),
-                        child: const Text(
+                        child: Text(
                           'Back',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.slate600,
+                            color: colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                         ),
                       ),
@@ -667,8 +660,11 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                         child: FtPrimaryButton(
                           label: 'Continue',
                           isLoading: _isSaving,
-                          trailingIcon: const Icon(Icons.arrow_forward_rounded,
-                              color: AppColors.slateDark, size: 18),
+                          trailingIcon: Icon(
+                            Icons.arrow_forward_rounded,
+                            color: colorScheme.onPrimary,
+                            size: 18,
+                          ),
                           onPressed: _isSaving ? null : _continue,
                         ),
                       ),
@@ -693,15 +689,17 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.cardWhite,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.slate200),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: AppColors.slateDark.withValues(alpha: 0.04),
+            color: colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -712,11 +710,11 @@ class _SectionCard extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.4,
-              color: AppColors.slate400,
+              color: colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: 8),
@@ -739,6 +737,8 @@ class _SexBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -746,10 +746,10 @@ class _SexBtn extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.kineticMintLight : AppColors.cardWhite,
+            color: isSelected ? colorScheme.primaryContainer : colorScheme.surface,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: isSelected ? AppColors.kineticMint : AppColors.slate200,
+              color: isSelected ? colorScheme.primary : colorScheme.outlineVariant,
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -760,9 +760,9 @@ class _SexBtn extends StatelessWidget {
                 Container(
                   width: 6,
                   height: 6,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.kineticMint,
+                    color: colorScheme.primary,
                   ),
                 ),
                 const SizedBox(width: 5),
@@ -773,7 +773,7 @@ class _SexBtn extends StatelessWidget {
                   fontSize: 12,
                   fontWeight:
                       isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? const Color(0xFF065F46) : AppColors.slate700,
+                  color: isSelected ? colorScheme.onPrimaryContainer : colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -803,15 +803,17 @@ class _NumericCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.cardWhite,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.slate200),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: AppColors.slateDark.withValues(alpha: 0.04),
+            color: colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -825,11 +827,11 @@ class _NumericCard extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.4,
-                  color: AppColors.slate400,
+                  color: colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
               ),
               if (badge != null)
@@ -837,15 +839,15 @@ class _NumericCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppColors.kineticMintLight,
+                    color: colorScheme.primaryContainer,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     badge!,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF065F46),
+                      color: colorScheme.onPrimaryContainer,
                     ),
                   ),
                 ),
@@ -858,20 +860,20 @@ class _NumericCard extends StatelessWidget {
             children: [
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.5,
-                  color: AppColors.slateDark,
+                  color: colorScheme.onSurface,
                 ),
               ),
               const SizedBox(width: 4),
               Text(
                 unit,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.slate400,
+                  color: colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
               ),
             ],
@@ -884,9 +886,9 @@ class _NumericCard extends StatelessWidget {
                 child: Center(
                   child: Text(
                     'adjust',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 10,
-                      color: AppColors.slate400,
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -908,22 +910,24 @@ class _StepperBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: AppColors.slate100,
+          color: colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Center(
           child: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: AppColors.slate700,
+              color: colorScheme.onSurface,
             ),
           ),
         ),
@@ -938,35 +942,36 @@ class _MetricTile extends StatelessWidget {
     required this.value,
     this.unit,
     this.subLabel,
-    this.subColor = const Color(0xFF94A3B8),
+    this.subColor,
   });
 
   final String label;
   final String value;
   final String? unit;
   final String? subLabel;
-  final Color subColor;
+  final Color? subColor;
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withValues(alpha: 0.6),
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-            color: const Color(0xFF334155).withValues(alpha: 0.5)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 9,
               fontWeight: FontWeight.w600,
               letterSpacing: 1.1,
-              color: Color(0xFF94A3B8),
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 4),
@@ -976,20 +981,20 @@ class _MetricTile extends StatelessWidget {
             children: [
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -0.5,
-                  color: Colors.white,
+                  color: colorScheme.onSurface,
                 ),
               ),
               if (unit != null) ...[
                 const SizedBox(width: 3),
                 Text(
                   unit!,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
-                    color: Color(0xFF94A3B8),
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1001,7 +1006,7 @@ class _MetricTile extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: subColor,
+                    color: subColor ?? colorScheme.primary,
                   ),
                 ),
               ],
@@ -1011,9 +1016,9 @@ class _MetricTile extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               subLabel!,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
-                color: Color(0xFF94A3B8),
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -1036,6 +1041,8 @@ class _UnitToggleBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -1043,12 +1050,12 @@ class _UnitToggleBtn extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isActive ? AppColors.cardWhite : Colors.transparent,
+            color: isActive ? colorScheme.surface : Colors.transparent,
             borderRadius: BorderRadius.circular(9),
             boxShadow: isActive
                 ? [
                     BoxShadow(
-                      color: AppColors.slateDark.withValues(alpha: 0.08),
+                      color: colorScheme.shadow.withValues(alpha: 0.08),
                       blurRadius: 6,
                     ),
                   ]
@@ -1060,7 +1067,9 @@ class _UnitToggleBtn extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
-              color: isActive ? AppColors.slateDark : AppColors.slate500,
+              color: isActive
+                  ? colorScheme.onSurface
+                  : colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
         ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 
 /// Onboarding step progress indicator — pill for active step, dots for others.
 class FtStepIndicator extends StatelessWidget {
@@ -16,6 +15,7 @@ class FtStepIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(totalSteps, (i) {
@@ -27,7 +27,9 @@ class FtStepIndicator extends StatelessWidget {
           width: isActive ? 24 : 8,
           height: 8,
           decoration: BoxDecoration(
-            color: isActive ? AppColors.kineticMint : AppColors.slate300,
+            color: isActive
+                ? colorScheme.primary
+                : colorScheme.outlineVariant,
             borderRadius: BorderRadius.circular(99),
           ),
         );

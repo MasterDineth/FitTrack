@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../theme/app_colors.dart';
 import '../widgets/ft_primary_button.dart';
 
 /// FitTrack – Reset Password Verification Screen.
@@ -81,8 +80,11 @@ class _ResetVerificationScreenState extends State<ResetVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -101,26 +103,29 @@ class _ResetVerificationScreenState extends State<ResetVerificationScreen> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppColors.cardWhite,
+                        color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: colorScheme.outlineVariant),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.slateDark.withValues(alpha: 0.06),
+                            color: colorScheme.shadow.withValues(alpha: 0.04),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded,
-                          size: 18, color: AppColors.slate800),
+                      child: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 18,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 5),
                     decoration: BoxDecoration(
-                      color:
-                          AppColors.kineticMint.withValues(alpha: 0.12),
+                      color: colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(99),
                     ),
                     child: Row(
@@ -130,17 +135,17 @@ class _ResetVerificationScreenState extends State<ResetVerificationScreen> {
                           height: 6,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppColors.kineticMint,
+                            color: colorScheme.primary,
                           ),
                         ),
                         const SizedBox(width: 6),
-                        const Text(
+                        Text(
                           'SECURE CHANNEL',
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.4,
-                            color: AppColors.slate600,
+                            color: colorScheme.onPrimaryContainer,
                           ),
                         ),
                       ],
@@ -150,18 +155,22 @@ class _ResetVerificationScreenState extends State<ResetVerificationScreen> {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: AppColors.cardWhite,
+                      color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: colorScheme.outlineVariant),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.slateDark.withValues(alpha: 0.06),
+                          color: colorScheme.shadow.withValues(alpha: 0.04),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.help_outline_rounded,
-                        size: 18, color: AppColors.slate500),
+                    child: Icon(
+                      Icons.help_outline_rounded,
+                      size: 18,
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
                   ),
                 ],
               ),
@@ -178,11 +187,12 @@ class _ResetVerificationScreenState extends State<ResetVerificationScreen> {
                           width: 72,
                           height: 72,
                           decoration: BoxDecoration(
-                            color: AppColors.cardWhite,
+                            color: colorScheme.surface,
                             borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: colorScheme.outlineVariant),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.slateDark.withValues(alpha: 0.08),
+                                color: colorScheme.shadow.withValues(alpha: 0.08),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
@@ -193,20 +203,20 @@ class _ResetVerificationScreenState extends State<ResetVerificationScreen> {
                               width: 48,
                               height: 48,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF006C46),
+                                color: colorScheme.primary,
                                 borderRadius: BorderRadius.circular(14),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.kineticMint
+                                    color: colorScheme.primary
                                         .withValues(alpha: 0.35),
                                     blurRadius: 20,
                                     offset: const Offset(0, 8),
                                   ),
                                 ],
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.shield_rounded,
-                                color: Colors.white,
+                                color: colorScheme.onPrimary,
                                 size: 26,
                               ),
                             ),
@@ -215,29 +225,29 @@ class _ResetVerificationScreenState extends State<ResetVerificationScreen> {
                         Positioned(
                           top: -4,
                           right: -4,
-                          child: _PingBadge(),
+                          child: _PingBadge(color: colorScheme.primary),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Verify Reset Code',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.4,
-                        color: AppColors.slateDark,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 6),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Text(
                         "We've sent a 6-digit verification code to your registered email address.",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 13,
-                          color: AppColors.slate500,
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
                           fontWeight: FontWeight.w400,
                           height: 1.5,
                         ),
@@ -249,12 +259,12 @@ class _ResetVerificationScreenState extends State<ResetVerificationScreen> {
               const SizedBox(height: 24),
 
               // ── Email + Send Code ─────────────────────────────────────
-              const Text(
+              Text(
                 'Email Address',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.slateDark,
+                  color: colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 6),
@@ -264,37 +274,38 @@ class _ResetVerificationScreenState extends State<ResetVerificationScreen> {
                     child: TextFormField(
                       controller: _emailCtrl,
                       keyboardType: TextInputType.emailAddress,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.slateDark,
+                        color: colorScheme.onSurface,
                       ),
                       decoration: InputDecoration(
                         hintText: 'e.g. alex.trainer@fittrack.io',
-                        hintStyle: const TextStyle(
-                          color: AppColors.slate400,
+                        hintStyle: TextStyle(
+                          color: colorScheme.onSurface.withValues(alpha: 0.4),
                           fontSize: 13,
                         ),
-                        prefixIcon: const Icon(Icons.mail_outline_rounded,
-                            size: 18, color: AppColors.slate400),
+                        prefixIcon: Icon(
+                          Icons.mail_outline_rounded,
+                          size: 18,
+                          color: colorScheme.onSurface.withValues(alpha: 0.5),
+                        ),
                         filled: true,
-                        fillColor: AppColors.cardWhite,
+                        fillColor: colorScheme.surface,
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 14, vertical: 13),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                              color: AppColors.slate200),
+                          borderSide: BorderSide(color: colorScheme.outlineVariant),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                              color: AppColors.slate200),
+                          borderSide: BorderSide(color: colorScheme.outlineVariant),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                              color: AppColors.kineticMint, width: 2),
+                          borderSide: BorderSide(
+                              color: colorScheme.primary, width: 2),
                         ),
                       ),
                     ),
@@ -306,23 +317,23 @@ class _ResetVerificationScreenState extends State<ResetVerificationScreen> {
                       height: 48,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF006C46),
+                        color: colorScheme.primary,
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.kineticMint.withValues(alpha: 0.25),
+                            color: colorScheme.primary.withValues(alpha: 0.25),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
                         ],
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
                           'Send Code',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                            color: colorScheme.onPrimary,
                           ),
                         ),
                       ),
@@ -337,31 +348,34 @@ class _ResetVerificationScreenState extends State<ResetVerificationScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       '6-Digit Code',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.slateDark,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: AppColors.slate100,
+                        color: colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(99),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.timer_outlined,
-                              size: 13, color: AppColors.kineticMint),
+                          Icon(
+                            Icons.timer_outlined,
+                            size: 13,
+                            color: colorScheme.primary,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             'Expires in ${_formatTime(_expirySeconds)}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
-                              color: AppColors.slate500,
+                              color: colorScheme.onSurface.withValues(alpha: 0.6),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -377,11 +391,11 @@ class _ResetVerificationScreenState extends State<ResetVerificationScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       "Didn't receive code?",
                       style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.slate500,
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                     GestureDetector(
@@ -394,8 +408,8 @@ class _ResetVerificationScreenState extends State<ResetVerificationScreen> {
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: _resendSeconds > 0
-                              ? AppColors.slate400
-                              : AppColors.kineticMint,
+                              ? colorScheme.onSurface.withValues(alpha: 0.4)
+                              : colorScheme.primary,
                         ),
                       ),
                     ),
@@ -407,8 +421,11 @@ class _ResetVerificationScreenState extends State<ResetVerificationScreen> {
                 FtPrimaryButton(
                   label: 'Reset Password',
                   isLoading: _isLoading,
-                  trailingIcon: const Icon(Icons.arrow_forward_rounded,
-                      color: AppColors.slateDark, size: 18),
+                  trailingIcon: Icon(
+                    Icons.arrow_forward_rounded,
+                    color: colorScheme.onPrimary,
+                    size: 18,
+                  ),
                   onPressed: _isLoading ? null : _verify,
                 ),
                 const SizedBox(height: 14),
@@ -418,11 +435,11 @@ class _ResetVerificationScreenState extends State<ResetVerificationScreen> {
                   children: [
                     GestureDetector(
                       onTap: () => context.go('/auth'),
-                      child: const Text(
+                      child: Text(
                         'Return to Sign In',
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.slate500,
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -431,17 +448,17 @@ class _ResetVerificationScreenState extends State<ResetVerificationScreen> {
                     Container(
                       width: 3,
                       height: 3,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.slate300,
+                        color: colorScheme.outlineVariant,
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
+                    Text(
                       'Contact Support',
                       style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.slate500,
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -454,7 +471,7 @@ class _ResetVerificationScreenState extends State<ResetVerificationScreen> {
                     'Enter your email above and tap "Send Code"',
                     style: TextStyle(
                       fontSize: 13,
-                      color: AppColors.slate400,
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
                       fontStyle: FontStyle.italic,
                     ),
                   ),
@@ -462,12 +479,12 @@ class _ResetVerificationScreenState extends State<ResetVerificationScreen> {
                 const SizedBox(height: 20),
                 GestureDetector(
                   onTap: () => context.go('/auth'),
-                  child: const Center(
+                  child: Center(
                     child: Text(
                       '← Return to Sign In',
                       style: TextStyle(
                         fontSize: 13,
-                        color: AppColors.slate600,
+                        color: colorScheme.onSurface.withValues(alpha: 0.7),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -494,41 +511,43 @@ class _OtpField extends StatefulWidget {
 class _OtpFieldState extends State<_OtpField> {
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return TextFormField(
       controller: widget.controller,
       keyboardType: TextInputType.number,
       maxLength: 6,
       textAlign: TextAlign.center,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 24,
         fontWeight: FontWeight.w800,
         letterSpacing: 14,
-        color: AppColors.slateDark,
+        color: colorScheme.onSurface,
       ),
       decoration: InputDecoration(
         counterText: '',
         hintText: '——————',
-        hintStyle: const TextStyle(
-          color: AppColors.slate300,
+        hintStyle: TextStyle(
+          color: colorScheme.onSurface.withValues(alpha: 0.3),
           letterSpacing: 10,
           fontSize: 20,
         ),
         filled: true,
-        fillColor: AppColors.cardWhite,
+        fillColor: colorScheme.surface,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.slate200),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.slate200),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide:
-              const BorderSide(color: AppColors.kineticMint, width: 2),
+              BorderSide(color: colorScheme.primary, width: 2),
         ),
       ),
       onChanged: (_) => setState(() {}),
@@ -537,6 +556,9 @@ class _OtpFieldState extends State<_OtpField> {
 }
 
 class _PingBadge extends StatefulWidget {
+  const _PingBadge({required this.color});
+  final Color color;
+
   @override
   State<_PingBadge> createState() => _PingBadgeState();
 }
@@ -577,7 +599,7 @@ class _PingBadgeState extends State<_PingBadge>
                 height: 14,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.kineticMint
+                  color: widget.color
                       .withValues(alpha: 0.75 * (1 - _c.value)),
                 ),
               ),
@@ -586,9 +608,9 @@ class _PingBadgeState extends State<_PingBadge>
           Container(
             width: 14,
             height: 14,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.kineticMint,
+              color: widget.color,
             ),
           ),
         ],

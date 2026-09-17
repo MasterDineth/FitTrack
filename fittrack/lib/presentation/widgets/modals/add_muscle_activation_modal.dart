@@ -14,9 +14,6 @@ class AddMuscleActivationModal extends StatefulWidget {
 }
 
 class _AddMuscleActivationModalState extends State<AddMuscleActivationModal> {
-  static const Color _mint = Color(0xFF00d68f);
-  static const Color _dark = Color(0xFF0f172a);
-
   static const _allMuscles = [
     'Chest', 'Upper Chest', 'Lower Chest',
     'Front Deltoid', 'Side Deltoid', 'Rear Deltoid',
@@ -38,6 +35,8 @@ class _AddMuscleActivationModalState extends State<AddMuscleActivationModal> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return DraggableScrollableSheet(
       initialChildSize: 0.85,
       minChildSize: 0.5,
@@ -45,9 +44,9 @@ class _AddMuscleActivationModalState extends State<AddMuscleActivationModal> {
       expand: false,
       builder: (context, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
             children: [
@@ -62,18 +61,18 @@ class _AddMuscleActivationModalState extends State<AddMuscleActivationModal> {
                       height: 4,
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFe2e8f0),
+                        color: colorScheme.outlineVariant,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
-                    const Align(
+                    Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         'Add Muscle Activation',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: _dark,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                     ),
@@ -82,11 +81,19 @@ class _AddMuscleActivationModalState extends State<AddMuscleActivationModal> {
                     // Search bar
                     TextField(
                       onChanged: (v) => setState(() => _query = v),
+                      style: TextStyle(color: colorScheme.onSurface),
                       decoration: InputDecoration(
                         hintText: 'Search muscles…',
-                        prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                        hintStyle: TextStyle(
+                          color: colorScheme.onSurface.withValues(alpha: 0.5),
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search_rounded,
+                          size: 20,
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
                         filled: true,
-                        fillColor: const Color(0xFFf1f5f9),
+                        fillColor: colorScheme.surfaceContainerLow,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -107,7 +114,10 @@ class _AddMuscleActivationModalState extends State<AddMuscleActivationModal> {
                   controller: scrollController,
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                   itemCount: _filtered.length,
-                  separatorBuilder: (_, _) => const Divider(height: 1),
+                  separatorBuilder: (_, _) => Divider(
+                    height: 1,
+                    color: colorScheme.outlineVariant,
+                  ),
                   itemBuilder: (context, i) {
                     final muscle = _filtered[i];
                     final isSelected = _selectedMuscle == muscle;
@@ -119,13 +129,16 @@ class _AddMuscleActivationModalState extends State<AddMuscleActivationModal> {
                           fontWeight: isSelected
                               ? FontWeight.w700
                               : FontWeight.w500,
-                          color: isSelected ? _mint : _dark,
+                          color: isSelected ? colorScheme.primary : colorScheme.onSurface,
                         ),
                       ),
                       trailing: isSelected
-                          ? const Icon(Icons.check_circle_rounded, color: _mint)
-                          : const Icon(Icons.circle_outlined,
-                              color: Color(0xFFcbd5e1), size: 20),
+                          ? Icon(Icons.check_circle_rounded, color: colorScheme.primary)
+                          : Icon(
+                              Icons.circle_outlined,
+                              color: colorScheme.outlineVariant,
+                              size: 20,
+                            ),
                       onTap: () => setState(() => _selectedMuscle = muscle),
                     );
                   },
@@ -137,16 +150,16 @@ class _AddMuscleActivationModalState extends State<AddMuscleActivationModal> {
                 Container(
                   padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: colorScheme.surface,
                     border: Border(
                       top: BorderSide(
-                        color: const Color(0xFFe2e8f0),
+                        color: colorScheme.outlineVariant,
                         width: 1,
                       ),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.06),
+                        color: colorScheme.shadow.withValues(alpha: 0.06),
                         blurRadius: 12,
                         offset: const Offset(0, -4),
                       ),
@@ -157,27 +170,27 @@ class _AddMuscleActivationModalState extends State<AddMuscleActivationModal> {
                     children: [
                       Text(
                         _selectedMuscle!,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
-                          color: _dark,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 12),
 
                       // Role pills
-                      _buildRoleRow(),
+                      _buildRoleRow(colorScheme),
                       const SizedBox(height: 16),
 
                       // Intensity stepper
                       Row(
                         children: [
-                          const Text(
+                          Text(
                             'Intensity',
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 13,
-                              color: _dark,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           const Spacer(),
@@ -192,10 +205,10 @@ class _AddMuscleActivationModalState extends State<AddMuscleActivationModal> {
                                 const EdgeInsets.symmetric(horizontal: 12),
                             child: Text(
                               '$_intensity%',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 15,
-                                color: _dark,
+                                color: colorScheme.onSurface,
                               ),
                             ),
                           ),
@@ -216,8 +229,8 @@ class _AddMuscleActivationModalState extends State<AddMuscleActivationModal> {
                         child: ElevatedButton(
                           onPressed: _submit,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: _mint,
-                            foregroundColor: _dark,
+                            backgroundColor: colorScheme.primary,
+                            foregroundColor: colorScheme.onPrimary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
@@ -242,7 +255,7 @@ class _AddMuscleActivationModalState extends State<AddMuscleActivationModal> {
     );
   }
 
-  Widget _buildRoleRow() {
+  Widget _buildRoleRow(ColorScheme colorScheme) {
     return Row(
       children: MuscleRole.values.map((role) {
         final isSelected = _selectedRole == role;
@@ -257,7 +270,7 @@ class _AddMuscleActivationModalState extends State<AddMuscleActivationModal> {
               ),
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected ? _mint : const Color(0xFFf1f5f9),
+                color: isSelected ? colorScheme.primaryContainer : colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Center(
@@ -266,7 +279,7 @@ class _AddMuscleActivationModalState extends State<AddMuscleActivationModal> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: isSelected ? _dark : const Color(0xFF64748b),
+                    color: isSelected ? colorScheme.onPrimaryContainer : colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
                 ),
               ),
@@ -296,16 +309,17 @@ class _StepperButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: const Color(0xFFf1f5f9),
+          color: colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, size: 16, color: const Color(0xFF0f172a)),
+        child: Icon(icon, size: 16, color: colorScheme.onSurface),
       ),
     );
   }

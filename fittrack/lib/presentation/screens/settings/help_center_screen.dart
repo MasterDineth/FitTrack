@@ -5,39 +5,42 @@ class HelpCenterScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF7F9FB),
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
             size: 20,
-            color: Color(0xFF0F172A),
+            color: colorScheme.onSurface,
           ),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
-        title: const Text(
+        title: Text(
           'Help Center & FAQs',
           style: TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontSize: 18,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
+            color: colorScheme.onSurface,
           ),
         ),
         centerTitle: true,
       ),
-      body: const Center(
+      body: Center(
         child: Text(
           'Help Center & FAQs',
           style: TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontSize: 15,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF64748B),
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
       ),

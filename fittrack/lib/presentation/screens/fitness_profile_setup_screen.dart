@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../theme/app_colors.dart';
 import '../widgets/ft_primary_button.dart';
 import '../widgets/ft_selection_card.dart';
 import '../widgets/ft_step_indicator.dart';
@@ -10,10 +9,6 @@ import '../providers/user_profile_provider.dart';
 import '../../domain/entities/fitness_profile.dart';
 
 /// FitTrack Onboarding – Fitness Goals & Training Profile Screen (Step 4 of 4).
-///
-/// Collects [PrimaryFocus], [LiftingExperience], weekly frequency, and
-/// [AvailableEquipment]. Saves via [UserProfileNotifier.saveFitnessProfile].
-/// GoRouter's redirect will navigate to /dashboard on completion.
 class FitnessProfileSetupScreen extends ConsumerStatefulWidget {
   const FitnessProfileSetupScreen({super.key});
 
@@ -50,16 +45,17 @@ class _FitnessProfileSetupScreenState
         .saveFitnessProfile(profile);
 
     setState(() => _isSaving = false);
-    // GoRouter redirect handles navigation to /dashboard once isComplete == true
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final profileState = ref.watch(userProfileProvider);
     final isLoading = profileState.isLoading || _isSaving;
 
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -75,39 +71,42 @@ class _FitnessProfileSetupScreenState
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppColors.cardWhite,
+                        color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.slate200),
+                        border: Border.all(color: colorScheme.outlineVariant),
                       ),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded,
-                          size: 18, color: AppColors.slate700),
+                      child: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 18,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 5),
                     decoration: BoxDecoration(
-                      color: AppColors.slate200.withValues(alpha: 0.7),
+                      color: colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(99),
                     ),
-                    child: const Text(
+                    child: Text(
                       'STEP 4 OF 4',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.4,
-                        color: AppColors.slate700,
+                        color: colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                   ),
                   TextButton(
                     onPressed: () {},
-                    child: const Text(
+                    child: Text(
                       'Skip',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.slate500,
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ),
@@ -122,22 +121,22 @@ class _FitnessProfileSetupScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ── Title ────────────────────────────────────────
-                    const Text(
+                    Text(
                       'Define your training\nprofile',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.5,
-                        color: AppColors.slateDark,
+                        color: colorScheme.onSurface,
                         height: 1.2,
                       ),
                     ),
                     const SizedBox(height: 6),
-                    const Text(
+                    Text(
                       'We build your first program around these — you can edit anytime.',
                       style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.slate500,
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
                         fontWeight: FontWeight.w500,
                         height: 1.5,
                       ),
@@ -227,12 +226,12 @@ class _FitnessProfileSetupScreenState
                     Container(
                       padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
                       decoration: BoxDecoration(
-                        color: AppColors.cardWhite,
+                        color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.slate200),
+                        border: Border.all(color: colorScheme.outlineVariant),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.slateDark.withValues(alpha: 0.04),
+                            color: colorScheme.shadow.withValues(alpha: 0.04),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -254,13 +253,13 @@ class _FitnessProfileSetupScreenState
                                   height: 38,
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? AppColors.kineticMint
-                                        : AppColors.slate100,
+                                        ? colorScheme.primary
+                                        : colorScheme.surfaceContainerHighest,
                                     borderRadius: BorderRadius.circular(10),
                                     boxShadow: isSelected
                                         ? [
                                             BoxShadow(
-                                              color: AppColors.kineticMint
+                                              color: colorScheme.primary
                                                   .withValues(alpha: 0.3),
                                               blurRadius: 8,
                                               offset: const Offset(0, 3),
@@ -275,8 +274,8 @@ class _FitnessProfileSetupScreenState
                                         fontSize: 12,
                                         fontWeight: FontWeight.w800,
                                         color: isSelected
-                                            ? AppColors.slateDark
-                                            : AppColors.slate400,
+                                            ? colorScheme.onPrimary
+                                            : colorScheme.onSurface.withValues(alpha: 0.5),
                                       ),
                                     ),
                                   ),
@@ -291,9 +290,9 @@ class _FitnessProfileSetupScreenState
                               Text(
                                 '$_weeklyFrequency training days · '
                                 '${7 - _weeklyFrequency} rest days',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11,
-                                  color: AppColors.slate400,
+                                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -307,10 +306,10 @@ class _FitnessProfileSetupScreenState
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
                                   color: _weeklyFrequency >= 5
-                                      ? AppColors.errorRed
+                                      ? colorScheme.error
                                       : _weeklyFrequency >= 3
-                                          ? AppColors.kineticMint
-                                          : AppColors.slate400,
+                                          ? colorScheme.primary
+                                          : colorScheme.onSurface.withValues(alpha: 0.5),
                                 ),
                               ),
                             ],
@@ -368,9 +367,10 @@ class _FitnessProfileSetupScreenState
             Container(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
               decoration: BoxDecoration(
-                color: AppColors.surface.withValues(alpha: 0.96),
+                color: colorScheme.surface.withValues(alpha: 0.96),
                 border: Border(
-                    top: BorderSide(color: AppColors.slate200, width: 1)),
+                  top: BorderSide(color: colorScheme.outlineVariant, width: 1),
+                ),
               ),
               child: Column(
                 children: [
@@ -378,11 +378,11 @@ class _FitnessProfileSetupScreenState
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const FtStepIndicator(totalSteps: 4, currentStep: 3),
-                      const Text(
+                      Text(
                         '100% completed',
                         style: TextStyle(
                           fontSize: 11,
-                          color: AppColors.kineticMint,
+                          color: colorScheme.primary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -393,12 +393,12 @@ class _FitnessProfileSetupScreenState
                     children: [
                       TextButton(
                         onPressed: () => context.pop(),
-                        child: const Text(
+                        child: Text(
                           'Back',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.slate600,
+                            color: colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                         ),
                       ),
@@ -409,8 +409,8 @@ class _FitnessProfileSetupScreenState
                           isLoading: isLoading,
                           trailingIcon: isLoading
                               ? null
-                              : const Icon(Icons.check_rounded,
-                                  color: AppColors.slateDark, size: 18),
+                              : Icon(Icons.check_rounded,
+                                  color: colorScheme.onPrimary, size: 18),
                           onPressed: isLoading ? null : _complete,
                         ),
                       ),
@@ -439,6 +439,8 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -446,10 +448,10 @@ class _SectionLabel extends StatelessWidget {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: AppColors.kineticMintLight,
+            color: colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(9),
           ),
-          child: Icon(icon, color: AppColors.kineticMintDark, size: 16),
+          child: Icon(icon, color: colorScheme.onPrimaryContainer, size: 16),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -458,17 +460,17 @@ class _SectionLabel extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.slateDark,
+                  color: colorScheme.onSurface,
                 ),
               ),
               Text(
                 subtitle,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
-                  color: AppColors.slate500,
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                   fontWeight: FontWeight.w500,
                 ),
               ),

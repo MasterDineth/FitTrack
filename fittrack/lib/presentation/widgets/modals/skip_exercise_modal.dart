@@ -48,9 +48,8 @@ Future<void> showSkipExerciseModal(
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    // Transparent so we can paint our own frosted backdrop
     backgroundColor: Colors.transparent,
-    barrierColor: const Color(0x99000000),
+    barrierColor: Colors.black.withValues(alpha: 0.5),
     builder: (_) => SkipExerciseModal(args: args),
   );
 }
@@ -68,12 +67,10 @@ class SkipExerciseModal extends ConsumerStatefulWidget {
 class _SkipExerciseModalState extends ConsumerState<SkipExerciseModal> {
   _SkipReason? _selectedReason;
 
-  static const Color _amber = Color(0xFFf59e0b);
-  static const Color _amberSoft = Color(0xFFfef3c7);
-  static const Color _amberDark = Color(0xFF92400e);
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final args = widget.args;
     final notifier = ref.read(activeWorkoutProvider.notifier);
     final setsCompleted = args.currentSetIndex; // 0-based = sets done so far
@@ -82,12 +79,11 @@ class _SkipExerciseModalState extends ConsumerState<SkipExerciseModal> {
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
       child: Container(
-        // Push sheet above keyboard if needed
         padding:
             EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(36)),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(36)),
         ),
         child: SafeArea(
           top: false,
@@ -117,7 +113,7 @@ class _SkipExerciseModalState extends ConsumerState<SkipExerciseModal> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    color: _amberSoft,
+                    color: Colors.amber.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -127,15 +123,15 @@ class _SkipExerciseModalState extends ConsumerState<SkipExerciseModal> {
                         width: 7,
                         height: 7,
                         decoration: const BoxDecoration(
-                          color: _amber,
+                          color: Colors.amber,
                           shape: BoxShape.circle,
                         ),
                       ),
                       const SizedBox(width: 6),
                       Text(
                         'Set ${args.currentSetIndex + 1} of ${args.totalSets} in progress',
-                        style: const TextStyle(
-                          color: _amberDark,
+                        style: TextStyle(
+                          color: Colors.amber.shade800,
                           fontWeight: FontWeight.w700,
                           fontSize: 11,
                         ),
@@ -146,10 +142,10 @@ class _SkipExerciseModalState extends ConsumerState<SkipExerciseModal> {
                 const SizedBox(height: 10),
 
                 // Title
-                const Text(
+                Text(
                   'Skip Exercise?',
                   style: TextStyle(
-                    color: Color(0xFF0f172a),
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.w900,
                     fontSize: 24,
                     letterSpacing: -0.5,
@@ -164,8 +160,8 @@ class _SkipExerciseModalState extends ConsumerState<SkipExerciseModal> {
                   'finishing your session or proceed directly to '
                   '${args.nextExerciseName ?? 'the next exercise'}.',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Color(0xFF64748b),
+                  style: TextStyle(
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                     fontSize: 13,
                     height: 1.5,
                   ),
@@ -200,22 +196,21 @@ class _SkipExerciseModalState extends ConsumerState<SkipExerciseModal> {
                 const SizedBox(height: 6),
 
                 // Footer hint
-                const Text(
+                Text(
                   'Tap outside or press ✕ to cancel',
                   style: TextStyle(
-                    color: Color(0xFF94a3b8),
+                    color: colorScheme.onSurface.withValues(alpha: 0.5),
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
 
-                // iOS home bar spacer
                 const SizedBox(height: 8),
                 Container(
                   width: 128,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFcbd5e1),
+                    color: colorScheme.outlineVariant,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -241,7 +236,7 @@ class _DragHandle extends StatelessWidget {
         width: 44,
         height: 5,
         decoration: BoxDecoration(
-          color: const Color(0xFFe2e8f0),
+          color: Theme.of(context).colorScheme.outlineVariant,
           borderRadius: BorderRadius.circular(3),
         ),
       ),
@@ -255,17 +250,18 @@ class _CloseButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: const Color(0xFFf1f5f9),
+          color: colorScheme.surfaceContainerHighest,
           shape: BoxShape.circle,
         ),
-        child: const Icon(Icons.close,
-            size: 16, color: Color(0xFF94a3b8)),
+        child: Icon(Icons.close,
+            size: 16, color: colorScheme.onSurface.withValues(alpha: 0.6)),
       ),
     );
   }
@@ -274,6 +270,7 @@ class _CloseButton extends StatelessWidget {
 class _SkipIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SizedBox(
       width: 70,
       height: 70,
@@ -283,20 +280,20 @@ class _SkipIcon extends StatelessWidget {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: const Color(0xFFFFFBEB),
+              color: Colors.amber.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFFFDE68A)),
-              boxShadow: const [
+              border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+              boxShadow: [
                 BoxShadow(
-                  color: Color(0x14F59E0B),
+                  color: Colors.amber.withValues(alpha: 0.2),
                   blurRadius: 16,
-                  offset: Offset(0, 4),
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: const Center(
               child: Icon(Icons.skip_next,
-                  color: Color(0xFFf59e0b), size: 32),
+                  color: Colors.amber, size: 32),
             ),
           ),
           // Warning badge
@@ -307,9 +304,9 @@ class _SkipIcon extends StatelessWidget {
               width: 22,
               height: 22,
               decoration: BoxDecoration(
-                color: const Color(0xFFf59e0b),
+                color: Colors.amber,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
+                border: Border.all(color: colorScheme.surface, width: 2),
               ),
               child: const Icon(Icons.warning_amber_rounded,
                   size: 12, color: Colors.white),
@@ -333,12 +330,13 @@ class _ContextCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFf8fafc),
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -352,16 +350,16 @@ class _ContextCard extends StatelessWidget {
                   Container(
                     width: 7,
                     height: 7,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFf43f5e),
+                    decoration: BoxDecoration(
+                      color: colorScheme.error,
                       shape: BoxShape.circle,
                     ),
                   ),
                   const SizedBox(width: 6),
-                  const Text(
+                  Text(
                     'SKIPPING EXERCISE',
                     style: TextStyle(
-                      color: Color(0xFF64748b),
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.0,
@@ -373,14 +371,13 @@ class _ContextCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFfff1f2),
+                  color: colorScheme.errorContainer,
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: const Color(0xFFfecdd3)),
                 ),
                 child: Text(
                   args.currentExerciseMuscleTag.toUpperCase(),
-                  style: const TextStyle(
-                    color: Color(0xFFe11d48),
+                  style: TextStyle(
+                    color: colorScheme.onErrorContainer,
                     fontSize: 9,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.8,
@@ -402,8 +399,8 @@ class _ContextCard extends StatelessWidget {
                   children: [
                     Text(
                       args.currentExerciseName,
-                      style: const TextStyle(
-                        color: Color(0xFF0f172a),
+                      style: TextStyle(
+                        color: colorScheme.onSurface,
                         fontWeight: FontWeight.w800,
                         fontSize: 14,
                       ),
@@ -417,16 +414,16 @@ class _ContextCard extends StatelessWidget {
                         children: [
                           TextSpan(
                             text: '$setsRemaining sets remaining ',
-                            style: const TextStyle(
-                              color: Color(0xFF475569),
+                            style: TextStyle(
+                              color: colorScheme.onSurface.withValues(alpha: 0.8),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           TextSpan(
                             text:
                                 '($setsCompleted of ${args.totalSets} completed)',
-                            style: const TextStyle(
-                              color: Color(0xFF94a3b8),
+                            style: TextStyle(
+                              color: colorScheme.onSurface.withValues(alpha: 0.5),
                               fontWeight: FontWeight.w400,
                             ),
                           ),
@@ -441,7 +438,7 @@ class _ContextCard extends StatelessWidget {
               Container(
                 width: 1,
                 height: 56,
-                color: const Color(0xFFe2e8f0),
+                color: colorScheme.outlineVariant,
                 margin:
                     const EdgeInsets.symmetric(horizontal: 12),
               ),
@@ -451,10 +448,10 @@ class _ContextCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    const Text(
+                    Text(
                       'NEXT UP',
                       style: TextStyle(
-                        color: Color(0xFF94a3b8),
+                        color: colorScheme.onSurface.withValues(alpha: 0.5),
                         fontSize: 9,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1.2,
@@ -464,8 +461,8 @@ class _ContextCard extends StatelessWidget {
                     if (args.nextExerciseName != null)
                       Text(
                         args.nextExerciseName!,
-                        style: const TextStyle(
-                          color: Color(0xFF064E3B),
+                        style: TextStyle(
+                          color: colorScheme.primary,
                           fontWeight: FontWeight.w800,
                           fontSize: 13,
                         ),
@@ -474,10 +471,10 @@ class _ContextCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       )
                     else
-                      const Text(
+                      Text(
                         'Last Exercise',
                         style: TextStyle(
-                          color: Color(0xFF94a3b8),
+                          color: colorScheme.onSurface.withValues(alpha: 0.5),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -487,8 +484,8 @@ class _ContextCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         '${args.nextExerciseSets} sets × ${args.nextExerciseReps} reps',
-                        style: const TextStyle(
-                          color: Color(0xFF94a3b8),
+                        style: TextStyle(
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
                           fontSize: 11,
                         ),
                         textAlign: TextAlign.end,
@@ -512,13 +509,14 @@ class _ReasonGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'REASON FOR SKIPPING (OPTIONAL)',
           style: TextStyle(
-            color: Color(0xFF94a3b8),
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
             fontSize: 10,
             fontWeight: FontWeight.w800,
             letterSpacing: 1.2,
@@ -557,6 +555,7 @@ class _ReasonPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -564,13 +563,13 @@ class _ReasonPill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFFe6faf3)
-              : const Color(0xFFf8fafc),
+              ? colorScheme.primaryContainer
+              : colorScheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF00d68f)
-                : const Color(0xFFe2e8f0),
+                ? colorScheme.primary
+                : colorScheme.outlineVariant,
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -580,8 +579,8 @@ class _ReasonPill extends StatelessWidget {
               reason.icon,
               size: 15,
               color: isSelected
-                  ? const Color(0xFF00875a)
-                  : const Color(0xFF94a3b8),
+                  ? colorScheme.onPrimaryContainer
+                  : colorScheme.onSurface.withValues(alpha: 0.6),
             ),
             const SizedBox(width: 6),
             Flexible(
@@ -589,8 +588,8 @@ class _ReasonPill extends StatelessWidget {
                 reason.label,
                 style: TextStyle(
                   color: isSelected
-                      ? const Color(0xFF065f46)
-                      : const Color(0xFF475569),
+                      ? colorScheme.onPrimaryContainer
+                      : colorScheme.onSurface,
                   fontWeight: FontWeight.w700,
                   fontSize: 12,
                 ),
@@ -614,6 +613,7 @@ class _ActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         // Primary — Keep Exercising
@@ -622,14 +622,13 @@ class _ActionButtons extends StatelessWidget {
           child: ElevatedButton.icon(
             onPressed: onKeepExercising,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00d68f),
-              foregroundColor: const Color(0xFF0f172a),
+              backgroundColor: colorScheme.primary,
+              foregroundColor: colorScheme.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(18),
               ),
               elevation: 0,
-              shadowColor: const Color(0x5000d68f),
             ),
             icon: const Icon(Icons.play_circle_fill, size: 18),
             label: const Text(
@@ -650,16 +649,16 @@ class _ActionButtons extends StatelessWidget {
           child: OutlinedButton.icon(
             onPressed: onSkip,
             style: OutlinedButton.styleFrom(
-              backgroundColor: const Color(0xFFf8fafc),
-              foregroundColor: const Color(0xFF334155),
+              backgroundColor: colorScheme.surfaceContainerLow,
+              foregroundColor: colorScheme.onSurface,
               padding: const EdgeInsets.symmetric(vertical: 14),
-              side: const BorderSide(color: Color(0xFFe2e8f0)),
+              side: BorderSide(color: colorScheme.outlineVariant),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(18),
               ),
             ),
-            icon: const Icon(Icons.skip_next, size: 18,
-                color: Color(0xFF64748b)),
+            icon: Icon(Icons.skip_next, size: 18,
+                color: colorScheme.onSurface.withValues(alpha: 0.7)),
             label: const Text(
               'Skip & Next Exercise',
               style: TextStyle(

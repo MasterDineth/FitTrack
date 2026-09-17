@@ -4,12 +4,6 @@ import '../../providers/active_workout_provider.dart';
 import 'modal_backdrop_helper.dart';
 
 /// Shows the modern Discard Workout Confirmation Modal from Stitch (ID: a9255ebb92064a47ab69b52063e5e9f9).
-/// Features:
-///   - Full-screen stationary dimmed backdrop blur
-///   - Warning badge with pulsing dot and close button
-///   - Subtle pulsing rose trash hero icon
-///   - Unsaved session telemetry summary
-///   - "Keep Training" primary button and "Discard Workout" destructive button
 Future<void> showDiscardWorkoutModal(
   BuildContext context, {
   required ActiveWorkoutState state,
@@ -42,14 +36,6 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
   late final AnimationController _pulseCtrl;
   late final Animation<double> _pulseAnim;
 
-  static const Color _mint = Color(0xFF00D68F);
-  static const Color _slate900 = Color(0xFF0F172A);
-  static const Color _slate800 = Color(0xFF1E293B);
-  static const Color _slate500 = Color(0xFF64748B);
-  static const Color _slate400 = Color(0xFF94A3B8);
-  static const Color _rose500 = Color(0xFFEF4444);
-  static const Color _rose600 = Color(0xFFE11D48);
-
   @override
   void initState() {
     super.initState();
@@ -70,6 +56,8 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final completedCount = widget.state.entries
         .where(
           (e) => widget.state.completedSets.any((s) => s.exerciseId == e.exerciseId),
@@ -84,14 +72,14 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
       constraints: const BoxConstraints(maxWidth: 460),
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
-        boxShadow: const [
+        border: Border.all(color: colorScheme.outlineVariant),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x33000000),
+            color: colorScheme.shadow.withValues(alpha: 0.15),
             blurRadius: 36,
-            offset: Offset(0, 14),
+            offset: const Offset(0, 14),
           ),
         ],
       ),
@@ -113,7 +101,7 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
                   width: 44,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE2E8F0),
+                    color: colorScheme.outlineVariant,
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -128,9 +116,11 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF1F2),
+                      color: colorScheme.errorContainer,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFFFE4E6)),
+                      border: Border.all(
+                        color: colorScheme.error.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -141,11 +131,11 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
                             width: 6,
                             height: 6,
                             decoration: BoxDecoration(
-                              color: _rose500,
+                              color: colorScheme.error,
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: _rose500.withValues(alpha: 0.5),
+                                  color: colorScheme.error.withValues(alpha: 0.5),
                                   blurRadius: _pulseAnim.value,
                                   spreadRadius: 1,
                                 ),
@@ -154,10 +144,10 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
                           ),
                         ),
                         const SizedBox(width: 6),
-                        const Text(
+                        Text(
                           'WARNING!',
                           style: TextStyle(
-                            color: _rose600,
+                            color: colorScheme.onErrorContainer,
                             fontWeight: FontWeight.w800,
                             fontSize: 10.5,
                             letterSpacing: 0.8,
@@ -168,8 +158,10 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded),
-                    color: _slate400,
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
                     iconSize: 18,
                     visualDensity: VisualDensity.compact,
                     splashRadius: 18,
@@ -187,12 +179,14 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF1F2),
+                    color: colorScheme.errorContainer,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFFECDD3)),
+                    border: Border.all(
+                      color: colorScheme.error.withValues(alpha: 0.3),
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: _rose500.withValues(alpha: 0.15),
+                        color: colorScheme.error.withValues(alpha: 0.15),
                         blurRadius: 12 + _pulseAnim.value * 2,
                         spreadRadius: _pulseAnim.value * 0.8,
                       ),
@@ -200,10 +194,10 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
                   ),
                   child: child,
                 ),
-                child: const Center(
+                child: Center(
                   child: Icon(
                     Icons.delete_outline_rounded,
-                    color: _rose500,
+                    color: colorScheme.onErrorContainer,
                     size: 32,
                   ),
                 ),
@@ -211,22 +205,22 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
               const SizedBox(height: 16),
 
               // ── Headline & Description ────────────────────────────────────
-              const Text(
+              Text(
                 'Discard workout?',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: _slate900,
+                  color: colorScheme.onSurface,
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.3,
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
+              Text(
                 'All progress will be permanently lost. This cannot be undone.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: _slate500,
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 13.5,
                   fontWeight: FontWeight.w500,
                   height: 1.35,
@@ -237,9 +231,9 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
               // ── Unsaved Session Stats Card ────────────────────────────────
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
+                  color: colorScheme.surfaceContainerLow,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: Border.all(color: colorScheme.outlineVariant),
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 child: Column(
@@ -247,10 +241,10 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'UNSAVED SESSION STATS',
                           style: TextStyle(
-                            color: _slate400,
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
                             fontWeight: FontWeight.w700,
                             fontSize: 10,
                             letterSpacing: 0.8,
@@ -262,16 +256,16 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
                             Container(
                               width: 5,
                               height: 5,
-                              decoration: const BoxDecoration(
-                                color: _rose500,
+                              decoration: BoxDecoration(
+                                color: colorScheme.error,
                                 shape: BoxShape.circle,
                               ),
                             ),
                             const SizedBox(width: 4),
-                            const Text(
+                            Text(
                               'Will be lost',
                               style: TextStyle(
-                                color: _rose500,
+                                color: colorScheme.error,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 10.5,
                               ),
@@ -291,7 +285,7 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
                             value: widget.state.elapsedFormatted,
                           ),
                         ),
-                        _verticalDivider(),
+                        _verticalDivider(colorScheme.outlineVariant),
                         // Column 2: Sets
                         Expanded(
                           child: _DiscardStatColumn(
@@ -300,7 +294,7 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
                             value: '${widget.state.completedSetCount}',
                           ),
                         ),
-                        _verticalDivider(),
+                        _verticalDivider(colorScheme.outlineVariant),
                         // Column 3: Exercises
                         Expanded(
                           child: _DiscardStatColumn(
@@ -312,16 +306,16 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
                                 children: [
                                   TextSpan(
                                     text: '$completedCount ',
-                                    style: const TextStyle(
-                                      color: _slate800,
+                                    style: TextStyle(
+                                      color: colorScheme.onSurface,
                                       fontSize: 16,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
                                   TextSpan(
                                     text: '/ $totalCount',
-                                    style: const TextStyle(
-                                      color: _slate400,
+                                    style: TextStyle(
+                                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -342,17 +336,18 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
               // Primary: Keep Training
               FilledButton.icon(
                 onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.play_arrow_rounded, size: 22),
-                label: const Text(
+                icon: Icon(Icons.play_arrow_rounded, size: 22, color: colorScheme.onPrimary),
+                label: Text(
                   'Keep Training',
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 15.5,
+                    color: colorScheme.onPrimary,
                   ),
                 ),
                 style: FilledButton.styleFrom(
-                  backgroundColor: _mint,
-                  foregroundColor: _slate900,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                   minimumSize: const Size(double.infinity, 52),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -368,18 +363,19 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
                   Navigator.of(context).pop();
                   widget.onDiscard();
                 },
-                icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                label: const Text(
+                icon: Icon(Icons.delete_outline_rounded, size: 18, color: colorScheme.onErrorContainer),
+                label: Text(
                   'Discard Workout',
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
+                    color: colorScheme.onErrorContainer,
                   ),
                 ),
                 style: OutlinedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFF1F2),
-                  foregroundColor: _rose600,
-                  side: const BorderSide(color: Color(0xFFFECDD3)),
+                  backgroundColor: colorScheme.errorContainer,
+                  foregroundColor: colorScheme.onErrorContainer,
+                  side: BorderSide(color: colorScheme.error.withValues(alpha: 0.3)),
                   minimumSize: const Size(double.infinity, 48),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -389,11 +385,11 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
               const SizedBox(height: 12),
 
               // ── Microcopy ─────────────────────────────────────────────────
-              const Text(
+              Text(
                 'Tap outside or swipe down to cancel',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: _slate400,
+                  color: colorScheme.onSurface.withValues(alpha: 0.5),
                   fontSize: 11.5,
                   fontWeight: FontWeight.w500,
                 ),
@@ -405,11 +401,11 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
     );
   }
 
-  Widget _verticalDivider() {
+  Widget _verticalDivider(Color color) {
     return Container(
       width: 1,
       height: 32,
-      color: const Color(0xFFE2E8F0),
+      color: color,
     );
   }
 }
@@ -429,6 +425,7 @@ class _DiscardStatColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -436,15 +433,15 @@ class _DiscardStatColumn extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 13, color: const Color(0xFF94A3B8)),
+            Icon(icon, size: 13, color: colorScheme.onSurface.withValues(alpha: 0.6)),
             const SizedBox(width: 3),
             Flexible(
               child: Text(
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Color(0xFF94A3B8),
+                style: TextStyle(
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 10.5,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.4,
@@ -458,8 +455,8 @@ class _DiscardStatColumn extends StatelessWidget {
             Text(
               value ?? '',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF1E293B),
+              style: TextStyle(
+                color: colorScheme.onSurface,
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
               ),

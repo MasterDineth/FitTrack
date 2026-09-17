@@ -85,22 +85,15 @@ class AppearanceSettingsScreen extends ConsumerWidget {
 
     final accentColor = themeSettings.accentColor;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isOled = themeSettings.useOledBlack && isDark;
 
-    final scaffoldBg = isDark
-        ? (isOled ? const Color(0xFF000000) : const Color(0xFF0F172A))
-        : const Color(0xFFF7F9FB);
-    final cardBg = isDark
-        ? (isOled ? const Color(0xFF000000) : const Color(0xFF1E293B))
-        : Colors.white;
-    final borderColor = isDark
-        ? (isOled ? const Color(0xFF262626) : const Color(0xFF334155))
-        : const Color(0xFFE2E8F0);
-    final textPrimary = isDark ? Colors.white : const Color(0xFF0F172A);
-    final textMuted =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
-    final iconBg =
-        isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final scaffoldBg = theme.scaffoldBackgroundColor;
+    final cardBg = colorScheme.surface;
+    final borderColor = colorScheme.outlineVariant;
+    final textPrimary = colorScheme.onSurface;
+    final textMuted = colorScheme.onSurface.withValues(alpha: 0.6);
+    final iconBg = colorScheme.surfaceContainerHighest;
 
     return Scaffold(
       backgroundColor: scaffoldBg,

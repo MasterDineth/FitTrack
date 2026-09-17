@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 
 /// A selectable card for goal/experience/equipment options.
 class FtSelectionCard extends StatelessWidget {
@@ -22,6 +21,8 @@ class FtSelectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -29,23 +30,23 @@ class FtSelectionCard extends StatelessWidget {
         curve: Curves.easeOut,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.cardWhite,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppColors.kineticMint : AppColors.slate200,
+            color: isSelected ? colorScheme.primary : colorScheme.outlineVariant,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.kineticMint.withValues(alpha: 0.18),
+                    color: colorScheme.primary.withValues(alpha: 0.18),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
                 ]
               : [
                   BoxShadow(
-                    color: AppColors.slateDark.withValues(alpha: 0.04),
+                    color: colorScheme.shadow.withValues(alpha: 0.04),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -59,14 +60,15 @@ class FtSelectionCard extends StatelessWidget {
                 height: 36,
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? AppColors.kineticMint.withValues(alpha: 0.15)
-                      : AppColors.slate100,
+                      ? colorScheme.primaryContainer
+                      : colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: IconTheme(
                   data: IconThemeData(
-                    color:
-                        isSelected ? AppColors.kineticMint : AppColors.slate600,
+                    color: isSelected
+                        ? colorScheme.onPrimaryContainer
+                        : colorScheme.onSurface.withValues(alpha: 0.6),
                     size: 18,
                   ),
                   child: Center(child: leadingIcon!),
@@ -84,17 +86,17 @@ class FtSelectionCard extends StatelessWidget {
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: isSelected
-                          ? AppColors.slateDark
-                          : AppColors.slate700,
+                          ? colorScheme.onSurface
+                          : colorScheme.onSurface.withValues(alpha: 0.8),
                     ),
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.slate500,
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -113,13 +115,12 @@ class FtSelectionCard extends StatelessWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? AppColors.kineticMint
-                                        .withValues(alpha: 0.15)
-                                    : AppColors.slate100,
+                                    ? colorScheme.primaryContainer
+                                    : colorScheme.surfaceContainerHighest,
                                 borderRadius: BorderRadius.circular(6),
                                 border: isSelected
                                     ? Border.all(
-                                        color: AppColors.kineticMint
+                                        color: colorScheme.primary
                                             .withValues(alpha: 0.3),
                                       )
                                     : null,
@@ -130,8 +131,8 @@ class FtSelectionCard extends StatelessWidget {
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
                                   color: isSelected
-                                      ? const Color(0xFF064E3B)
-                                      : AppColors.slate600,
+                                      ? colorScheme.onPrimaryContainer
+                                      : colorScheme.onSurface.withValues(alpha: 0.7),
                                 ),
                               ),
                             ),
@@ -148,14 +149,14 @@ class FtSelectionCard extends StatelessWidget {
               width: 20,
               height: 20,
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.kineticMint : Colors.transparent,
+                color: isSelected ? colorScheme.primary : Colors.transparent,
                 shape: BoxShape.circle,
                 border: isSelected
                     ? null
-                    : Border.all(color: AppColors.slate300, width: 1.5),
+                    : Border.all(color: colorScheme.outlineVariant, width: 1.5),
               ),
               child: isSelected
-                  ? const Icon(Icons.check, size: 13, color: AppColors.slateDark)
+                  ? Icon(Icons.check, size: 13, color: colorScheme.onPrimary)
                   : null,
             ),
           ],

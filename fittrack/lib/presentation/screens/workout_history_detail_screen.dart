@@ -408,7 +408,7 @@ class _HeroCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.cardTheme.color ?? colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
@@ -448,10 +448,10 @@ class _HeroCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFf0fdf4),
+                        color: colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                            color: const Color(0xFFbbf7d0)),
+                            color: colorScheme.primary.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -459,18 +459,18 @@ class _HeroCard extends StatelessWidget {
                           Container(
                             width: 6,
                             height: 6,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF22c55e),
+                            decoration: BoxDecoration(
+                              color: colorScheme.primary,
                               shape: BoxShape.circle,
                             ),
                           ),
                           const SizedBox(width: 5),
-                          const Text(
+                          Text(
                             'Completed',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF166534),
+                              color: colorScheme.onPrimaryContainer,
                             ),
                           ),
                         ],
@@ -541,7 +541,7 @@ class _HeroCard extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 14),
-                Divider(height: 1, color: isDark ? const Color(0xFF334155) : const Color(0xFFf1f5f9)),
+                Divider(height: 1, color: colorScheme.outlineVariant),
                 const SizedBox(height: 14),
 
                 // 3×2 metrics grid
@@ -640,15 +640,14 @@ class _MiniMetric extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       constraints: const BoxConstraints(minHeight: 84),
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFf8fafc),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -705,14 +704,13 @@ class _NotesCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: theme.cardTheme.color ?? colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -796,7 +794,6 @@ class _ExerciseAccordion extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
     final isSkipped = exercise.isSkipped;
     final totalVolume =
         exercise.sets.fold(0.0, (s, e) => s + e.volume);
@@ -806,13 +803,13 @@ class _ExerciseAccordion extends StatelessWidget {
       curve: Curves.easeInOut,
       decoration: BoxDecoration(
         color: isSkipped
-            ? (isDark ? const Color(0xFF0F172A) : const Color(0xFFfafafa))
+            ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.5)
             : (theme.cardTheme.color ?? colorScheme.surface),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isExpanded
               ? colorScheme.primary.withValues(alpha: 0.5)
-              : (isDark ? const Color(0xFF334155) : const Color(0xFFe2e8f0)),
+              : colorScheme.outlineVariant,
           width: isExpanded ? 1.5 : 1,
         ),
         boxShadow: isExpanded
@@ -842,7 +839,7 @@ class _ExerciseAccordion extends StatelessWidget {
                     height: 32,
                     decoration: BoxDecoration(
                       color: isSkipped
-                          ? (isDark ? const Color(0xFF1E293B) : const Color(0xFFf1f5f9))
+                          ? colorScheme.surfaceContainerHighest
                           : colorScheme.primary,
                       borderRadius: BorderRadius.circular(9),
                     ),
@@ -853,7 +850,7 @@ class _ExerciseAccordion extends StatelessWidget {
                           fontWeight: FontWeight.w800,
                           fontSize: 13,
                           color: isSkipped
-                              ? const Color(0xFF94a3b8)
+                              ? colorScheme.onSurface.withValues(alpha: 0.5)
                               : colorScheme.onPrimary,
                         ),
                       ),
@@ -876,7 +873,7 @@ class _ExerciseAccordion extends StatelessWidget {
                                   fontWeight: FontWeight.w700,
                                   fontSize: 14,
                                   color: isSkipped
-                                      ? const Color(0xFF94a3b8)
+                                      ? colorScheme.onSurface.withValues(alpha: 0.5)
                                       : colorScheme.onSurface,
                                 ),
                               ),
@@ -888,7 +885,7 @@ class _ExerciseAccordion extends StatelessWidget {
                                   horizontal: 7, vertical: 2),
                               decoration: BoxDecoration(
                                 color: isSkipped
-                                    ? (isDark ? const Color(0xFF1E293B) : const Color(0xFFf1f5f9))
+                                    ? colorScheme.surfaceContainerHighest
                                     : _muscleColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(6),
                               ),
@@ -898,7 +895,7 @@ class _ExerciseAccordion extends StatelessWidget {
                                   fontSize: 9,
                                   fontWeight: FontWeight.w800,
                                   color: isSkipped
-                                      ? const Color(0xFFcbd5e1)
+                                      ? colorScheme.onSurface.withValues(alpha: 0.5)
                                       : _muscleColor,
                                 ),
                               ),
@@ -947,10 +944,10 @@ class _ExerciseAccordion extends StatelessWidget {
 
                   // Chevron or lock
                   if (isSkipped)
-                    const Icon(
+                    Icon(
                       Icons.lock_outline_rounded,
                       size: 16,
-                      color: Color(0xFFcbd5e1),
+                      color: colorScheme.onSurface.withValues(alpha: 0.4),
                     )
                   else
                     AnimatedRotation(
@@ -991,14 +988,13 @@ class _SetLogTable extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFf8fafc),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         children: [
@@ -1015,7 +1011,7 @@ class _SetLogTable extends StatelessWidget {
               ],
             ),
           ),
-          Divider(height: 1, color: isDark ? const Color(0xFF334155) : const Color(0xFFe2e8f0)),
+          Divider(height: 1, color: colorScheme.outlineVariant),
           // Rows
           ...sets.indexed.map((r) {
             final i = r.$1;
@@ -1025,7 +1021,7 @@ class _SetLogTable extends StatelessWidget {
                   horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: i.isEven
-                    ? (isDark ? const Color(0xFF1E293B).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.6))
+                    ? colorScheme.surface.withValues(alpha: 0.6)
                     : Colors.transparent,
               ),
               child: Row(
@@ -1059,10 +1055,10 @@ class _ColHeader extends StatelessWidget {
         flex: flex,
         child: Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF94a3b8),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
             letterSpacing: 0.5,
           ),
         ),

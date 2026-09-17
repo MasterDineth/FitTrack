@@ -11,39 +11,33 @@ import '../widgets/modals/add_muscle_activation_modal.dart';
 class CreateCustomExerciseScreen extends ConsumerWidget {
   const CreateCustomExerciseScreen({super.key});
 
-  // ── Brand colours ──────────────────────────────────────────────────────────
-  static const Color _mint = Color(0xFF00d68f);
-  static const Color _dark = Color(0xFF0f172a);
-  static const Color _bg = Color(0xFFf7f9fb);
-  static const Color _muted = Color(0xFF64748b);
-  static const Color _border = Color(0xFFe2e8f0);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(customExerciseProvider);
     final notifier = ref.read(customExerciseProvider.notifier);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: _dark),
+          icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface),
           onPressed: () => context.pop(),
         ),
-        title: const Text(
+        title: Text(
           'Create Exercise',
           style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
-            color: _dark,
+            color: colorScheme.onSurface,
           ),
         ),
         centerTitle: true,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: _border),
+          child: Container(height: 1, color: colorScheme.outlineVariant),
         ),
       ),
       body: Stack(
@@ -58,11 +52,11 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _SectionHeader('Basic Info'),
+                      const _SectionHeader('Basic Info'),
                       const SizedBox(height: 12),
 
                       // Title
-                      _FieldLabel('Exercise Title'),
+                      const _FieldLabel('Exercise Title'),
                       const SizedBox(height: 6),
                       _TextField(
                         hint: 'e.g. Barbell Bench Press',
@@ -71,7 +65,7 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                       const SizedBox(height: 20),
 
                       // Equipment
-                      _FieldLabel('Equipment'),
+                      const _FieldLabel('Equipment'),
                       const SizedBox(height: 10),
                       Wrap(
                         spacing: 8,
@@ -87,10 +81,10 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                                 horizontal: 14, vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: isSelected ? _mint : Colors.white,
+                                color: isSelected ? colorScheme.primaryContainer : colorScheme.surface,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: isSelected ? _mint : _border,
+                                  color: isSelected ? colorScheme.primary : colorScheme.outlineVariant,
                                 ),
                               ),
                               child: Text(
@@ -98,7 +92,7 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: isSelected ? _dark : _muted,
+                                  color: isSelected ? colorScheme.onPrimaryContainer : colorScheme.onSurface.withValues(alpha: 0.6),
                                 ),
                               ),
                             ),
@@ -108,7 +102,7 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                       const SizedBox(height: 20),
 
                       // Movement Classification
-                      _FieldLabel('Movement Classification'),
+                      const _FieldLabel('Movement Classification'),
                       const SizedBox(height: 10),
                       ...MovementClassification.values.map((mc) {
                         final isSelected =
@@ -124,11 +118,11 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                             ),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? _mint.withValues(alpha: 0.08)
-                                  : Colors.white,
+                                  ? colorScheme.primaryContainer.withValues(alpha: 0.35)
+                                  : colorScheme.surface,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: isSelected ? _mint : _border,
+                                color: isSelected ? colorScheme.primary : colorScheme.outlineVariant,
                                 width: isSelected ? 1.5 : 1,
                               ),
                             ),
@@ -141,18 +135,18 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: isSelected
-                                        ? _mint
-                                        : Colors.white,
+                                        ? colorScheme.primary
+                                        : colorScheme.surface,
                                     border: Border.all(
                                       color: isSelected
-                                          ? _mint
-                                          : _border,
+                                          ? colorScheme.primary
+                                          : colorScheme.outlineVariant,
                                       width: 2,
                                     ),
                                   ),
                                   child: isSelected
-                                      ? const Icon(Icons.check_rounded,
-                                          size: 12, color: Colors.white)
+                                      ? Icon(Icons.check_rounded,
+                                          size: 12, color: colorScheme.onPrimary)
                                       : null,
                                 ),
                                 const SizedBox(width: 12),
@@ -165,16 +159,14 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                                       style: TextStyle(
                                         fontWeight: FontWeight.w700,
                                         fontSize: 14,
-                                        color: isSelected
-                                            ? _dark
-                                            : _dark,
+                                        color: colorScheme.onSurface,
                                       ),
                                     ),
                                     Text(
                                       _movementDescription(mc),
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 11,
-                                        color: _muted,
+                                        color: colorScheme.onSurface.withValues(alpha: 0.6),
                                       ),
                                     ),
                                   ],
@@ -193,17 +185,17 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _SectionHeader('Media'),
+                      const _SectionHeader('Media'),
                       const SizedBox(height: 12),
 
                       // Image picker placeholder
                       Container(
                         height: 120,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFf1f5f9),
+                          color: colorScheme.surfaceContainerLow,
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                            color: _border,
+                            color: colorScheme.outlineVariant,
                             style: BorderStyle.solid,
                           ),
                         ),
@@ -211,13 +203,13 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.image_outlined,
-                                  size: 32, color: Color(0xFFcbd5e1)),
+                              Icon(Icons.image_outlined,
+                                  size: 32, color: colorScheme.onSurface.withValues(alpha: 0.35)),
                               const SizedBox(height: 8),
                               Text(
                                 'Tap to add image',
                                 style: TextStyle(
-                                  color: _muted,
+                                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                                   fontSize: 13,
                                 ),
                               ),
@@ -228,7 +220,7 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                       const SizedBox(height: 14),
 
                       // YouTube URL
-                      _FieldLabel('YouTube URL (optional)'),
+                      const _FieldLabel('YouTube URL (optional)'),
                       const SizedBox(height: 6),
                       _TextField(
                         hint: 'https://youtube.com/watch?v=…',
@@ -251,7 +243,7 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          _SectionHeader('Execution Steps'),
+                          const _SectionHeader('Execution Steps'),
                           const Spacer(),
                           GestureDetector(
                             onTap: notifier.addExecutionStep,
@@ -260,15 +252,15 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                                 horizontal: 12, vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: _mint,
+                                color: colorScheme.primaryContainer,
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: const Text(
+                              child: Text(
                                 '+ Add Phase',
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: _dark,
+                                  color: colorScheme.onPrimaryContainer,
                                 ),
                               ),
                             ),
@@ -277,7 +269,7 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 12),
                       if (state.executionSteps.isEmpty)
-                        _EmptyHint(
+                        const _EmptyHint(
                           icon: Icons.format_list_numbered_rounded,
                           text: 'Add step-by-step execution phases',
                         )
@@ -307,7 +299,7 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          _SectionHeader('Technique Cues'),
+                          const _SectionHeader('Technique Cues'),
                           const Spacer(),
                           GestureDetector(
                             onTap: () => _showAddFormCueDialog(
@@ -317,15 +309,15 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                                 horizontal: 12, vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: _mint,
+                                color: colorScheme.primaryContainer,
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: const Text(
+                              child: Text(
                                 '+ Add Cue',
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: _dark,
+                                  color: colorScheme.onPrimaryContainer,
                                 ),
                               ),
                             ),
@@ -334,7 +326,7 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 12),
                       if (state.formCues.isEmpty)
-                        _EmptyHint(
+                        const _EmptyHint(
                           icon: Icons.tips_and_updates_outlined,
                           text: 'Add DO and DON\'T technique tips',
                         )
@@ -357,7 +349,7 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          _SectionHeader('Muscle Activation'),
+                          const _SectionHeader('Muscle Activation'),
                           const Spacer(),
                           GestureDetector(
                             onTap: () => _showAddMuscleModal(
@@ -367,15 +359,15 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                                 horizontal: 12, vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: _mint,
+                                color: colorScheme.primaryContainer,
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: const Text(
+                              child: Text(
                                 '+ Add Muscle',
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: _dark,
+                                  color: colorScheme.onPrimaryContainer,
                                 ),
                               ),
                             ),
@@ -384,7 +376,7 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 12),
                       if (state.muscleActivations.isEmpty)
-                        _EmptyHint(
+                        const _EmptyHint(
                           icon: Icons.accessibility_new_rounded,
                           text: 'Define muscles and their activation roles',
                         )
@@ -466,7 +458,7 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
   ) {
     showDialog<FormCueDraft>(
       context: context,
-      barrierColor: const Color(0x660F172A),
+      barrierColor: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.5),
       builder: (_) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
         child: const AddFormCueDialog(),
@@ -484,7 +476,7 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: const Color(0x660F172A),
+      barrierColor: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.5),
       builder: (_) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
         child: const AddMuscleActivationModal(),
@@ -496,13 +488,14 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
 
   static Future<void> _save(BuildContext context, WidgetRef ref) async {
     final notifier = ref.read(customExerciseProvider.notifier);
+    final colorScheme = Theme.of(context).colorScheme;
     final success = await notifier.save();
     if (!context.mounted) return;
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Exercise created!'),
-          backgroundColor: _mint,
+        SnackBar(
+          content: Text('Exercise created!', style: TextStyle(color: colorScheme.onPrimary, fontWeight: FontWeight.w700)),
+          backgroundColor: colorScheme.primary,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -523,9 +516,9 @@ class _Section extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFe2e8f0)),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: child,
     );
@@ -540,10 +533,10 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 15,
         fontWeight: FontWeight.w700,
-        color: Color(0xFF0f172a),
+        color: Theme.of(context).colorScheme.onSurface,
       ),
     );
   }
@@ -557,10 +550,10 @@ class _FieldLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w600,
-        color: Color(0xFF64748b),
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
       ),
     );
   }
@@ -580,27 +573,32 @@ class _TextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return TextField(
       maxLines: 1,
       onChanged: onChanged,
       keyboardType: keyboardType,
+      style: TextStyle(color: colorScheme.onSurface, fontSize: 14),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: Color(0xFFa0aec0), fontSize: 13),
+        hintStyle: TextStyle(
+          color: colorScheme.onSurface.withValues(alpha: 0.4),
+          fontSize: 13,
+        ),
         prefixIcon: prefixIcon,
         filled: true,
-        fillColor: const Color(0xFFf8fafc),
+        fillColor: colorScheme.surfaceContainerLow,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFe2e8f0)),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFe2e8f0)),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
+          borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14, vertical: 12,
@@ -617,22 +615,23 @@ class _EmptyHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
-        color: const Color(0xFFf8fafc),
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
-          Icon(icon, size: 28, color: const Color(0xFFcbd5e1)),
+          Icon(icon, size: 28, color: colorScheme.onSurface.withValues(alpha: 0.35)),
           const SizedBox(height: 8),
           Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: Color(0xFF94a3b8),
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -656,21 +655,19 @@ class _StepCard extends StatelessWidget {
   final ValueChanged<String> onInstructionsChanged;
   final VoidCallback onRemove;
 
-  static const Color _mint = Color(0xFF00d68f);
-  static const Color _dark = Color(0xFF0f172a);
-
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -685,16 +682,16 @@ class _StepCard extends StatelessWidget {
                 width: 28,
                 height: 28,
                 decoration: BoxDecoration(
-                  color: _mint,
+                  color: colorScheme.primary,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
                   child: Text(
                     '${index + 1}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 13,
-                      color: _dark,
+                      color: colorScheme.onPrimary,
                     ),
                   ),
                 ),
@@ -703,14 +700,18 @@ class _StepCard extends StatelessWidget {
               Expanded(
                 child: TextField(
                   onChanged: onTitleChanged,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
-                    color: _dark,
+                    color: colorScheme.onSurface,
                   ),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Step Title',
-                    hintStyle: TextStyle(color: Color(0xFFa0aec0), fontSize: 15, fontWeight: FontWeight.w600),
+                    hintStyle: TextStyle(
+                      color: colorScheme.onSurface.withValues(alpha: 0.4),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
                     border: InputBorder.none,
                     isDense: true,
                     contentPadding: EdgeInsets.zero,
@@ -719,8 +720,8 @@ class _StepCard extends StatelessWidget {
               ),
               GestureDetector(
                 onTap: onRemove,
-                child: const Icon(Icons.close_rounded,
-                    size: 20, color: Color(0xFFa0aec0)),
+                child: Icon(Icons.close_rounded,
+                    size: 20, color: colorScheme.onSurface.withValues(alpha: 0.5)),
               ),
             ],
           ),
@@ -729,12 +730,15 @@ class _StepCard extends StatelessWidget {
             onChanged: onInstructionsChanged,
             maxLines: null,
             minLines: 2,
-            style: const TextStyle(fontSize: 14, color: Color(0xFF475569), height: 1.5),
+            style: TextStyle(fontSize: 14, color: colorScheme.onSurface, height: 1.5),
             decoration: InputDecoration(
               hintText: 'Add detailed instructions for this step...',
-              hintStyle: const TextStyle(color: Color(0xFFcbd5e1), fontSize: 14),
+              hintStyle: TextStyle(
+                color: colorScheme.onSurface.withValues(alpha: 0.4),
+                fontSize: 14,
+              ),
               filled: true,
-              fillColor: const Color(0xFFf8fafc),
+              fillColor: colorScheme.surfaceContainerLow,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -755,19 +759,20 @@ class _FormCueTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final isPositive = cue.isPositive;
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: isPositive
-            ? const Color(0xFF00d68f).withValues(alpha: 0.06)
-            : const Color(0xFFef4444).withValues(alpha: 0.06),
+            ? colorScheme.primaryContainer.withValues(alpha: 0.35)
+            : colorScheme.errorContainer.withValues(alpha: 0.35),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isPositive
-              ? const Color(0xFF00d68f).withValues(alpha: 0.3)
-              : const Color(0xFFef4444).withValues(alpha: 0.3),
+              ? colorScheme.primary.withValues(alpha: 0.4)
+              : colorScheme.error.withValues(alpha: 0.4),
         ),
       ),
       child: Row(
@@ -778,23 +783,23 @@ class _FormCueTile extends StatelessWidget {
                 : Icons.cancel_rounded,
             size: 18,
             color: isPositive
-                ? const Color(0xFF00d68f)
-                : const Color(0xFFef4444),
+                ? colorScheme.primary
+                : colorScheme.error,
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               cue.description,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
-                color: Color(0xFF0f172a),
+                color: colorScheme.onSurface,
               ),
             ),
           ),
           GestureDetector(
             onTap: onRemove,
-            child: const Icon(Icons.close_rounded,
-                size: 16, color: Color(0xFFa0aec0)),
+            child: Icon(Icons.close_rounded,
+                size: 16, color: colorScheme.onSurface.withValues(alpha: 0.5)),
           ),
         ],
       ),
@@ -813,27 +818,26 @@ class _MuscleActivationTile extends StatelessWidget {
   final ValueChanged<int> onIntensityChanged;
   final VoidCallback onRemove;
 
-  static const Color _dark = Color(0xFF0f172a);
-
-  static Color _roleColor(MuscleRole role) => switch (role) {
-        MuscleRole.agonist => const Color(0xFF00d68f),
-        MuscleRole.synergist => const Color(0xFF3b82f6),
-        MuscleRole.stabilizer => const Color(0xFFf59e0b),
+  static Color _roleColor(MuscleRole role, ColorScheme cs) => switch (role) {
+        MuscleRole.agonist => cs.primary,
+        MuscleRole.synergist => cs.tertiary,
+        MuscleRole.stabilizer => cs.secondary,
       };
 
   @override
   Widget build(BuildContext context) {
-    final roleColor = _roleColor(activation.role);
+    final colorScheme = Theme.of(context).colorScheme;
+    final roleColor = _roleColor(activation.role, colorScheme);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -848,7 +852,7 @@ class _MuscleActivationTile extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: roleColor.withValues(alpha: 0.1),
+                  color: roleColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -865,38 +869,38 @@ class _MuscleActivationTile extends StatelessWidget {
               Expanded(
                 child: Text(
                   activation.muscleName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
-                    color: _dark,
+                    color: colorScheme.onSurface,
                   ),
                 ),
               ),
               GestureDetector(
                 onTap: onRemove,
-                child: const Icon(Icons.close_rounded,
-                    size: 20, color: Color(0xFFa0aec0)),
+                child: Icon(Icons.close_rounded,
+                    size: 20, color: colorScheme.onSurface.withValues(alpha: 0.5)),
               ),
             ],
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              const Text(
+              Text(
                 'Intensity',
                 style: TextStyle(
                   fontSize: 13,
-                  color: Color(0xFF64748b),
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const Spacer(),
               Text(
                 '${activation.intensityPercentage}%',
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: 15,
-                  color: _dark,
+                  color: colorScheme.onSurface,
                 ),
               ),
             ],
@@ -904,7 +908,7 @@ class _MuscleActivationTile extends StatelessWidget {
           SliderTheme(
             data: SliderThemeData(
               activeTrackColor: roleColor,
-              inactiveTrackColor: const Color(0xFFf1f5f9),
+              inactiveTrackColor: colorScheme.surfaceContainerHighest,
               thumbColor: roleColor,
               trackHeight: 8,
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
@@ -937,20 +941,18 @@ class _SaveBar extends StatelessWidget {
   final String? saveError;
   final VoidCallback onSave;
 
-  static const Color _mint = Color(0xFF00d68f);
-  static const Color _dark = Color(0xFF0f172a);
-
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: EdgeInsets.fromLTRB(
         20, 14, 20, 14 + MediaQuery.of(context).padding.bottom,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
+            color: colorScheme.shadow.withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(0, -4),
           ),
@@ -964,8 +966,8 @@ class _SaveBar extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
                 saveError!,
-                style: const TextStyle(
-                  color: Color(0xFFef4444),
+                style: TextStyle(
+                  color: colorScheme.error,
                   fontSize: 12,
                 ),
               ),
@@ -976,19 +978,22 @@ class _SaveBar extends StatelessWidget {
             child: ElevatedButton(
               onPressed: (isValid && !isSaving) ? onSave : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: _mint,
-                foregroundColor: _dark,
-                disabledBackgroundColor: const Color(0xFFe2e8f0),
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+                disabledBackgroundColor: colorScheme.surfaceContainerHighest,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
                 elevation: 0,
               ),
               child: isSaving
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 22,
                       height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colorScheme.onPrimary,
+                      ),
                     )
                   : const Text(
                       'Create Exercise',

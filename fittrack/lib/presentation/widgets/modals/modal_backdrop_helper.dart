@@ -35,7 +35,7 @@ Future<T?> showBlurBottomSheet<T>({
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
                   child: Container(
-                    color: const Color(0xFF0F172A).withValues(alpha: 0.45),
+                    color: Colors.black.withValues(alpha: 0.5),
                   ),
                 ),
               ),

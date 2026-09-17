@@ -26,13 +26,6 @@ class _LeaveWithoutSavingCardState extends State<_LeaveWithoutSavingCard>
   late final AnimationController _pulseCtrl;
   late final Animation<double> _pulseAnim;
 
-  static const Color _mint = Color(0xFF00D68F);
-  static const Color _slate900 = Color(0xFF0F172A);
-  static const Color _slate500 = Color(0xFF64748B);
-  static const Color _slate400 = Color(0xFF94A3B8);
-  static const Color _rose500 = Color(0xFFEF4444);
-  static const Color _rose600 = Color(0xFFE11D48);
-
   @override
   void initState() {
     super.initState();
@@ -53,6 +46,7 @@ class _LeaveWithoutSavingCardState extends State<_LeaveWithoutSavingCard>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
@@ -61,14 +55,14 @@ class _LeaveWithoutSavingCardState extends State<_LeaveWithoutSavingCard>
       constraints: const BoxConstraints(maxWidth: 460),
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
-        boxShadow: const [
+        border: Border.all(color: colorScheme.outlineVariant),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x33000000),
+            color: colorScheme.shadow.withValues(alpha: 0.15),
             blurRadius: 36,
-            offset: Offset(0, 14),
+            offset: const Offset(0, 14),
           ),
         ],
       ),
@@ -90,7 +84,7 @@ class _LeaveWithoutSavingCardState extends State<_LeaveWithoutSavingCard>
                   width: 44,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFCBD5E1),
+                    color: colorScheme.outlineVariant,
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -105,9 +99,11 @@ class _LeaveWithoutSavingCardState extends State<_LeaveWithoutSavingCard>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF1F2),
+                      color: colorScheme.errorContainer,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFFFE4E6)),
+                      border: Border.all(
+                        color: colorScheme.error.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -118,11 +114,11 @@ class _LeaveWithoutSavingCardState extends State<_LeaveWithoutSavingCard>
                             width: 6,
                             height: 6,
                             decoration: BoxDecoration(
-                              color: _rose500,
+                              color: colorScheme.error,
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: _rose500.withValues(alpha: 0.5),
+                                  color: colorScheme.error.withValues(alpha: 0.5),
                                   blurRadius: _pulseAnim.value,
                                   spreadRadius: 1,
                                 ),
@@ -131,10 +127,10 @@ class _LeaveWithoutSavingCardState extends State<_LeaveWithoutSavingCard>
                           ),
                         ),
                         const SizedBox(width: 6),
-                        const Text(
+                        Text(
                           'UNSAVED SUMMARY',
                           style: TextStyle(
-                            color: _rose600,
+                            color: colorScheme.onErrorContainer,
                             fontWeight: FontWeight.w800,
                             fontSize: 10.5,
                             letterSpacing: 0.8,
@@ -145,8 +141,10 @@ class _LeaveWithoutSavingCardState extends State<_LeaveWithoutSavingCard>
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(false),
-                    icon: const Icon(Icons.close_rounded),
-                    color: _slate400,
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
                     iconSize: 18,
                     visualDensity: VisualDensity.compact,
                     splashRadius: 18,
@@ -165,12 +163,14 @@ class _LeaveWithoutSavingCardState extends State<_LeaveWithoutSavingCard>
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF1F2),
+                    color: colorScheme.errorContainer,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFFECDD3)),
+                    border: Border.all(
+                      color: colorScheme.error.withValues(alpha: 0.3),
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: _rose500.withValues(alpha: 0.15),
+                        color: colorScheme.error.withValues(alpha: 0.15),
                         blurRadius: 12 + _pulseAnim.value * 2,
                         spreadRadius: _pulseAnim.value * 0.8,
                       ),
@@ -178,10 +178,10 @@ class _LeaveWithoutSavingCardState extends State<_LeaveWithoutSavingCard>
                   ),
                   child: child,
                 ),
-                child: const Center(
+                child: Center(
                   child: Icon(
                     Icons.exit_to_app_rounded,
-                    color: _rose500,
+                    color: colorScheme.onErrorContainer,
                     size: 32,
                   ),
                 ),
@@ -189,24 +189,24 @@ class _LeaveWithoutSavingCardState extends State<_LeaveWithoutSavingCard>
               const SizedBox(height: 16),
 
               // ── Title & Description ───────────────────────────────────────
-              const Text(
+              Text(
                 'Leave without saving?',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: _slate900,
+                  color: colorScheme.onSurface,
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.3,
                 ),
               ),
               const SizedBox(height: 6),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
                   'Your workout summary will not be saved if you go back now.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: _slate500,
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                     fontSize: 13.5,
                     fontWeight: FontWeight.w500,
                     height: 1.4,
@@ -219,17 +219,18 @@ class _LeaveWithoutSavingCardState extends State<_LeaveWithoutSavingCard>
               // Primary: Stay
               FilledButton.icon(
                 onPressed: () => Navigator.of(context).pop(false),
-                icon: const Icon(Icons.arrow_back_rounded, size: 20),
-                label: const Text(
+                icon: Icon(Icons.arrow_back_rounded, size: 20, color: colorScheme.onPrimary),
+                label: Text(
                   'Stay on Summary',
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 15.5,
+                    color: colorScheme.onPrimary,
                   ),
                 ),
                 style: FilledButton.styleFrom(
-                  backgroundColor: _mint,
-                  foregroundColor: _slate900,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                   minimumSize: const Size(double.infinity, 52),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -242,18 +243,19 @@ class _LeaveWithoutSavingCardState extends State<_LeaveWithoutSavingCard>
               // Secondary: Leave
               OutlinedButton.icon(
                 onPressed: () => Navigator.of(context).pop(true),
-                icon: const Icon(Icons.logout_rounded, size: 18),
-                label: const Text(
+                icon: Icon(Icons.logout_rounded, size: 18, color: colorScheme.onErrorContainer),
+                label: Text(
                   'Leave without Saving',
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
+                    color: colorScheme.onErrorContainer,
                   ),
                 ),
                 style: OutlinedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFF1F2),
-                  foregroundColor: _rose600,
-                  side: const BorderSide(color: Color(0xFFFECDD3)),
+                  backgroundColor: colorScheme.errorContainer,
+                  foregroundColor: colorScheme.onErrorContainer,
+                  side: BorderSide(color: colorScheme.error.withValues(alpha: 0.3)),
                   minimumSize: const Size(double.infinity, 48),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -263,11 +265,11 @@ class _LeaveWithoutSavingCardState extends State<_LeaveWithoutSavingCard>
               const SizedBox(height: 12),
 
               // ── Microcopy ─────────────────────────────────────────────────
-              const Text(
+              Text(
                 'Tap outside or swipe down to cancel',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: _slate400,
+                  color: colorScheme.onSurface.withValues(alpha: 0.5),
                   fontSize: 11.5,
                   fontWeight: FontWeight.w500,
                 ),
