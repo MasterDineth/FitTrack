@@ -735,8 +735,8 @@ class _ActivityCalendar extends StatelessWidget {
                       color: isActive
                           ? colorScheme.primary
                           : isToday
-                              ? colorScheme.primary.withValues(alpha: 0.15)
-                              : const Color(0xFFf8fafc),
+                              ? colorScheme.primaryContainer
+                              : colorScheme.surfaceContainer,
                       borderRadius: BorderRadius.circular(10),
                       border: isToday
                           ? Border.all(color: colorScheme.primary, width: 2)
@@ -755,8 +755,8 @@ class _ActivityCalendar extends StatelessWidget {
                             color: isActive
                                 ? colorScheme.onPrimary
                                 : isToday
-                                    ? colorScheme.primary
-                                    : const Color(0xFF475569),
+                                    ? colorScheme.onPrimaryContainer
+                                    : colorScheme.onSurface,
                           ),
                         ),
                         if (isActive || isToday)
@@ -767,7 +767,7 @@ class _ActivityCalendar extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: isActive
                                   ? colorScheme.onPrimary
-                                  : colorScheme.primary,
+                                  : colorScheme.onPrimaryContainer,
                               shape: BoxShape.circle,
                             ),
                           ),

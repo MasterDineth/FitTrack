@@ -10,11 +10,12 @@ ThemeData buildAppTheme([ThemeSettings? settings]) {
 /// Builds the Light theme based on [ThemeSettings] and optional [dynamicScheme].
 ThemeData buildLightTheme(ThemeSettings settings, [ColorScheme? dynamicScheme]) {
   final seedColor = Color(settings.accentColorValue);
-  final colorScheme = dynamicScheme ??
-      ColorScheme.fromSeed(
-        seedColor: seedColor,
-        brightness: Brightness.light,
-      );
+  final colorScheme = (settings.useDynamicAccent && dynamicScheme != null)
+      ? dynamicScheme
+      : ColorScheme.fromSeed(
+          seedColor: seedColor,
+          brightness: Brightness.light,
+        );
 
   return ThemeData(
     useMaterial3: true,
@@ -111,11 +112,12 @@ ThemeData buildDarkTheme(ThemeSettings settings, [ColorScheme? dynamicScheme]) {
   final seedColor = Color(settings.accentColorValue);
   final isOled = settings.useOledBlack;
 
-  var colorScheme = dynamicScheme ??
-      ColorScheme.fromSeed(
-        seedColor: seedColor,
-        brightness: Brightness.dark,
-      );
+  var colorScheme = (settings.useDynamicAccent && dynamicScheme != null)
+      ? dynamicScheme
+      : ColorScheme.fromSeed(
+          seedColor: seedColor,
+          brightness: Brightness.dark,
+        );
 
   if (isOled) {
     colorScheme = colorScheme.copyWith(

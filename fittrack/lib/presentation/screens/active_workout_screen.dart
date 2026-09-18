@@ -653,16 +653,16 @@ class _ActiveExerciseCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFf0fdf4),
+                    color: colorScheme.primaryContainer.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFbbf7d0)),
+                    border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
                   ),
                   child: Column(
                     children: [
-                      const Text(
+                      Text(
                         'TARGET REPS',
                         style: TextStyle(
-                          color: Color(0xFF166534),
+                          color: colorScheme.primary,
                           fontSize: 9,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.2,
@@ -670,11 +670,11 @@ class _ActiveExerciseCard extends StatelessWidget {
                       ),
                       Text(
                         '${entry.targetReps} reps',
-                        style: const TextStyle(
-                          color: Color(0xFF14532d),
+                        style: TextStyle(
+                          color: colorScheme.onPrimaryContainer,
                           fontWeight: FontWeight.w800,
                           fontSize: 13,
-                          fontFeatures: [FontFeature.tabularFigures()],
+                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
                     ],
@@ -689,9 +689,9 @@ class _ActiveExerciseCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFf8fafc),
+              color: colorScheme.surfaceContainer,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFe2e8f0)),
+              border: Border.all(color: colorScheme.outlineVariant),
             ),
             child: Column(
               children: [
@@ -709,7 +709,7 @@ class _ActiveExerciseCard extends StatelessWidget {
                             notifier.adjustWeight(-2.5),
                         onIncrement: () =>
                             notifier.adjustWeight(2.5),
-                        captionColor: const Color(0xFF64748b),
+                        captionColor: colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -722,7 +722,7 @@ class _ActiveExerciseCard extends StatelessWidget {
                             'Target: ${entry.targetReps}',
                         onDecrement: () => notifier.adjustReps(-1),
                         onIncrement: () => notifier.adjustReps(1),
-                        captionColor: const Color(0xFF059669),
+                        captionColor: colorScheme.primary,
                       ),
                     ),
                   ],
@@ -734,13 +734,13 @@ class _ActiveExerciseCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.timer_outlined,
-                            size: 13, color: Color(0xFF00875a)),
+                        Icon(Icons.timer_outlined,
+                            size: 13, color: colorScheme.primary),
                         const SizedBox(width: 4),
                         Text(
                           'Rest timer: ${entry.restDurationSeconds}s on complete',
-                          style: const TextStyle(
-                            color: Color(0xFF475569),
+                          style: TextStyle(
+                            color: colorScheme.onSurface.withValues(alpha: 0.7),
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
                           ),
@@ -1338,7 +1338,7 @@ class _StepperInput extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
@@ -1364,7 +1364,7 @@ class _StepperInput extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 5, vertical: 1.5),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest,
+                  color: colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -1417,16 +1417,17 @@ class _StepBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: const Color(0xFFf1f5f9),
+          color: colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, size: 16, color: const Color(0xFF475569)),
+        child: Icon(icon, size: 16, color: colorScheme.onSurface),
       ),
     );
   }

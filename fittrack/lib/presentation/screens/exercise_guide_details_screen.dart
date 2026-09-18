@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -55,8 +56,6 @@ class ExerciseGuideDetailsScreen extends ConsumerStatefulWidget {
 
 class _ExerciseGuideDetailsScreenState
     extends ConsumerState<ExerciseGuideDetailsScreen> {
-  bool _fullscreenOpen = false;
-
   @override
   Widget build(BuildContext context) {
     final guideAsync =
@@ -74,22 +73,11 @@ class _ExerciseGuideDetailsScreenState
           message: e.toString(),
           onBack: () => context.pop(),
         ),
-        data: (data) => Stack(
-          children: [
-            _GuideBody(
-              data: data,
-              onFullscreen: () =>
-                  setState(() => _fullscreenOpen = true),
-              onBack: () => context.pop(),
-            ),
-            // Fullscreen modal overlay
-            if (_fullscreenOpen)
-              _FullscreenModal(
-                exerciseName: data.exercise.name,
-                onClose: () =>
-                  setState(() => _fullscreenOpen = false),
-              ),
-          ],
+        data: (data) => _GuideBody(
+          data: data,
+          onFullscreen: () =>
+              _showExerciseCuesModal(context, data.exercise.name),
+          onBack: () => context.pop(),
         ),
       ),
     );
@@ -1015,8 +1003,21 @@ class _ActivationBar extends StatelessWidget {
 
 // ── Fullscreen Modal ──────────────────────────────────────────────────────────
 
-class _FullscreenModal extends StatelessWidget {
-  const _FullscreenModal(
+void _showExerciseCuesModal(BuildContext context, String exerciseName) {
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: 0.4),
+    builder: (context) => _ExerciseCuesModal(
+      exerciseName: exerciseName,
+      onClose: () => Navigator.of(context).pop(),
+    ),
+  );
+}
+
+class _ExerciseCuesModal extends StatelessWidget {
+  const _ExerciseCuesModal(
       {required this.exerciseName, required this.onClose});
   final String exerciseName;
   final VoidCallback onClose;
@@ -1025,117 +1026,132 @@ class _FullscreenModal extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
-      color: Colors.black.withValues(alpha: 0.95),
-      child: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '$exerciseName Cues',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: onClose,
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.close,
-                          color: Colors.white, size: 22),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: Container(
-                  margin: const EdgeInsets.all(16),
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
+        child: Container(
+          color: colorScheme.surface.withValues(alpha: 0.75),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 12),
+                // Drag handle
+                Container(
+                  width: 40,
+                  height: 4,
                   decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                    color: colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.fitness_center,
-                            color: colorScheme.primary, size: 64),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Form Focus Preview',
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '$exerciseName Cues',
+                        style: TextStyle(
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: onClose,
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.close,
+                              color: colorScheme.onSurface, size: 20),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.fitness_center,
+                          color: colorScheme.primary, size: 56),
+                      const SizedBox(height: 14),
+                      Text(
+                        'Form Focus Preview',
+                        style: TextStyle(
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'Wrist stacked over elbows. Scapula pinned against the bench pad throughout the entire repetition.',
                           style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 18,
+                            color: colorScheme.onSurface.withValues(alpha: 0.7),
+                            fontSize: 13,
+                            height: 1.5,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'QUICK CHECKPOINT',
+                          style: TextStyle(
+                            color: colorScheme.primary,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.4,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 32),
-                          child: Text(
-                            'Wrist stacked over elbows. Scapula pinned against the bench pad throughout the entire repetition.',
-                            style: TextStyle(
-                              color: Color(0xFF94a3b8),
-                              fontSize: 13,
-                              height: 1.5,
-                            ),
-                            textAlign: TextAlign.center,
+                        const SizedBox(height: 4),
+                        Text(
+                          'Wrist stacked over elbows. Scapula pinned against the bench pad throughout entire repetition.',
+                          style: TextStyle(
+                            color: colorScheme.onSurface,
+                            fontSize: 13,
+                            height: 1.4,
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 8),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'QUICK CHECKPOINT',
-                      style: TextStyle(
-                        color: colorScheme.primary,
-                        fontSize: 9,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Wrist stacked over elbows. Scapula pinned against the bench pad throughout entire repetition.',
-                      style: TextStyle(
-                        color: Color(0xFFcbd5e1),
-                        fontSize: 13,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
