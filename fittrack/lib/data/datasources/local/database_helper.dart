@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
   static const _databaseName = "FitTrack.db";
-  static const _databaseVersion = 5;
+  static const _databaseVersion = 6;
 
   DatabaseHelper._privateConstructor();
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
@@ -30,18 +30,44 @@ class DatabaseHelper {
   }
 
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Drop all tables
-    final tables = [
-      'user_profile',
-      'set_logs', 'exercise_logs', 'workout_sessions',
-      'schedule_exercises', 'schedules', 'form_cues',
-      'execution_steps', 'muscle_activations', 'exercises'
-    ];
-    for (var table in tables) {
-      await db.execute('DROP TABLE IF EXISTS $table');
+    if (oldVersion < 5) {
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS user_profile (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            age INTEGER,
+            weightKg REAL,
+            heightCm REAL,
+            experienceLevel TEXT,
+            primaryGoal TEXT,
+            weeklyTargetDays INTEGER,
+            profileImagePath TEXT
+          )
+        ''');
+      } on DatabaseException catch (_) {
+        // Table may already exist
+      } catch (_) {}
     }
-    // Recreate
-    await _onCreate(db, newVersion);
+
+    if (oldVersion < 6) {
+      final columns = [
+        'ALTER TABLE user_profile ADD COLUMN address TEXT',
+        'ALTER TABLE user_profile ADD COLUMN phone TEXT',
+        'ALTER TABLE user_profile ADD COLUMN isPhoneVerified INTEGER NOT NULL DEFAULT 0',
+        'ALTER TABLE user_profile ADD COLUMN dob TEXT',
+        'ALTER TABLE user_profile ADD COLUMN email TEXT',
+        'ALTER TABLE user_profile ADD COLUMN username TEXT',
+      ];
+
+      for (final sql in columns) {
+        try {
+          await db.execute(sql);
+        } on DatabaseException catch (_) {
+          // Column may already exist; catch DatabaseException to prevent app launch crash
+        } catch (_) {}
+      }
+    }
   }
 
   Future _onCreate(Database db, int version) async {
@@ -168,7 +194,13 @@ class DatabaseHelper {
         experienceLevel TEXT NOT NULL,
         primaryGoal TEXT NOT NULL,
         weeklyTargetDays INTEGER NOT NULL,
-        profileImagePath TEXT
+        profileImagePath TEXT,
+        address TEXT,
+        phone TEXT,
+        isPhoneVerified INTEGER NOT NULL DEFAULT 0,
+        dob TEXT,
+        email TEXT,
+        username TEXT
       )
     ''');
 

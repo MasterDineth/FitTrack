@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UserProfile {
 
- String get id; String get name; int get age; double get weightKg; double get heightCm; String get experienceLevel; String get primaryGoal; int get weeklyTargetDays; String? get profileImagePath;
+ String get id; String get name; int get age; double get weightKg; double get heightCm; String get experienceLevel; String get primaryGoal; int get weeklyTargetDays; String? get profileImagePath; String? get address; String? get phone;@BoolIntConverter() bool get isPhoneVerified; String? get dob; String? get email; String? get username;
 /// Create a copy of UserProfile
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +30,20 @@ $UserProfileCopyWith<UserProfile> get copyWith => _$UserProfileCopyWithImpl<User
 @override
 bool operator ==(Object other) {
   final _this = this as UserProfile;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserProfile&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.age, _this.age) || other.age == _this.age)&&(identical(other.weightKg, _this.weightKg) || other.weightKg == _this.weightKg)&&(identical(other.heightCm, _this.heightCm) || other.heightCm == _this.heightCm)&&(identical(other.experienceLevel, _this.experienceLevel) || other.experienceLevel == _this.experienceLevel)&&(identical(other.primaryGoal, _this.primaryGoal) || other.primaryGoal == _this.primaryGoal)&&(identical(other.weeklyTargetDays, _this.weeklyTargetDays) || other.weeklyTargetDays == _this.weeklyTargetDays)&&(identical(other.profileImagePath, _this.profileImagePath) || other.profileImagePath == _this.profileImagePath));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserProfile&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.age, _this.age) || other.age == _this.age)&&(identical(other.weightKg, _this.weightKg) || other.weightKg == _this.weightKg)&&(identical(other.heightCm, _this.heightCm) || other.heightCm == _this.heightCm)&&(identical(other.experienceLevel, _this.experienceLevel) || other.experienceLevel == _this.experienceLevel)&&(identical(other.primaryGoal, _this.primaryGoal) || other.primaryGoal == _this.primaryGoal)&&(identical(other.weeklyTargetDays, _this.weeklyTargetDays) || other.weeklyTargetDays == _this.weeklyTargetDays)&&(identical(other.profileImagePath, _this.profileImagePath) || other.profileImagePath == _this.profileImagePath)&&(identical(other.address, _this.address) || other.address == _this.address)&&(identical(other.phone, _this.phone) || other.phone == _this.phone)&&(identical(other.isPhoneVerified, _this.isPhoneVerified) || other.isPhoneVerified == _this.isPhoneVerified)&&(identical(other.dob, _this.dob) || other.dob == _this.dob)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.username, _this.username) || other.username == _this.username));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as UserProfile;
-  return Object.hash(runtimeType,_this.id,_this.name,_this.age,_this.weightKg,_this.heightCm,_this.experienceLevel,_this.primaryGoal,_this.weeklyTargetDays,_this.profileImagePath);
+  return Object.hash(runtimeType,_this.id,_this.name,_this.age,_this.weightKg,_this.heightCm,_this.experienceLevel,_this.primaryGoal,_this.weeklyTargetDays,_this.profileImagePath,_this.address,_this.phone,_this.isPhoneVerified,_this.dob,_this.email,_this.username);
 }
 
 @override
 String toString() {
   final _this = this as UserProfile;
-  return 'UserProfile(id: ${_this.id}, name: ${_this.name}, age: ${_this.age}, weightKg: ${_this.weightKg}, heightCm: ${_this.heightCm}, experienceLevel: ${_this.experienceLevel}, primaryGoal: ${_this.primaryGoal}, weeklyTargetDays: ${_this.weeklyTargetDays}, profileImagePath: ${_this.profileImagePath})';
+  return 'UserProfile(id: ${_this.id}, name: ${_this.name}, age: ${_this.age}, weightKg: ${_this.weightKg}, heightCm: ${_this.heightCm}, experienceLevel: ${_this.experienceLevel}, primaryGoal: ${_this.primaryGoal}, weeklyTargetDays: ${_this.weeklyTargetDays}, profileImagePath: ${_this.profileImagePath}, address: ${_this.address}, phone: ${_this.phone}, isPhoneVerified: ${_this.isPhoneVerified}, dob: ${_this.dob}, email: ${_this.email}, username: ${_this.username})';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $UserProfileCopyWith<$Res>  {
   factory $UserProfileCopyWith(UserProfile value, $Res Function(UserProfile) _then) = _$UserProfileCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, int age, double weightKg, double heightCm, String experienceLevel, String primaryGoal, int weeklyTargetDays, String? profileImagePath
+ String id, String name, int age, double weightKg, double heightCm, String experienceLevel, String primaryGoal, int weeklyTargetDays, String? profileImagePath, String? address, String? phone,@BoolIntConverter() bool isPhoneVerified, String? dob, String? email, String? username
 });
 
 
@@ -71,7 +71,7 @@ class _$UserProfileCopyWithImpl<$Res>
 
 /// Create a copy of UserProfile
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? age = null,Object? weightKg = null,Object? heightCm = null,Object? experienceLevel = null,Object? primaryGoal = null,Object? weeklyTargetDays = null,Object? profileImagePath = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? age = null,Object? weightKg = null,Object? heightCm = null,Object? experienceLevel = null,Object? primaryGoal = null,Object? weeklyTargetDays = null,Object? profileImagePath = freezed,Object? address = freezed,Object? phone = freezed,Object? isPhoneVerified = null,Object? dob = freezed,Object? email = freezed,Object? username = freezed,}) {
   return _then(UserProfile(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -82,6 +82,12 @@ as double,experienceLevel: null == experienceLevel ? _self.experienceLevel : exp
 as String,primaryGoal: null == primaryGoal ? _self.primaryGoal : primaryGoal // ignore: cast_nullable_to_non_nullable
 as String,weeklyTargetDays: null == weeklyTargetDays ? _self.weeklyTargetDays : weeklyTargetDays // ignore: cast_nullable_to_non_nullable
 as int,profileImagePath: freezed == profileImagePath ? _self.profileImagePath : profileImagePath // ignore: cast_nullable_to_non_nullable
+as String?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
+as String?,isPhoneVerified: null == isPhoneVerified ? _self.isPhoneVerified : isPhoneVerified // ignore: cast_nullable_to_non_nullable
+as bool,dob: freezed == dob ? _self.dob : dob // ignore: cast_nullable_to_non_nullable
+as String?,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String?,username: freezed == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -167,10 +173,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  int age,  double weightKg,  double heightCm,  String experienceLevel,  String primaryGoal,  int weeklyTargetDays,  String? profileImagePath)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  int age,  double weightKg,  double heightCm,  String experienceLevel,  String primaryGoal,  int weeklyTargetDays,  String? profileImagePath,  String? address,  String? phone, @BoolIntConverter()  bool isPhoneVerified,  String? dob,  String? email,  String? username)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserProfile() when $default != null:
-return $default(_that.id,_that.name,_that.age,_that.weightKg,_that.heightCm,_that.experienceLevel,_that.primaryGoal,_that.weeklyTargetDays,_that.profileImagePath);case _:
+return $default(_that.id,_that.name,_that.age,_that.weightKg,_that.heightCm,_that.experienceLevel,_that.primaryGoal,_that.weeklyTargetDays,_that.profileImagePath,_that.address,_that.phone,_that.isPhoneVerified,_that.dob,_that.email,_that.username);case _:
   return orElse();
 
 }
@@ -188,10 +194,10 @@ return $default(_that.id,_that.name,_that.age,_that.weightKg,_that.heightCm,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  int age,  double weightKg,  double heightCm,  String experienceLevel,  String primaryGoal,  int weeklyTargetDays,  String? profileImagePath)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  int age,  double weightKg,  double heightCm,  String experienceLevel,  String primaryGoal,  int weeklyTargetDays,  String? profileImagePath,  String? address,  String? phone, @BoolIntConverter()  bool isPhoneVerified,  String? dob,  String? email,  String? username)  $default,) {final _that = this;
 switch (_that) {
 case _UserProfile():
-return $default(_that.id,_that.name,_that.age,_that.weightKg,_that.heightCm,_that.experienceLevel,_that.primaryGoal,_that.weeklyTargetDays,_that.profileImagePath);case _:
+return $default(_that.id,_that.name,_that.age,_that.weightKg,_that.heightCm,_that.experienceLevel,_that.primaryGoal,_that.weeklyTargetDays,_that.profileImagePath,_that.address,_that.phone,_that.isPhoneVerified,_that.dob,_that.email,_that.username);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -208,10 +214,10 @@ return $default(_that.id,_that.name,_that.age,_that.weightKg,_that.heightCm,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  int age,  double weightKg,  double heightCm,  String experienceLevel,  String primaryGoal,  int weeklyTargetDays,  String? profileImagePath)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  int age,  double weightKg,  double heightCm,  String experienceLevel,  String primaryGoal,  int weeklyTargetDays,  String? profileImagePath,  String? address,  String? phone, @BoolIntConverter()  bool isPhoneVerified,  String? dob,  String? email,  String? username)?  $default,) {final _that = this;
 switch (_that) {
 case _UserProfile() when $default != null:
-return $default(_that.id,_that.name,_that.age,_that.weightKg,_that.heightCm,_that.experienceLevel,_that.primaryGoal,_that.weeklyTargetDays,_that.profileImagePath);case _:
+return $default(_that.id,_that.name,_that.age,_that.weightKg,_that.heightCm,_that.experienceLevel,_that.primaryGoal,_that.weeklyTargetDays,_that.profileImagePath,_that.address,_that.phone,_that.isPhoneVerified,_that.dob,_that.email,_that.username);case _:
   return null;
 
 }
@@ -223,7 +229,7 @@ return $default(_that.id,_that.name,_that.age,_that.weightKg,_that.heightCm,_tha
 @JsonSerializable()
 
 class _UserProfile extends UserProfile {
-  const _UserProfile({required this.id, required this.name, required this.age, required this.weightKg, required this.heightCm, required this.experienceLevel, required this.primaryGoal, required this.weeklyTargetDays, this.profileImagePath}): super._();
+  const _UserProfile({required this.id, required this.name, required this.age, required this.weightKg, required this.heightCm, required this.experienceLevel, required this.primaryGoal, required this.weeklyTargetDays, this.profileImagePath, this.address, this.phone, @BoolIntConverter() this.isPhoneVerified = false, this.dob, this.email, this.username}): super._();
   factory _UserProfile.fromJson(Map<String, dynamic> json) => _$UserProfileFromJson(json);
 
 @override final  String id;
@@ -235,6 +241,12 @@ class _UserProfile extends UserProfile {
 @override final  String primaryGoal;
 @override final  int weeklyTargetDays;
 @override final  String? profileImagePath;
+@override final  String? address;
+@override final  String? phone;
+@override@JsonKey()@BoolIntConverter() final  bool isPhoneVerified;
+@override final  String? dob;
+@override final  String? email;
+@override final  String? username;
 
 /// Create a copy of UserProfile
 /// with the given fields replaced by the non-null parameter values.
@@ -249,18 +261,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserProfile&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.age, age) || other.age == age)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.heightCm, heightCm) || other.heightCm == heightCm)&&(identical(other.experienceLevel, experienceLevel) || other.experienceLevel == experienceLevel)&&(identical(other.primaryGoal, primaryGoal) || other.primaryGoal == primaryGoal)&&(identical(other.weeklyTargetDays, weeklyTargetDays) || other.weeklyTargetDays == weeklyTargetDays)&&(identical(other.profileImagePath, profileImagePath) || other.profileImagePath == profileImagePath));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserProfile&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.age, age) || other.age == age)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.heightCm, heightCm) || other.heightCm == heightCm)&&(identical(other.experienceLevel, experienceLevel) || other.experienceLevel == experienceLevel)&&(identical(other.primaryGoal, primaryGoal) || other.primaryGoal == primaryGoal)&&(identical(other.weeklyTargetDays, weeklyTargetDays) || other.weeklyTargetDays == weeklyTargetDays)&&(identical(other.profileImagePath, profileImagePath) || other.profileImagePath == profileImagePath)&&(identical(other.address, address) || other.address == address)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.isPhoneVerified, isPhoneVerified) || other.isPhoneVerified == isPhoneVerified)&&(identical(other.dob, dob) || other.dob == dob)&&(identical(other.email, email) || other.email == email)&&(identical(other.username, username) || other.username == username));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,age,weightKg,heightCm,experienceLevel,primaryGoal,weeklyTargetDays,profileImagePath);
+    return Object.hash(runtimeType,id,name,age,weightKg,heightCm,experienceLevel,primaryGoal,weeklyTargetDays,profileImagePath,address,phone,isPhoneVerified,dob,email,username);
 }
 
 @override
 String toString() {
-    return 'UserProfile(id: $id, name: $name, age: $age, weightKg: $weightKg, heightCm: $heightCm, experienceLevel: $experienceLevel, primaryGoal: $primaryGoal, weeklyTargetDays: $weeklyTargetDays, profileImagePath: $profileImagePath)';
+    return 'UserProfile(id: $id, name: $name, age: $age, weightKg: $weightKg, heightCm: $heightCm, experienceLevel: $experienceLevel, primaryGoal: $primaryGoal, weeklyTargetDays: $weeklyTargetDays, profileImagePath: $profileImagePath, address: $address, phone: $phone, isPhoneVerified: $isPhoneVerified, dob: $dob, email: $email, username: $username)';
 }
 
 
@@ -271,7 +283,7 @@ abstract mixin class _$UserProfileCopyWith<$Res> implements $UserProfileCopyWith
   factory _$UserProfileCopyWith(_UserProfile value, $Res Function(_UserProfile) _then) = __$UserProfileCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, int age, double weightKg, double heightCm, String experienceLevel, String primaryGoal, int weeklyTargetDays, String? profileImagePath
+ String id, String name, int age, double weightKg, double heightCm, String experienceLevel, String primaryGoal, int weeklyTargetDays, String? profileImagePath, String? address, String? phone,@BoolIntConverter() bool isPhoneVerified, String? dob, String? email, String? username
 });
 
 
@@ -288,7 +300,7 @@ class __$UserProfileCopyWithImpl<$Res>
 
 /// Create a copy of UserProfile
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? age = null,Object? weightKg = null,Object? heightCm = null,Object? experienceLevel = null,Object? primaryGoal = null,Object? weeklyTargetDays = null,Object? profileImagePath = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? age = null,Object? weightKg = null,Object? heightCm = null,Object? experienceLevel = null,Object? primaryGoal = null,Object? weeklyTargetDays = null,Object? profileImagePath = freezed,Object? address = freezed,Object? phone = freezed,Object? isPhoneVerified = null,Object? dob = freezed,Object? email = freezed,Object? username = freezed,}) {
   return _then(_UserProfile(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -299,6 +311,12 @@ as double,experienceLevel: null == experienceLevel ? _self.experienceLevel : exp
 as String,primaryGoal: null == primaryGoal ? _self.primaryGoal : primaryGoal // ignore: cast_nullable_to_non_nullable
 as String,weeklyTargetDays: null == weeklyTargetDays ? _self.weeklyTargetDays : weeklyTargetDays // ignore: cast_nullable_to_non_nullable
 as int,profileImagePath: freezed == profileImagePath ? _self.profileImagePath : profileImagePath // ignore: cast_nullable_to_non_nullable
+as String?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
+as String?,isPhoneVerified: null == isPhoneVerified ? _self.isPhoneVerified : isPhoneVerified // ignore: cast_nullable_to_non_nullable
+as bool,dob: freezed == dob ? _self.dob : dob // ignore: cast_nullable_to_non_nullable
+as String?,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String?,username: freezed == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

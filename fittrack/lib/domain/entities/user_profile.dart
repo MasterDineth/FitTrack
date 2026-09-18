@@ -3,6 +3,21 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'user_profile.freezed.dart';
 part 'user_profile.g.dart';
 
+class BoolIntConverter implements JsonConverter<bool, dynamic> {
+  const BoolIntConverter();
+
+  @override
+  bool fromJson(dynamic json) {
+    if (json is bool) return json;
+    if (json is num) return json != 0;
+    if (json is String) return json == '1' || json.toLowerCase() == 'true';
+    return false;
+  }
+
+  @override
+  dynamic toJson(bool object) => object ? 1 : 0;
+}
+
 @freezed
 abstract class UserProfile with _$UserProfile {
   const UserProfile._();
@@ -17,6 +32,12 @@ abstract class UserProfile with _$UserProfile {
     required String primaryGoal,
     required int weeklyTargetDays,
     String? profileImagePath,
+    String? address,
+    String? phone,
+    @Default(false) @BoolIntConverter() bool isPhoneVerified,
+    String? dob,
+    String? email,
+    String? username,
   }) = _UserProfile;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) =>

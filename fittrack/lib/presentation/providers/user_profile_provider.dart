@@ -58,6 +58,12 @@ class UserProfileNotifier extends _$UserProfileNotifier {
     String? experienceLevel,
     String? primaryGoal,
     int? weeklyTargetDays,
+    String? address,
+    String? phone,
+    bool? isPhoneVerified,
+    String? dob,
+    String? email,
+    String? username,
   }) async {
     final current = state.value ??
         const UserProfile(
@@ -79,8 +85,45 @@ class UserProfileNotifier extends _$UserProfileNotifier {
       experienceLevel: experienceLevel ?? current.experienceLevel,
       primaryGoal: primaryGoal ?? current.primaryGoal,
       weeklyTargetDays: weeklyTargetDays ?? current.weeklyTargetDays,
+      address: address ?? current.address,
+      phone: phone ?? current.phone,
+      isPhoneVerified: isPhoneVerified ?? current.isPhoneVerified,
+      dob: dob ?? current.dob,
+      email: email ?? current.email,
+      username: username ?? current.username,
     );
 
+    state = AsyncData(updated);
+    final userRepo = ref.read(userRepositoryProvider);
+    await userRepo.saveUserProfile(updated);
+  }
+
+  /// Updates profile info specifically for the Account Details screen.
+  Future<void> updateProfileInfo({
+    String? name,
+    String? address,
+    String? phone,
+    bool? isPhoneVerified,
+    String? dob,
+    String? email,
+    String? username,
+  }) async {
+    await updateField(
+      name: name,
+      address: address,
+      phone: phone,
+      isPhoneVerified: isPhoneVerified,
+      dob: dob,
+      email: email,
+      username: username,
+    );
+  }
+
+  /// Verifies the user's phone number and persists state.
+  Future<void> verifyPhoneNumber() async {
+    final current = state.value;
+    if (current == null) return;
+    final updated = current.copyWith(isPhoneVerified: true);
     state = AsyncData(updated);
     final userRepo = ref.read(userRepositoryProvider);
     await userRepo.saveUserProfile(updated);
