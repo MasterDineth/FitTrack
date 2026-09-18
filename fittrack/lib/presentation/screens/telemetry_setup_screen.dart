@@ -97,7 +97,7 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
         .saveTelemetry(telemetry);
 
     setState(() => _isSaving = false);
-    if (mounted) context.push('/onboarding/fitness');
+    if (mounted) context.go('/onboarding/fitness');
   }
 
   @override
@@ -118,7 +118,13 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   GestureDetector(
-                    onTap: () => context.pop(),
+                    onTap: () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go('/welcome');
+                      }
+                    },
                     child: Container(
                       width: 40,
                       height: 40,

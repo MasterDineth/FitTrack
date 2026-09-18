@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
   static const _databaseName = "FitTrack.db";
-  static const _databaseVersion = 4;
+  static const _databaseVersion = 5;
 
   DatabaseHelper._privateConstructor();
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
@@ -176,19 +176,6 @@ class DatabaseHelper {
   }
 
   Future<void> _seedInitialData(Database db) async {
-    // Default User Profile
-    await db.insert('user_profile', {
-      'id': '1',
-      'name': 'Dineth',
-      'age': 20,
-      'weightKg': 80.0,
-      'heightCm': 170.0,
-      'experienceLevel': 'Advanced',
-      'primaryGoal': 'Hypertrophy & Strength',
-      'weeklyTargetDays': 4,
-      'profileImagePath': null,
-    });
-
     // 10 Default Exercises
     final exercises = [
       {'id': 'ex1', 'name': 'BB Bench Press', 'equipment': 'barbell', 'movementClassification': 'compound'},

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../widgets/ft_primary_button.dart';
 import '../widgets/ft_text_field.dart';
 import '../providers/auth_provider.dart';
+import '../providers/user_profile_provider.dart';
 import '../widgets/ft_exit_confirmation.dart';
 
 /// FitTrack Auth – Sign In & Sign Up Screen.
@@ -62,8 +63,26 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         return;
       }
       await notifier.signUp(email, password);
+      final authState = ref.read(authProvider);
+      if (!authState.hasError) {
+        final enteredName = _nameCtrl.text.trim();
+        await ref.read(userProfileProvider.notifier).updateField(
+          name: enteredName.isNotEmpty ? enteredName : email.split('@').first,
+        );
+      }
     } else {
       await notifier.signIn(email, password);
+      final authState = ref.read(authProvider);
+      if (!authState.hasError) {
+        final currentProfile = ref.read(userProfileProvider).value;
+        if (currentProfile == null || currentProfile.name.trim().isEmpty) {
+          final raw = email.split('@').first;
+          final name = raw.isNotEmpty
+              ? raw[0].toUpperCase() + raw.substring(1)
+              : 'Athlete';
+          await ref.read(userProfileProvider.notifier).updateField(name: name);
+        }
+      }
     }
 
     final authState = ref.read(authProvider);

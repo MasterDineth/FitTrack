@@ -45,6 +45,7 @@ class _FitnessProfileSetupScreenState
         .saveFitnessProfile(profile);
 
     setState(() => _isSaving = false);
+    if (mounted) context.go('/dashboard');
   }
 
   @override
@@ -66,7 +67,13 @@ class _FitnessProfileSetupScreenState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   GestureDetector(
-                    onTap: () => context.pop(),
+                    onTap: () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go('/onboarding/telemetry');
+                      }
+                    },
                     child: Container(
                       width: 40,
                       height: 40,
@@ -100,7 +107,7 @@ class _FitnessProfileSetupScreenState
                     ),
                   ),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: isLoading ? null : _complete,
                     child: Text(
                       'Skip',
                       style: TextStyle(
@@ -392,7 +399,13 @@ class _FitnessProfileSetupScreenState
                   Row(
                     children: [
                       TextButton(
-                        onPressed: () => context.pop(),
+                        onPressed: () {
+                          if (context.canPop()) {
+                            context.pop();
+                          } else {
+                            context.go('/onboarding/telemetry');
+                          }
+                        },
                         child: Text(
                           'Back',
                           style: TextStyle(

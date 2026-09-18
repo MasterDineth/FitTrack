@@ -37,6 +37,12 @@ abstract class UserProfile with _$UserProfile {
     return 'OVERWEIGHT';
   }
 
-  /// Checks if minimum profile criteria is complete.
-  bool get isComplete => name.isNotEmpty && weightKg > 0 && heightCm > 0;
+  /// Checks if onboarding criteria (both telemetry and fitness profile) is complete.
+  bool get isComplete =>
+      name.trim().isNotEmpty &&
+      weightKg > 0 &&
+      heightCm > 0 &&
+      experienceLevel.trim().isNotEmpty &&
+      primaryGoal.trim().isNotEmpty &&
+      weeklyTargetDays > 0;
 }

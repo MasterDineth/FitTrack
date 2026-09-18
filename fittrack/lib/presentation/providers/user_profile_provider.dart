@@ -20,24 +20,25 @@ class UserProfileNotifier extends _$UserProfileNotifier {
       return profile;
     }
 
-    const defaultProfile = UserProfile(
+    const initialProfile = UserProfile(
       id: '1',
-      name: 'Dineth',
-      age: 20,
-      weightKg: 80.0,
-      heightCm: 170.0,
-      experienceLevel: 'Advanced',
-      primaryGoal: 'Hypertrophy & Strength',
-      weeklyTargetDays: 4,
+      name: '',
+      age: 24,
+      weightKg: 0.0,
+      heightCm: 0.0,
+      experienceLevel: '',
+      primaryGoal: '',
+      weeklyTargetDays: 0,
     );
-    await userRepo.saveUserProfile(defaultProfile);
-    return defaultProfile;
+    return initialProfile;
   }
 
   /// Dynamic calculation for BMI based on current height and weight.
   double calculateBMI() {
     final profile = state.value;
-    if (profile == null) return 22.5;
+    if (profile == null || profile.heightCm <= 0 || profile.weightKg <= 0) {
+      return 22.5;
+    }
     return profile.calculateBMI;
   }
 
@@ -58,8 +59,17 @@ class UserProfileNotifier extends _$UserProfileNotifier {
     String? primaryGoal,
     int? weeklyTargetDays,
   }) async {
-    final current = state.value;
-    if (current == null) return;
+    final current = state.value ??
+        const UserProfile(
+          id: '1',
+          name: '',
+          age: 24,
+          weightKg: 0.0,
+          heightCm: 0.0,
+          experienceLevel: '',
+          primaryGoal: '',
+          weeklyTargetDays: 0,
+        );
 
     final updated = current.copyWith(
       name: name ?? current.name,

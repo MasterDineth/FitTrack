@@ -29,19 +29,7 @@ class SqliteUserRepository implements IUserRepository {
     }
 
     if (maps.isEmpty) {
-      // Return default initial profile if table is somehow empty
-      const defaultProfile = UserProfile(
-        id: '1',
-        name: 'Dineth',
-        age: 20,
-        weightKg: 80.0,
-        heightCm: 170.0,
-        experienceLevel: 'Advanced',
-        primaryGoal: 'Hypertrophy & Strength',
-        weeklyTargetDays: 4,
-      );
-      await saveUserProfile(defaultProfile);
-      return defaultProfile;
+      return null;
     }
 
     return UserProfile.fromJson(maps.first);
