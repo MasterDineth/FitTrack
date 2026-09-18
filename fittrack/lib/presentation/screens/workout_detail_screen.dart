@@ -6,6 +6,7 @@ import '../providers/repository_providers.dart';
 import '../providers/workout_logic_providers.dart';
 import '../../domain/entities/schedule.dart';
 import '../../domain/entities/schedule_exercise.dart';
+import '../../domain/entities/workout_schedule.dart';
 
 /// Workout Detail Screen – shows the full routine breakdown for a given [scheduleId].
 ///
@@ -14,14 +15,107 @@ import '../../domain/entities/schedule_exercise.dart';
 /// estimated-time metric bar. A sticky "Start Workout" CTA is anchored at the
 /// bottom via [Scaffold.bottomNavigationBar].
 class WorkoutDetailScreen extends ConsumerWidget {
-  const WorkoutDetailScreen({super.key, required this.scheduleId});
+  const WorkoutDetailScreen({
+    super.key,
+    required this.scheduleId,
+    this.workoutSchedule,
+  });
 
   final String scheduleId;
+  final WorkoutSchedule? workoutSchedule;
+
+  Schedule _mapWorkoutSchedule(WorkoutSchedule ws) {
+    return Schedule(
+      id: ws.id,
+      name: ws.title,
+      description: ws.description,
+      targetMuscles: ws.targetMuscles.isNotEmpty
+          ? ws.targetMuscles
+          : [ws.focus],
+      assignedWeekdays: List.generate(
+        ws.daysPerWeek.clamp(1, 7),
+        (i) => i + 1,
+      ),
+      orderIndex: 0,
+    );
+  }
+
+  List<ScheduleExercise> _fallbackExercises(String schedId) {
+    return [
+      ScheduleExercise(
+        id: '${schedId}_ex1',
+        scheduleId: schedId,
+        exerciseId: 'ex_barbell_bench_press',
+        sortOrder: 1,
+        targetSets: 4,
+        targetReps: 8,
+        targetWeightKg: 80.0,
+        restDurationSeconds: 120,
+      ),
+      ScheduleExercise(
+        id: '${schedId}_ex2',
+        scheduleId: schedId,
+        exerciseId: 'ex_incline_dumbbell_press',
+        sortOrder: 2,
+        targetSets: 3,
+        targetReps: 10,
+        targetWeightKg: 28.0,
+        restDurationSeconds: 90,
+      ),
+      ScheduleExercise(
+        id: '${schedId}_ex3',
+        scheduleId: schedId,
+        exerciseId: 'ex_cable_flyes',
+        sortOrder: 3,
+        targetSets: 3,
+        targetReps: 12,
+        targetWeightKg: 15.0,
+        restDurationSeconds: 60,
+      ),
+      ScheduleExercise(
+        id: '${schedId}_ex4',
+        scheduleId: schedId,
+        exerciseId: 'ex_overhead_triceps_extension',
+        sortOrder: 4,
+        targetSets: 3,
+        targetReps: 12,
+        targetWeightKg: 20.0,
+        restDurationSeconds: 60,
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final scheduleRepo = ref.watch(scheduleRepositoryProvider);
     final theme = Theme.of(context);
+
+    // If workoutSchedule was provided via extra, immediately render it with deep mock data!
+    if (workoutSchedule != null) {
+      final effectiveSchedule = _mapWorkoutSchedule(workoutSchedule!);
+      final effectiveExercises = workoutSchedule!.exercises.isNotEmpty
+          ? workoutSchedule!.exercises
+          : _fallbackExercises(scheduleId);
+
+      return Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        bottomNavigationBar: _StickyStartDock(
+          onStartTap: () {
+            context.push('/workouts/active/$scheduleId');
+          },
+        ),
+        body: SafeArea(
+          bottom: false,
+          child: _DetailBody(
+            schedule: effectiveSchedule,
+            exercises: effectiveExercises,
+            ref: ref,
+            workoutSchedule: workoutSchedule,
+          ),
+        ),
+      );
+    }
+
+    final scheduleRepo = ref.watch(scheduleRepositoryProvider);
     final colorScheme = theme.colorScheme;
 
     final scheduleAsync = ref.watch(
@@ -31,9 +125,10 @@ class WorkoutDetailScreen extends ConsumerWidget {
       _scheduleExercisesDetailProvider((scheduleRepo, scheduleId)),
     );
 
+    final fallbackExs = _fallbackExercises(scheduleId);
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      // ── Sticky Start Workout CTA ────────────────────────────────────
       bottomNavigationBar: _StickyStartDock(
         onStartTap: () {
           context.push('/workouts/active/$scheduleId');
@@ -46,19 +141,32 @@ class WorkoutDetailScreen extends ConsumerWidget {
             if (schedule == null) {
               return _NotFoundBody(onBack: () => context.pop());
             }
+
             return exercisesAsync.when(
-              data: (exercises) => _DetailBody(
-                schedule: schedule,
-                exercises: exercises,
-                ref: ref,
+              data: (exercises) {
+                final effectiveExercises =
+                    exercises.isNotEmpty ? exercises : fallbackExs;
+                return _DetailBody(
+                  schedule: schedule,
+                  exercises: effectiveExercises,
+                  ref: ref,
+                  workoutSchedule: null,
+                );
+              },
+              loading: () => Center(
+                child: CircularProgressIndicator(color: colorScheme.primary),
               ),
-              loading: () =>
-                  Center(child: CircularProgressIndicator(color: colorScheme.primary)),
-              error: (e, _) => _ErrorBody(error: e, onBack: () => context.pop()),
+              error: (_, _) => _DetailBody(
+                schedule: schedule,
+                exercises: fallbackExs,
+                ref: ref,
+                workoutSchedule: null,
+              ),
             );
           },
-          loading: () =>
-              Center(child: CircularProgressIndicator(color: colorScheme.primary)),
+          loading: () => Center(
+            child: CircularProgressIndicator(color: colorScheme.primary),
+          ),
           error: (e, _) => _ErrorBody(error: e, onBack: () => context.pop()),
         ),
       ),
@@ -88,16 +196,22 @@ class _DetailBody extends StatelessWidget {
     required this.schedule,
     required this.exercises,
     required this.ref,
+    this.workoutSchedule,
   });
 
   final Schedule schedule;
   final List<ScheduleExercise> exercises;
   final WidgetRef ref;
+  final WorkoutSchedule? workoutSchedule;
 
-  int get _totalSets =>
-      exercises.fold(0, (sum, e) => sum + e.targetSets);
+  int get _totalSets => workoutSchedule != null && workoutSchedule!.exercises.isNotEmpty
+      ? workoutSchedule!.exercises.fold(0, (sum, e) => sum + e.targetSets)
+      : exercises.fold(0, (sum, e) => sum + e.targetSets);
 
   int get _estimatedMinutes {
+    if (workoutSchedule != null && workoutSchedule!.estimatedMinutes > 0) {
+      return workoutSchedule!.estimatedMinutes;
+    }
     if (exercises.isEmpty) return 0;
     final secs = exercises.fold(
       0,
@@ -126,7 +240,10 @@ class _DetailBody extends StatelessWidget {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-            child: _WorkoutHeaderSection(schedule: schedule),
+            child: _WorkoutHeaderSection(
+              schedule: schedule,
+              workoutSchedule: workoutSchedule,
+            ),
           ),
         ),
 
@@ -316,9 +433,13 @@ class _NavIconBtn extends StatelessWidget {
 
 // ── Workout Header Section ───────────────────────────────────────────────────
 class _WorkoutHeaderSection extends StatelessWidget {
-  const _WorkoutHeaderSection({required this.schedule});
+  const _WorkoutHeaderSection({
+    required this.schedule,
+    this.workoutSchedule,
+  });
 
   final Schedule schedule;
+  final WorkoutSchedule? workoutSchedule;
 
   static const _muscleColors = <String, List<Color>>{
     'chest': [Color(0xFFfff1f2), Color(0xFFef4444), Color(0xFFfecdd3)],
@@ -326,9 +447,10 @@ class _WorkoutHeaderSection extends StatelessWidget {
     'triceps': [Color(0xFFf0f9ff), Color(0xFF0ea5e9), Color(0xFFbae6fd)],
     'back': [Color(0xFFf0fdf4), Color(0xFF22c55e), Color(0xFFbbf7d0)],
     'biceps': [Color(0xFFfdf4ff), Color(0xFFa855f7), Color(0xFFe9d5ff)],
-    'quads': [Color(0xFFeff6ff), Color(0xFF3b82f6), Color(0xFFbfdbfe)],
+    'legs': [Color(0xFFeff6ff), Color(0xFF2563eb), Color(0xFFbfdbfe)],
+    'quads': [Color(0xFFeff6ff), Color(0xFF2563eb), Color(0xFFbfdbfe)],
     'hamstrings': [Color(0xFFfefce8), Color(0xFFca8a04), Color(0xFFfef08a)],
-    'core': [Color(0xFFfff7ed), Color(0xFFf97316), Color(0xFFfed7aa)],
+    'core': [Color(0xFFfff7ed), Color(0xFFea580c), Color(0xFFfed7aa)],
     'calves': [Color(0xFFf0fdfa), Color(0xFF14b8a6), Color(0xFF99f6e4)],
   };
 
@@ -345,9 +467,11 @@ class _WorkoutHeaderSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(6),
             border: Border.all(color: const Color(0xFF99f6e4)),
           ),
-          child: const Text(
-            'Push Hypertrophy • Week 3',
-            style: TextStyle(
+          child: Text(
+            workoutSchedule != null
+                ? '${workoutSchedule!.focus} • ${workoutSchedule!.equipment} • ${workoutSchedule!.durationWeeks} Weeks'
+                : 'Push Hypertrophy • Active Split',
+            style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
               color: Color(0xFF0f766e),
@@ -671,11 +795,40 @@ class _ExerciseCard extends StatelessWidget {
   ];
 
   String _resolveExerciseName(String exerciseId, int index) {
+    if (exerciseId.startsWith('ex_')) {
+      final raw = exerciseId.substring(3).replaceAll('_', ' ');
+      return raw.split(' ').map((w) {
+        if (w.isEmpty) return '';
+        return '${w[0].toUpperCase()}${w.substring(1)}';
+      }).join(' ');
+    }
     if (index < _exerciseNames.length) return _exerciseNames[index];
     return 'Exercise ${index + 1}';
   }
 
   String _resolveMuscle(String exerciseId, int index) {
+    final lower = exerciseId.toLowerCase();
+    if (lower.contains('bench') || lower.contains('chest') || lower.contains('flyes') || lower.contains('push_ups')) {
+      return 'Chest';
+    }
+    if (lower.contains('squat') || lower.contains('leg') || lower.contains('calf')) {
+      return 'Quads';
+    }
+    if (lower.contains('row') || lower.contains('deadlift') || lower.contains('lat') || lower.contains('pull')) {
+      return 'Back';
+    }
+    if (lower.contains('overhead') || lower.contains('lateral') || lower.contains('delt') || lower.contains('shoulder')) {
+      return 'Shoulders';
+    }
+    if (lower.contains('triceps') || lower.contains('pushdown') || lower.contains('skull') || lower.contains('dips')) {
+      return 'Triceps';
+    }
+    if (lower.contains('curl') || lower.contains('bicep')) {
+      return 'Biceps';
+    }
+    if (lower.contains('abs') || lower.contains('core') || lower.contains('rollout') || lower.contains('hollow') || lower.contains('raise')) {
+      return 'Core';
+    }
     if (index < _muscleLabels.length) return _muscleLabels[index];
     return 'General';
   }
@@ -692,6 +845,8 @@ class _MuscleBadge extends StatelessWidget {
     'Triceps': [Color(0xFFf0f9ff), Color(0xFF0ea5e9), Color(0xFFbae6fd)],
     'Back': [Color(0xFFf0fdf4), Color(0xFF22c55e), Color(0xFFbbf7d0)],
     'Biceps': [Color(0xFFfdf4ff), Color(0xFFa855f7), Color(0xFFe9d5ff)],
+    'Quads': [Color(0xFFeff6ff), Color(0xFF2563eb), Color(0xFFbfdbfe)],
+    'Core': [Color(0xFFfff7ed), Color(0xFFea580c), Color(0xFFfed7aa)],
   };
 
   @override
