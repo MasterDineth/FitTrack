@@ -167,12 +167,10 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
           ),
         ),
       ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
-            child: Column(
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+        child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // ── Section 1: Basic Info ─────────────────────────────────
@@ -526,26 +524,72 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
+                const SizedBox(height: 24),
+
+                // ── Create Exercise Button (Scrolls with content) ─────────
+                if (state.saveError != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Center(
+                      child: Text(
+                        state.saveError!,
+                        style: TextStyle(
+                          color: colorScheme.error,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                SizedBox(
+                  width: double.infinity,
+                  height: 54,
+                  child: ElevatedButton.icon(
+                    onPressed: state.isSaving ? null : () => _save(context, ref),
+                    icon: state.isSaving
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: colorScheme.onPrimary,
+                            ),
+                          )
+                        : Icon(
+                            Icons.check_circle_rounded,
+                            size: 22,
+                            color: colorScheme.onPrimary,
+                          ),
+                    label: Text(
+                      state.isSaving
+                          ? 'Registering Exercise...'
+                          : 'Create Exercise',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                        color: colorScheme.onPrimary,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: colorScheme.onPrimary,
+                      disabledBackgroundColor: colorScheme.primary.withValues(alpha: 0.6),
+                      disabledForegroundColor: colorScheme.onPrimary.withValues(alpha: 0.8),
+                      elevation: 0,
+                      shadowColor: colorScheme.primary.withValues(alpha: 0.35),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
               ],
             ),
           ),
-
-          // ── Sticky Bottom CTA ───────────────────────────────────────────
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: _StickySaveDock(
-              isValid: state.isValid,
-              isSaving: state.isSaving,
-              saveError: state.saveError,
-              onSave: () => _save(context, ref),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+        );
+      }
 
   static void _showAddFormCueDialog(
     BuildContext context,
@@ -582,8 +626,27 @@ class CreateCustomExerciseScreen extends ConsumerWidget {
   }
 
   static Future<void> _save(BuildContext context, WidgetRef ref) async {
+    final state = ref.read(customExerciseProvider);
     final notifier = ref.read(customExerciseProvider.notifier);
     final colorScheme = Theme.of(context).colorScheme;
+
+    if (!state.isValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Please enter an exercise title',
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          backgroundColor: colorScheme.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     final success = await notifier.save();
     if (!context.mounted) return;
     if (success) {
@@ -1257,94 +1320,3 @@ class _EmptyHint extends StatelessWidget {
   }
 }
 
-// ── Sticky Save Dock ─────────────────────────────────────────────────────────
-class _StickySaveDock extends StatelessWidget {
-  const _StickySaveDock({
-    required this.isValid,
-    required this.isSaving,
-    required this.saveError,
-    required this.onSave,
-  });
-
-  final bool isValid;
-  final bool isSaving;
-  final String? saveError;
-  final VoidCallback onSave;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
-    final isLight = Theme.of(context).brightness == Brightness.light;
-
-    return Container(
-      padding: EdgeInsets.fromLTRB(16, 12, 16, bottomPadding + 10),
-      decoration: BoxDecoration(
-        color: colorScheme.surface.withValues(alpha: 0.95),
-        border: Border(
-          top: BorderSide(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.25),
-          ),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (saveError != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                saveError!,
-                style: TextStyle(
-                  color: colorScheme.error,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton.icon(
-              onPressed: (isValid && !isSaving) ? onSave : null,
-              icon: isSaving
-                  ? SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: colorScheme.onPrimary,
-                      ),
-                    )
-                  : Icon(
-                      Icons.check_circle_rounded,
-                      size: 20,
-                      color: colorScheme.onPrimary,
-                    ),
-              label: Text(
-                isSaving ? 'Registering Exercise...' : 'Create Exercise',
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 15,
-                  color: colorScheme.onPrimary,
-                  letterSpacing: -0.2,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
-                disabledBackgroundColor:
-                    colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
-                elevation: 0,
-                shadowColor: isLight ? colorScheme.primary : Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
