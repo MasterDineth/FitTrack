@@ -95,6 +95,7 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
     ref.read(schedulesNotifierProvider.notifier).updateSort(SortOption.relevant);
     setState(() {
       _isSearchActive = false;
+      _isFabExtended = true;
     });
   }
 
@@ -124,7 +125,21 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
     final custom = state.customSchedules;
     final filtered = state.filteredSchedules;
 
-    return Scaffold(
+    final isSearching = isSearchActive ||
+        _searchController.text.isNotEmpty ||
+        _searchFocusNode.hasFocus ||
+        state.searchQuery.isNotEmpty ||
+        state.selectedCategoryFilter != 'All';
+
+    return PopScope(
+      canPop: !isSearching,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        if (isSearching) {
+          _exitSearch();
+        }
+      },
+      child: Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 24.0),
@@ -143,25 +158,38 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
       ),
       body: SafeArea(
         bottom: false,
-        child: CustomScrollView(
-          controller: _scrollController,
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            // ── STICKY SLIVER APP BAR (CONTAINING ONLY THE SEARCH BAR) ──────
-            SliverAppBar(
-              pinned: true,
-              floating: false,
-              elevation: 0,
-              toolbarHeight: 114,
-              backgroundColor: theme.scaffoldBackgroundColor,
-              surfaceTintColor: Colors.transparent,
-              automaticallyImplyLeading: false,
-              titleSpacing: 16,
-              title: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Header row matching dashboard_screen.dart
-                  Row(
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            if (notification is UserScrollNotification) {
+              if (notification.direction == ScrollDirection.reverse && _isFabExtended) {
+                setState(() => _isFabExtended = false);
+              } else if (notification.direction == ScrollDirection.forward && !_isFabExtended) {
+                setState(() => _isFabExtended = true);
+              }
+            } else if (notification is ScrollUpdateNotification) {
+              final delta = notification.scrollDelta ?? 0;
+              if (delta > 2 && _isFabExtended) {
+                setState(() => _isFabExtended = false);
+              } else if (delta < -2 && !_isFabExtended) {
+                setState(() => _isFabExtended = true);
+              }
+              if (notification.metrics.pixels <= 10 && !_isFabExtended) {
+                setState(() => _isFabExtended = true);
+              }
+            }
+            return false;
+          },
+          child: CustomScrollView(
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
+            slivers: [
+              // ── TOP APP HEADER (EXACTLY MATCHING DASHBOARD SCREEN) ─────────
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+                  child: Row(
                     children: [
                       Container(
                         width: 8,
@@ -219,9 +247,10 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
                         ],
                       ),
                       const SizedBox(width: 10),
-                      // User avatar matching dashboard_screen.dart
-                      GestureDetector(
+                      // Profile avatar matching dashboard_screen.dart
+                      InkWell(
                         onTap: () => context.push('/settings/profile'),
+                        borderRadius: BorderRadius.circular(18),
                         child: Stack(
                           children: [
                             Container(
@@ -281,14 +310,26 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  // Search Bar row with subtle primary glow
-                  Row(
+                ),
+              ),
+
+              // ── PINNED SEARCH BAR (ONLY CONTAINS SEARCH INPUT & FILTER) ───
+              SliverAppBar(
+                pinned: true,
+                floating: false,
+                elevation: 0,
+                toolbarHeight: 70,
+                backgroundColor: theme.scaffoldBackgroundColor,
+                surfaceTintColor: Colors.transparent,
+                automaticallyImplyLeading: false,
+                titleSpacing: 0,
+                title: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Row(
                     children: [
                       Expanded(
                         child: Container(
-                          height: 44,
-                          clipBehavior: Clip.antiAlias,
+                          height: 46,
                           decoration: BoxDecoration(
                             color: isLight
                                 ? const Color(0xFFF2F4F6)
@@ -296,74 +337,78 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: theme.colorScheme.primary.withValues(
-                                alpha: _searchFocusNode.hasFocus ? 0.6 : 0.3,
+                                alpha: _searchFocusNode.hasFocus ? 0.6 : 0.35,
                               ),
-                              width: _searchFocusNode.hasFocus ? 1.5 : 1,
+                              width: _searchFocusNode.hasFocus ? 1.5 : 1.2,
                             ),
                             boxShadow: [
                               BoxShadow(
                                 color: theme.colorScheme.primary.withValues(
-                                  alpha: _searchFocusNode.hasFocus ? 0.25 : 0.15,
+                                  alpha: _searchFocusNode.hasFocus ? 0.25 : 0.12,
                                 ),
-                                blurRadius: 16,
+                                blurRadius: 10,
                                 spreadRadius: 0,
                               ),
                             ],
                           ),
-                          child: TextField(
-                            controller: _searchController,
-                            focusNode: _searchFocusNode,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurface,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            onChanged: (val) {
-                              notifier.updateSearchQuery(val);
-                              if (val.trim().isNotEmpty && !_isSearchActive) {
-                                setState(() {
-                                  _isSearchActive = true;
-                                });
-                              }
-                            },
-                            decoration: InputDecoration(
-                              hintText: 'Search splits, goals, or equipment...',
-                              hintStyle: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant
-                                    .withValues(alpha: 0.7),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(15),
+                            child: TextField(
+                              controller: _searchController,
+                              focusNode: _searchFocusNode,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onSurface,
+                                fontWeight: FontWeight.w500,
                               ),
-                              prefixIcon: _isSearchActive
-                                  ? IconButton(
-                                      icon: const Icon(Icons.arrow_back, size: 20),
-                                      color: theme.colorScheme.primary,
-                                      tooltip: 'Exit search',
-                                      onPressed: _exitSearch,
-                                    )
-                                  : Icon(
-                                      Icons.search,
-                                      size: 20,
-                                      color: _searchFocusNode.hasFocus
-                                          ? theme.colorScheme.primary
-                                          : theme.colorScheme.onSurfaceVariant,
-                                    ),
-                              suffixIcon: _searchController.text.isNotEmpty
-                                  ? IconButton(
-                                      icon: const Icon(Icons.close, size: 18),
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                      onPressed: () {
-                                        _searchController.clear();
-                                        notifier.updateSearchQuery('');
-                                        setState(() {});
-                                      },
-                                    )
-                                  : null,
-                              border: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              errorBorder: InputBorder.none,
-                              disabledBorder: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 10,
-                                horizontal: 4,
+                              onChanged: (val) {
+                                notifier.updateSearchQuery(val);
+                                if (val.trim().isNotEmpty && !_isSearchActive) {
+                                  setState(() {
+                                    _isSearchActive = true;
+                                  });
+                                }
+                              },
+                              decoration: InputDecoration(
+                                isDense: true,
+                                hintText: 'Search splits, goals, or equipment...',
+                                hintStyle: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant
+                                      .withValues(alpha: 0.7),
+                                ),
+                                prefixIcon: _isSearchActive
+                                    ? IconButton(
+                                        icon: const Icon(Icons.arrow_back, size: 20),
+                                        color: theme.colorScheme.primary,
+                                        tooltip: 'Exit search',
+                                        onPressed: _exitSearch,
+                                      )
+                                    : Icon(
+                                        Icons.search,
+                                        size: 20,
+                                        color: _searchFocusNode.hasFocus
+                                            ? theme.colorScheme.primary
+                                            : theme.colorScheme.onSurfaceVariant,
+                                      ),
+                                suffixIcon: _searchController.text.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.close, size: 18),
+                                        color: theme.colorScheme.onSurfaceVariant,
+                                        onPressed: () {
+                                          _searchController.clear();
+                                          notifier.updateSearchQuery('');
+                                          setState(() {});
+                                        },
+                                      )
+                                    : null,
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                errorBorder: InputBorder.none,
+                                disabledBorder: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 4,
+                                ),
                               ),
                             ),
                           ),
@@ -371,13 +416,13 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        width: 44,
-                        height: 44,
+                        width: 46,
+                        height: 46,
                         decoration: BoxDecoration(
                           color: isLight
                               ? const Color(0xFFF2F4F6)
                               : theme.colorScheme.surfaceContainer,
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: isLight
                                 ? const Color(0xFFE2E8F0)
@@ -402,116 +447,137 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
 
-            // ── 1. FILTER CHIPS (VERY FIRST SLIVER AFTER APP BAR) ───────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                child: _isSearchActive
-                    ? Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: _filterOptions.map((filter) {
-                          final isSelected =
-                              state.selectedCategoryFilter == filter;
-                          return FilterChip(
-                            label: Text(filter),
-                            selected: isSelected,
-                            showCheckmark: isSelected,
-                            checkmarkColor:
-                                theme.colorScheme.onPrimaryContainer,
-                            backgroundColor: isLight
-                                ? const Color(0xFFECEEF0)
-                                : theme.colorScheme.surfaceContainer,
-                            selectedColor: theme.colorScheme.primaryContainer,
-                            labelStyle: theme.textTheme.labelMedium?.copyWith(
-                              color: isSelected
-                                  ? theme.colorScheme.onPrimaryContainer
-                                  : theme.colorScheme.onSurfaceVariant,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.w600,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              side: BorderSide(
-                                color: isSelected
-                                    ? Colors.transparent
-                                    : (isLight
-                                        ? const Color(0xFFE2E8F0)
-                                        : theme.colorScheme.outline),
-                              ),
-                            ),
-                            onSelected: (_) {
-                              notifier.updateCategoryFilter(filter);
-                              if (filter != 'All') {
-                                setState(() {
-                                  _isSearchActive = true;
-                                });
-                              } else if (_searchController.text.trim().isEmpty &&
-                                  !_searchFocusNode.hasFocus) {
-                                setState(() {
-                                  _isSearchActive = false;
-                                });
-                              }
-                            },
-                          );
-                        }).toList(),
-                      )
-                    : SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
+              // ── 1. FILTER CHIPS (FIRST SLIVER AFTER SEARCH BAR) ─────────────
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 2, 20, 8),
+                  child: _isSearchActive
+                      ? Wrap(
+                          spacing: 8,
+                          runSpacing: 6,
                           children: _filterOptions.map((filter) {
                             final isSelected =
                                 state.selectedCategoryFilter == filter;
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: FilterChip(
-                                label: Text(filter),
-                                selected: isSelected,
-                                showCheckmark: isSelected,
-                                checkmarkColor:
-                                    theme.colorScheme.onPrimaryContainer,
-                                backgroundColor: isLight
-                                    ? const Color(0xFFECEEF0)
-                                    : theme.colorScheme.surfaceContainer,
-                                selectedColor: theme.colorScheme.primaryContainer,
-                                labelStyle: theme.textTheme.labelMedium?.copyWith(
-                                  color: isSelected
-                                      ? theme.colorScheme.onPrimaryContainer
-                                      : theme.colorScheme.onSurfaceVariant,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.w600,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  side: BorderSide(
-                                    color: isSelected
-                                        ? Colors.transparent
-                                        : (isLight
-                                            ? const Color(0xFFE2E8F0)
-                                            : theme.colorScheme.outline),
-                                  ),
-                                ),
-                                onSelected: (_) {
-                                  notifier.updateCategoryFilter(filter);
-                                  if (filter != 'All') {
-                                    setState(() {
-                                      _isSearchActive = true;
-                                    });
-                                  }
-                                },
+                            return FilterChip(
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: const VisualDensity(
+                                horizontal: -2,
+                                vertical: -2,
                               ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 2,
+                              ),
+                              label: Text(filter),
+                              selected: isSelected,
+                              showCheckmark: isSelected,
+                              checkmarkColor:
+                                  theme.colorScheme.onPrimaryContainer,
+                              backgroundColor: isLight
+                                  ? const Color(0xFFECEEF0)
+                                  : theme.colorScheme.surfaceContainer,
+                              selectedColor: theme.colorScheme.primaryContainer,
+                              labelStyle: theme.textTheme.labelMedium?.copyWith(
+                                color: isSelected
+                                    ? theme.colorScheme.onPrimaryContainer
+                                    : theme.colorScheme.onSurfaceVariant,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.w600,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                side: BorderSide(
+                                  color: isSelected
+                                      ? Colors.transparent
+                                      : (isLight
+                                          ? const Color(0xFFE2E8F0)
+                                          : theme.colorScheme.outline),
+                                ),
+                              ),
+                              onSelected: (_) {
+                                notifier.updateCategoryFilter(filter);
+                                if (filter != 'All') {
+                                  setState(() {
+                                    _isSearchActive = true;
+                                  });
+                                } else if (_searchController.text.trim().isEmpty &&
+                                    !_searchFocusNode.hasFocus) {
+                                  setState(() {
+                                    _isSearchActive = false;
+                                  });
+                                }
+                              },
                             );
                           }).toList(),
+                        )
+                      : SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: _filterOptions.map((filter) {
+                              final isSelected =
+                                  state.selectedCategoryFilter == filter;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: FilterChip(
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  visualDensity: const VisualDensity(
+                                    horizontal: -2,
+                                    vertical: -2,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 2,
+                                  ),
+                                  label: Text(filter),
+                                  selected: isSelected,
+                                  showCheckmark: isSelected,
+                                  checkmarkColor:
+                                      theme.colorScheme.onPrimaryContainer,
+                                  backgroundColor: isLight
+                                      ? const Color(0xFFECEEF0)
+                                      : theme.colorScheme.surfaceContainer,
+                                  selectedColor:
+                                      theme.colorScheme.primaryContainer,
+                                  labelStyle:
+                                      theme.textTheme.labelMedium?.copyWith(
+                                    color: isSelected
+                                        ? theme.colorScheme.onPrimaryContainer
+                                        : theme.colorScheme.onSurfaceVariant,
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.w600,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                    side: BorderSide(
+                                      color: isSelected
+                                          ? Colors.transparent
+                                          : (isLight
+                                              ? const Color(0xFFE2E8F0)
+                                              : theme.colorScheme.outline),
+                                    ),
+                                  ),
+                                  onSelected: (_) {
+                                    notifier.updateCategoryFilter(filter);
+                                    if (filter != 'All') {
+                                      setState(() {
+                                        _isSearchActive = true;
+                                      });
+                                    }
+                                  },
+                                ),
+                              );
+                            }).toList(),
+                          ),
                         ),
-                      ),
+                ),
               ),
-            ),
 
             // ── CONDITIONAL LAYOUTS ────────────────────────────────────────
             if (!isSearchActive) ...[
@@ -982,8 +1048,10 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  ),
+);
+}
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
