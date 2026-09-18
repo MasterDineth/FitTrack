@@ -3,17 +3,37 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/repository_providers.dart';
-import '../providers/workout_logic_providers.dart';
 import '../../domain/entities/schedule.dart';
 import '../../domain/entities/schedule_exercise.dart';
 import '../../domain/entities/workout_schedule.dart';
 
+/// Local private card decoration helper matching Stitch specifications.
+BoxDecoration _buildCardDecoration(BuildContext context, {double radius = 16}) {
+  final isLight = Theme.of(context).brightness == Brightness.light;
+  final colorScheme = Theme.of(context).colorScheme;
+
+  if (isLight) {
+    return BoxDecoration(
+      color: colorScheme.surface,
+      borderRadius: BorderRadius.circular(radius),
+      boxShadow: const [
+        BoxShadow(
+          color: Color(0x080F172A),
+          blurRadius: 16,
+          offset: Offset(0, 4),
+        ),
+      ],
+    );
+  } else {
+    return BoxDecoration(
+      color: colorScheme.surface,
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(color: colorScheme.outline),
+    );
+  }
+}
+
 /// Workout Detail Screen – shows the full routine breakdown for a given [scheduleId].
-///
-/// Wires to [scheduleRepositoryProvider] to load the [Schedule] and its
-/// [ScheduleExercise] list. Also uses [durationCalculationProvider] for the
-/// estimated-time metric bar. A sticky "Start Workout" CTA is anchored at the
-/// bottom via [Scaffold.bottomNavigationBar].
 class WorkoutDetailScreen extends ConsumerWidget {
   const WorkoutDetailScreen({
     super.key,
@@ -48,7 +68,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
         exerciseId: 'ex_barbell_bench_press',
         sortOrder: 1,
         targetSets: 4,
-        targetReps: 8,
+        targetReps: 6,
         targetWeightKg: 80.0,
         restDurationSeconds: 120,
       ),
@@ -58,7 +78,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
         exerciseId: 'ex_incline_dumbbell_press',
         sortOrder: 2,
         targetSets: 3,
-        targetReps: 10,
+        targetReps: 8,
         targetWeightKg: 28.0,
         restDurationSeconds: 90,
       ),
@@ -68,18 +88,38 @@ class WorkoutDetailScreen extends ConsumerWidget {
         exerciseId: 'ex_cable_flyes',
         sortOrder: 3,
         targetSets: 3,
-        targetReps: 12,
+        targetReps: 10,
         targetWeightKg: 15.0,
         restDurationSeconds: 60,
       ),
       ScheduleExercise(
         id: '${schedId}_ex4',
         scheduleId: schedId,
-        exerciseId: 'ex_overhead_triceps_extension',
+        exerciseId: 'ex_overhead_press',
         sortOrder: 4,
+        targetSets: 4,
+        targetReps: 6,
+        targetWeightKg: 50.0,
+        restDurationSeconds: 120,
+      ),
+      ScheduleExercise(
+        id: '${schedId}_ex5',
+        scheduleId: schedId,
+        exerciseId: 'ex_lateral_raises',
+        sortOrder: 5,
         targetSets: 3,
-        targetReps: 12,
-        targetWeightKg: 20.0,
+        targetReps: 10,
+        targetWeightKg: 12.0,
+        restDurationSeconds: 60,
+      ),
+      ScheduleExercise(
+        id: '${schedId}_ex6',
+        scheduleId: schedId,
+        exerciseId: 'ex_tricep_pushdowns',
+        sortOrder: 6,
+        targetSets: 4,
+        targetReps: 10,
+        targetWeightKg: 25.0,
         restDurationSeconds: 60,
       ),
     ];
@@ -89,7 +129,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
 
-    // If workoutSchedule was provided via extra, immediately render it with deep mock data!
+    // If workoutSchedule was provided via extra, immediately render it
     if (workoutSchedule != null) {
       final effectiveSchedule = _mapWorkoutSchedule(workoutSchedule!);
       final effectiveExercises = workoutSchedule!.exercises.isNotEmpty
@@ -108,7 +148,6 @@ class WorkoutDetailScreen extends ConsumerWidget {
           child: _DetailBody(
             schedule: effectiveSchedule,
             exercises: effectiveExercises,
-            ref: ref,
             workoutSchedule: workoutSchedule,
           ),
         ),
@@ -149,7 +188,6 @@ class WorkoutDetailScreen extends ConsumerWidget {
                 return _DetailBody(
                   schedule: schedule,
                   exercises: effectiveExercises,
-                  ref: ref,
                   workoutSchedule: null,
                 );
               },
@@ -159,7 +197,6 @@ class WorkoutDetailScreen extends ConsumerWidget {
               error: (_, _) => _DetailBody(
                 schedule: schedule,
                 exercises: fallbackExs,
-                ref: ref,
                 workoutSchedule: null,
               ),
             );
@@ -174,7 +211,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
   }
 }
 
-// ── Providers (family – scoped to this file) ─────────────────────────────────
+// ── Scoped Providers ─────────────────────────────────────────────────────────
 
 final _scheduleByIdProvider = FutureProvider.family(
   (ref, (dynamic repo, String id) args) async {
@@ -195,13 +232,11 @@ class _DetailBody extends StatelessWidget {
   const _DetailBody({
     required this.schedule,
     required this.exercises,
-    required this.ref,
     this.workoutSchedule,
   });
 
   final Schedule schedule;
   final List<ScheduleExercise> exercises;
-  final WidgetRef ref;
   final WorkoutSchedule? workoutSchedule;
 
   int get _totalSets => workoutSchedule != null && workoutSchedule!.exercises.isNotEmpty
@@ -228,18 +263,22 @@ class _DetailBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
         // ── Top Navigation ─────────────────────────────────────────────
         SliverToBoxAdapter(
-          child: _TopNav(title: schedule.name),
+          child: _TopNav(
+            title: workoutSchedule?.title ?? schedule.name,
+          ),
         ),
 
         // ── Workout Header Section ──────────────────────────────────────
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
             child: _WorkoutHeaderSection(
               schedule: schedule,
               workoutSchedule: workoutSchedule,
@@ -247,11 +286,11 @@ class _DetailBody extends StatelessWidget {
           ),
         ),
 
-        // ── Metrics Bar ────────────────────────────────────────────────
+        // ── Stat Grid ──────────────────────────────────────────────────
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-            child: _MetricsBar(
+            child: _StatGrid(
               exerciseCount: exercises.length,
               totalSets: _totalSets,
               estimatedMinutes: _estimatedMinutes,
@@ -267,21 +306,31 @@ class _DetailBody extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'ROUTINE BREAKDOWN',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF64748b),
+                    color: colorScheme.onSurfaceVariant,
                     letterSpacing: 0.8,
                   ),
                 ),
-                Text(
-                  'Reorder',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.primary,
+                GestureDetector(
+                  onTap: () {},
+                  child: Row(
+                    children: [
+                      Icon(Icons.swap_vert_rounded,
+                          size: 16, color: colorScheme.primary),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Reorder',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -291,7 +340,7 @@ class _DetailBody extends StatelessWidget {
 
         // ── Exercise List ───────────────────────────────────────────────
         SliverPadding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
@@ -301,7 +350,6 @@ class _DetailBody extends StatelessWidget {
                   child: _ExerciseCard(
                     index: index,
                     exercise: ex,
-                    isFirst: index == 0,
                   ),
                 );
               },
@@ -313,13 +361,13 @@ class _DetailBody extends StatelessWidget {
         // ── Add Exercise Button ─────────────────────────────────────────
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
             child: _AddExerciseButton(),
           ),
         ),
 
-        // Bottom padding for sticky dock
-        const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        // Bottom clearance for sticky dock
+        const SliverToBoxAdapter(child: SizedBox(height: 120)),
       ],
     );
   }
@@ -337,12 +385,12 @@ class _TopNav extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor.withValues(alpha: 0.95),
+        color: theme.scaffoldBackgroundColor,
         border: Border(
           bottom: BorderSide(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
           ),
         ),
       ),
@@ -357,41 +405,39 @@ class _TopNav extends StatelessWidget {
               decoration: BoxDecoration(
                 color: colorScheme.surface,
                 shape: BoxShape.circle,
-                border: Border.all(color: colorScheme.outlineVariant),
-                boxShadow: [
-                  BoxShadow(
-                    color: colorScheme.shadow.withValues(alpha: 0.05),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  )
-                ],
+                border: Border.all(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+                ),
               ),
-              child: Icon(Icons.arrow_back_ios_new_rounded,
-                  size: 16, color: colorScheme.onSurface),
+              child: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                size: 16,
+                color: colorScheme.onSurface,
+              ),
             ),
           ),
           const SizedBox(width: 12),
 
-          // Truncated title
+          // Center App Bar Title
           Expanded(
             child: Text(
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface.withValues(alpha: 0.6),
+                fontWeight: FontWeight.w700,
+                color: colorScheme.onSurface,
                 letterSpacing: -0.2,
               ),
             ),
           ),
           const SizedBox(width: 8),
 
-          // Share button
+          // Trailing action buttons
           _NavIconBtn(icon: Icons.share_outlined, onTap: () {}),
-          const SizedBox(width: 6),
-          // More options
+          const SizedBox(width: 8),
           _NavIconBtn(icon: Icons.more_vert_rounded, onTap: () {}),
         ],
       ),
@@ -416,16 +462,15 @@ class _NavIconBtn extends StatelessWidget {
         decoration: BoxDecoration(
           color: colorScheme.surface,
           shape: BoxShape.circle,
-          border: Border.all(color: colorScheme.outlineVariant),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.04),
-              blurRadius: 4,
-              offset: const Offset(0, 1),
-            )
-          ],
+          border: Border.all(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+          ),
         ),
-        child: Icon(icon, size: 16, color: colorScheme.onSurface.withValues(alpha: 0.7)),
+        child: Icon(
+          icon,
+          size: 17,
+          color: colorScheme.onSurface.withValues(alpha: 0.8),
+        ),
       ),
     );
   }
@@ -441,111 +486,158 @@ class _WorkoutHeaderSection extends StatelessWidget {
   final Schedule schedule;
   final WorkoutSchedule? workoutSchedule;
 
-  static const _muscleColors = <String, List<Color>>{
-    'chest': [Color(0xFFfff1f2), Color(0xFFef4444), Color(0xFFfecdd3)],
-    'shoulders': [Color(0xFFfffbeb), Color(0xFFd97706), Color(0xFFfde68a)],
-    'triceps': [Color(0xFFf0f9ff), Color(0xFF0ea5e9), Color(0xFFbae6fd)],
-    'back': [Color(0xFFf0fdf4), Color(0xFF22c55e), Color(0xFFbbf7d0)],
-    'biceps': [Color(0xFFfdf4ff), Color(0xFFa855f7), Color(0xFFe9d5ff)],
-    'legs': [Color(0xFFeff6ff), Color(0xFF2563eb), Color(0xFFbfdbfe)],
-    'quads': [Color(0xFFeff6ff), Color(0xFF2563eb), Color(0xFFbfdbfe)],
-    'hamstrings': [Color(0xFFfefce8), Color(0xFFca8a04), Color(0xFFfef08a)],
-    'core': [Color(0xFFfff7ed), Color(0xFFea580c), Color(0xFFfed7aa)],
-    'calves': [Color(0xFFf0fdfa), Color(0xFF14b8a6), Color(0xFF99f6e4)],
-  };
-
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    final focusLabel = workoutSchedule?.focus.isNotEmpty == true
+        ? workoutSchedule!.focus
+        : (schedule.targetMuscles.isNotEmpty
+            ? schedule.targetMuscles.first
+            : 'Push Hypertrophy');
+    final durationLabel = workoutSchedule != null && workoutSchedule!.durationWeeks > 0
+        ? '${workoutSchedule!.durationWeeks} Weeks'
+        : '8 Weeks';
+    final frequencyLabel = workoutSchedule != null && workoutSchedule!.daysPerWeek > 0
+        ? '${workoutSchedule!.daysPerWeek} Days/Week'
+        : '${schedule.assignedWeekdays.length.clamp(3, 6)} Days/Week';
+    final equipmentLabel = workoutSchedule?.equipment.isNotEmpty == true
+        ? workoutSchedule!.equipment
+        : 'Full Gym';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Breadcrumb tag
+        // ── Eyebrow pill badge ─────────────────────────────────────
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           decoration: BoxDecoration(
-            color: const Color(0xFFf0fdfa),
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: const Color(0xFF99f6e4)),
-          ),
-          child: Text(
-            workoutSchedule != null
-                ? '${workoutSchedule!.focus} • ${workoutSchedule!.equipment} • ${workoutSchedule!.durationWeeks} Weeks'
-                : 'Push Hypertrophy • Active Split',
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF0f766e),
-              letterSpacing: 0.2,
+            color: colorScheme.primary.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: colorScheme.primary.withValues(alpha: 0.3),
             ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '${focusLabel.toUpperCase()} • WEEK 3',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: colorScheme.primary,
+                  letterSpacing: 0.6,
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 10),
 
-        // Title
+        // ── Major Title ────────────────────────────────────────────
         Text(
           schedule.name,
           style: TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.w800,
-            color: Theme.of(context).colorScheme.onSurface,
+            color: colorScheme.onSurface,
             letterSpacing: -0.6,
-            height: 1.1,
+            height: 1.15,
           ),
         ),
         const SizedBox(height: 12),
 
-        // Muscle tags
+        // ── Uniform Metadata Tags Row ──────────────────────────────
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: schedule.targetMuscles.map((m) {
-            final key = m.toLowerCase();
-            final colors = _muscleColors[key] ??
-                [
-                  const Color(0xFFf1f5f9),
-                  const Color(0xFF64748b),
-                  const Color(0xFFe2e8f0),
-                ];
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: colors[0],
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: colors[2]),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: colors[1],
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    m,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: colors[1],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
+          children: [
+            _MetaTagPill(
+              label: focusLabel,
+              hasMintDot: true,
+            ),
+            _MetaTagPill(
+              label: equipmentLabel,
+              hasMintDot: false,
+            ),
+            _MetaTagPill(
+              label: durationLabel,
+              hasMintDot: false,
+            ),
+            _MetaTagPill(
+              label: frequencyLabel,
+              hasMintDot: false,
+            ),
+          ],
         ),
       ],
     );
   }
 }
 
-// ── Metrics Bar ──────────────────────────────────────────────────────────────
-class _MetricsBar extends StatelessWidget {
-  const _MetricsBar({
+class _MetaTagPill extends StatelessWidget {
+  const _MetaTagPill({
+    required this.label,
+    required this.hasMintDot,
+  });
+
+  final String label;
+  final bool hasMintDot;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: hasMintDot
+                  ? colorScheme.primary
+                  : colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Stat Grid ────────────────────────────────────────────────────────────────
+class _StatGrid extends StatelessWidget {
+  const _StatGrid({
     required this.exerciseCount,
     required this.totalSets,
     required this.estimatedMinutes,
@@ -563,44 +655,44 @@ class _MetricsBar extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colorScheme.outlineVariant),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.04),
-            blurRadius: 20,
-            spreadRadius: -4,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      decoration: _buildCardDecoration(context, radius: 20),
       child: IntrinsicHeight(
         child: Row(
           children: [
-            _MetricStatCell(
-              icon: Icons.list_alt_rounded,
+            _StatColumn(
+              icon: Icons.format_list_bulleted_rounded,
               value: '$exerciseCount',
               label: 'Exercises',
             ),
-            const _VertDivider(),
-            _MetricStatCell(
+            VerticalDivider(
+              width: 1,
+              thickness: 1,
+              color: colorScheme.outlineVariant.withValues(alpha: 0.4),
+            ),
+            _StatColumn(
               icon: Icons.repeat_rounded,
               value: '$totalSets',
               label: 'Total Sets',
             ),
-            const _VertDivider(),
-            _MetricStatCell(
+            VerticalDivider(
+              width: 1,
+              thickness: 1,
+              color: colorScheme.outlineVariant.withValues(alpha: 0.4),
+            ),
+            _StatColumn(
               icon: Icons.access_time_rounded,
               value: '${estimatedMinutes}m',
               label: 'Est. Time',
             ),
-            const _VertDivider(),
-            _MetricStatCell(
+            VerticalDivider(
+              width: 1,
+              thickness: 1,
+              color: colorScheme.outlineVariant.withValues(alpha: 0.4),
+            ),
+            _StatColumn(
               icon: Icons.local_fire_department_rounded,
               value: '~$estimatedCalories',
-              label: 'Kcal',
+              label: 'Est. KCAL',
             ),
           ],
         ),
@@ -609,8 +701,8 @@ class _MetricsBar extends StatelessWidget {
   }
 }
 
-class _MetricStatCell extends StatelessWidget {
-  const _MetricStatCell({
+class _StatColumn extends StatelessWidget {
+  const _StatColumn({
     required this.icon,
     required this.value,
     required this.label,
@@ -623,18 +715,19 @@ class _MetricStatCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+
     return Expanded(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 32,
-            height: 32,
+            width: 34,
+            height: 34,
             decoration: BoxDecoration(
-              color: colorScheme.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
+              color: colorScheme.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 16, color: colorScheme.primary),
+            child: Icon(icon, size: 17, color: colorScheme.primary),
           ),
           const SizedBox(height: 6),
           Text(
@@ -651,8 +744,8 @@ class _MetricStatCell extends StatelessWidget {
             label.toUpperCase(),
             style: TextStyle(
               fontSize: 9,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface.withValues(alpha: 0.6),
+              fontWeight: FontWeight.w700,
+              color: colorScheme.onSurfaceVariant,
               letterSpacing: 0.4,
             ),
           ),
@@ -662,87 +755,57 @@ class _MetricStatCell extends StatelessWidget {
   }
 }
 
-class _VertDivider extends StatelessWidget {
-  const _VertDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 1,
-      height: double.infinity,
-      color: Theme.of(context).colorScheme.outlineVariant,
-    );
-  }
-}
-
 // ── Exercise Card ────────────────────────────────────────────────────────────
 class _ExerciseCard extends StatelessWidget {
   const _ExerciseCard({
     required this.index,
     required this.exercise,
-    required this.isFirst,
   });
 
   final int index;
   final ScheduleExercise exercise;
-  final bool isFirst;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final badgeBg = isFirst ? colorScheme.primary : colorScheme.surfaceContainerHighest;
-    final badgeFg = isFirst ? colorScheme.onPrimary : colorScheme.onSurfaceVariant;
+    final exerciseName = _resolveExerciseName(exercise.exerciseId, index);
+    final muscleName = _resolveMuscle(exercise.exerciseId, index);
 
     return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colorScheme.outlineVariant),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.04),
-            blurRadius: 20,
-            spreadRadius: -4,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: _buildCardDecoration(context, radius: 18),
       child: Row(
         children: [
-          // ── Index badge ────────────────────────────────────────────
+          // ── Sequence Circle (surfaceContainerHighest background, onSurface text) ──
           Container(
-            width: 34,
-            height: 34,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
-              color: badgeBg,
+              color: colorScheme.surfaceContainerHighest,
               shape: BoxShape.circle,
-              border: isFirst
-                  ? null
-                  : Border.all(color: colorScheme.outlineVariant),
             ),
             child: Center(
               child: Text(
                 '${index + 1}',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: FontWeight.w800,
-                  color: badgeFg,
+                  color: colorScheme.onSurface,
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
 
-          // ── Exercise info ──────────────────────────────────────────
+          // ── Exercise Detail ────────────────────────────────────────
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  // In a real join we'd resolve exerciseId → Exercise.name.
-                  // Here we use a meaningful placeholder derived from the id.
-                  _resolveExerciseName(exercise.exerciseId, index),
+                  exerciseName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -753,14 +816,46 @@ class _ExerciseCard extends StatelessWidget {
                 const SizedBox(height: 5),
                 Row(
                   children: [
-                    _MuscleBadge(muscle: _resolveMuscle(exercise.exerciseId, index)),
+                    // Muscle tag with mint dot
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 2.5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainer,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 5,
+                            height: 5,
+                            decoration: BoxDecoration(
+                              color: colorScheme.primary,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            muscleName,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       '${exercise.targetSets} sets × ${exercise.targetReps} reps',
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurface.withValues(alpha: 0.6),
+                        fontWeight: FontWeight.w500,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -769,15 +864,17 @@ class _ExerciseCard extends StatelessWidget {
             ),
           ),
 
-          // ── Chevron ────────────────────────────────────────────────
-          Icon(Icons.chevron_right_rounded,
-              color: colorScheme.onSurface.withValues(alpha: 0.4), size: 22),
+          // ── Trailing Chevron ───────────────────────────────────────
+          Icon(
+            Icons.chevron_right_rounded,
+            color: colorScheme.onSurface.withValues(alpha: 0.35),
+            size: 22,
+          ),
         ],
       ),
     );
   }
 
-  // Lookup helpers – in production these come from an Exercise repository join
   static const _exerciseNames = [
     'BB Bench Press',
     'Incline DB Press',
@@ -785,13 +882,15 @@ class _ExerciseCard extends StatelessWidget {
     'Overhead Press',
     'Lateral Raises',
     'Tricep Pushdowns',
-    'Overhead Tricep Extension',
   ];
 
   static const _muscleLabels = [
-    'Chest', 'Chest', 'Chest',
-    'Shoulders', 'Shoulders',
-    'Triceps', 'Triceps',
+    'Chest',
+    'Chest',
+    'Chest',
+    'Shoulders',
+    'Shoulders',
+    'Triceps',
   ];
 
   String _resolveExerciseName(String exerciseId, int index) {
@@ -808,73 +907,45 @@ class _ExerciseCard extends StatelessWidget {
 
   String _resolveMuscle(String exerciseId, int index) {
     final lower = exerciseId.toLowerCase();
-    if (lower.contains('bench') || lower.contains('chest') || lower.contains('flyes') || lower.contains('push_ups')) {
+    if (lower.contains('bench') ||
+        lower.contains('chest') ||
+        lower.contains('flyes') ||
+        lower.contains('push_ups')) {
       return 'Chest';
     }
-    if (lower.contains('squat') || lower.contains('leg') || lower.contains('calf')) {
+    if (lower.contains('squat') ||
+        lower.contains('leg') ||
+        lower.contains('calf')) {
       return 'Quads';
     }
-    if (lower.contains('row') || lower.contains('deadlift') || lower.contains('lat') || lower.contains('pull')) {
+    if (lower.contains('row') ||
+        lower.contains('deadlift') ||
+        lower.contains('lat') ||
+        lower.contains('pull')) {
       return 'Back';
     }
-    if (lower.contains('overhead') || lower.contains('lateral') || lower.contains('delt') || lower.contains('shoulder')) {
+    if (lower.contains('overhead') ||
+        lower.contains('lateral') ||
+        lower.contains('delt') ||
+        lower.contains('shoulder')) {
       return 'Shoulders';
     }
-    if (lower.contains('triceps') || lower.contains('pushdown') || lower.contains('skull') || lower.contains('dips')) {
+    if (lower.contains('triceps') ||
+        lower.contains('pushdown') ||
+        lower.contains('skull') ||
+        lower.contains('dips')) {
       return 'Triceps';
     }
     if (lower.contains('curl') || lower.contains('bicep')) {
       return 'Biceps';
     }
-    if (lower.contains('abs') || lower.contains('core') || lower.contains('rollout') || lower.contains('hollow') || lower.contains('raise')) {
+    if (lower.contains('abs') ||
+        lower.contains('core') ||
+        lower.contains('rollout')) {
       return 'Core';
     }
     if (index < _muscleLabels.length) return _muscleLabels[index];
-    return 'General';
-  }
-}
-
-// ── Muscle Badge ─────────────────────────────────────────────────────────────
-class _MuscleBadge extends StatelessWidget {
-  const _MuscleBadge({required this.muscle});
-  final String muscle;
-
-  static const _colors = <String, List<Color>>{
-    'Chest': [Color(0xFFfff1f2), Color(0xFFef4444), Color(0xFFfecdd3)],
-    'Shoulders': [Color(0xFFfffbeb), Color(0xFFd97706), Color(0xFFfde68a)],
-    'Triceps': [Color(0xFFf0f9ff), Color(0xFF0ea5e9), Color(0xFFbae6fd)],
-    'Back': [Color(0xFFf0fdf4), Color(0xFF22c55e), Color(0xFFbbf7d0)],
-    'Biceps': [Color(0xFFfdf4ff), Color(0xFFa855f7), Color(0xFFe9d5ff)],
-    'Quads': [Color(0xFFeff6ff), Color(0xFF2563eb), Color(0xFFbfdbfe)],
-    'Core': [Color(0xFFfff7ed), Color(0xFFea580c), Color(0xFFfed7aa)],
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = _colors[muscle] ??
-        [
-          const Color(0xFFf1f5f9),
-          const Color(0xFF64748b),
-          const Color(0xFFe2e8f0),
-        ];
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: colors[0],
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: colors[2]),
-      ),
-      child: Text(
-        muscle.toUpperCase(),
-        style: TextStyle(
-          fontSize: 9,
-          fontWeight: FontWeight.w700,
-          color: colors[1],
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
+    return 'Chest';
   }
 }
 
@@ -883,30 +954,33 @@ class _AddExerciseButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
-        color: colorScheme.surface.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(20),
+        color: colorScheme.surface.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: colorScheme.outlineVariant,
-          width: 2,
-          style: BorderStyle.solid,
+          color: colorScheme.outlineVariant.withValues(alpha: 0.7),
+          width: 1.5,
         ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.add_rounded,
-              size: 18, color: colorScheme.onSurface.withValues(alpha: 0.6)),
+          Icon(
+            Icons.add_rounded,
+            size: 18,
+            color: colorScheme.primary,
+          ),
           const SizedBox(width: 8),
           Text(
             'ADD AN EXERCISE',
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: colorScheme.onSurface.withValues(alpha: 0.6),
+              color: colorScheme.onSurfaceVariant,
               letterSpacing: 0.8,
             ),
           ),
@@ -926,50 +1000,53 @@ class _StickyStartDock extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     final colorScheme = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Container(
-      color: colorScheme.surface.withValues(alpha: 0.95),
+      decoration: BoxDecoration(
+        color: colorScheme.surface.withValues(alpha: 0.95),
+        border: Border(
+          top: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.25),
+          ),
+        ),
+      ),
       padding: EdgeInsets.only(
         left: 20,
         right: 20,
         top: 12,
-        bottom: bottomPadding + 12,
+        bottom: bottomPadding + 10,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Primary CTA
           GestureDetector(
             onTap: onStartTap,
             child: Container(
               width: double.infinity,
-              height: 56,
+              height: 54,
               decoration: BoxDecoration(
                 color: colorScheme.primary,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: colorScheme.primary.withValues(alpha: 0.28),
-                    blurRadius: 32,
-                    spreadRadius: -4,
-                    offset: const Offset(0, 12),
-                  ),
-                ],
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: isLight
+                    ? [
+                        BoxShadow(
+                          color: colorScheme.primary.withValues(alpha: 0.35),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ]
+                    : null,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: colorScheme.onPrimary.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(Icons.play_arrow_rounded,
-                        size: 18, color: colorScheme.onPrimary),
+                  Icon(
+                    Icons.play_arrow_rounded,
+                    size: 22,
+                    color: colorScheme.onPrimary,
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
                   Text(
                     'Start Workout',
                     style: TextStyle(
@@ -981,16 +1058,6 @@ class _StickyStartDock extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
-          ),
-          // iOS home indicator
-          const SizedBox(height: 8),
-          Container(
-            width: 120,
-            height: 4,
-            decoration: BoxDecoration(
-              color: colorScheme.outlineVariant,
-              borderRadius: BorderRadius.circular(2),
             ),
           ),
         ],
@@ -1011,8 +1078,11 @@ class _NotFoundBody extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.search_off_rounded,
-              size: 48, color: colorScheme.onSurface.withValues(alpha: 0.4)),
+          Icon(
+            Icons.search_off_rounded,
+            size: 48,
+            color: colorScheme.onSurface.withValues(alpha: 0.4),
+          ),
           const SizedBox(height: 12),
           Text(
             'Workout not found',
@@ -1025,8 +1095,10 @@ class _NotFoundBody extends StatelessWidget {
           const SizedBox(height: 20),
           TextButton(
             onPressed: onBack,
-            child: Text('Go Back',
-                style: TextStyle(color: colorScheme.primary)),
+            child: Text(
+              'Go Back',
+              style: TextStyle(color: colorScheme.primary),
+            ),
           ),
         ],
       ),
@@ -1046,8 +1118,11 @@ class _ErrorBody extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline_rounded,
-              size: 48, color: Color(0xFFef4444)),
+          Icon(
+            Icons.error_outline_rounded,
+            size: 48,
+            color: colorScheme.error,
+          ),
           const SizedBox(height: 12),
           Text(
             'Error: $error',
@@ -1060,8 +1135,10 @@ class _ErrorBody extends StatelessWidget {
           const SizedBox(height: 20),
           TextButton(
             onPressed: onBack,
-            child: Text('Go Back',
-                style: TextStyle(color: colorScheme.primary)),
+            child: Text(
+              'Go Back',
+              style: TextStyle(color: colorScheme.primary),
+            ),
           ),
         ],
       ),
