@@ -1,5 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../domain/entities/user_profile.dart';
+import '../providers/user_profile_provider.dart';
 import '../widgets/modals/modal_backdrop_helper.dart';
 
 /// FitTrack Settings Screen – Tab Index 3 of the main navigation dock.
@@ -7,11 +11,11 @@ import '../widgets/modals/modal_backdrop_helper.dart';
 /// Implemented strictly adhering to the Stitch design specification:
 /// - Top header with animated mint indicator dot
 /// - Search settings text field
-/// - Profile & Account Header Card with verified tick, PRO LIFTER badge, and "Manage Account"
+/// - Profile & Account Header Card with verified tick, dynamic avatar, and "Manage Account"
 /// - 4 grouped sections: Account & Security, Workout & Timers, App Preferences, Support & About
 /// - Status pill badges ("Biometrics On", "Enabled")
 /// - Outlined destructive Log Out button with confirmation dialog
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   void _showLogoutDialog(BuildContext context) {
@@ -183,9 +187,11 @@ class SettingsScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final userProfileAsync = ref.watch(userProfileProvider);
+    final profile = userProfileAsync.value;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -235,7 +241,7 @@ class SettingsScreen extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   // Profile & Account Header Card
-                  _buildProfileCard(context),
+                  _buildProfileCard(context, profile),
                   const SizedBox(height: 24),
 
                   // Section 1: ACCOUNT & SECURITY
@@ -437,12 +443,19 @@ class SettingsScreen extends StatelessWidget {
   }
 
   // ── Profile & Account Header Card ───────────────────────────────────────
-  Widget _buildProfileCard(BuildContext context) {
+  Widget _buildProfileCard(BuildContext context, UserProfile? profile) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final cardBg = theme.cardTheme.color ?? colorScheme.surface;
     final border = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+
+    final hasCustomImage = profile?.profileImagePath != null &&
+        File(profile!.profileImagePath!).existsSync();
+    final name = (profile?.name.trim().isNotEmpty == true) ? profile!.name : 'Dineth';
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : 'D';
+    final handle = '@${name.toLowerCase().replaceAll(' ', '')}.fit';
+    final experience = profile?.experienceLevel ?? 'Advanced';
 
     return InkWell(
       onTap: () => context.push('/settings/profile'),
@@ -472,26 +485,41 @@ class SettingsScreen extends StatelessWidget {
                   height: 56,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomLeft,
-                      end: Alignment.topRight,
-                      colors: [
-                        colorScheme.primary,
-                        colorScheme.primary.withValues(alpha: 0.75),
-                        colorScheme.tertiary,
-                      ],
+                    gradient: hasCustomImage
+                        ? null
+                        : LinearGradient(
+                            begin: Alignment.bottomLeft,
+                            end: Alignment.topRight,
+                            colors: [
+                              colorScheme.primary,
+                              colorScheme.primary.withValues(alpha: 0.75),
+                              colorScheme.tertiary,
+                            ],
+                          ),
+                    border: Border.all(
+                      color: colorScheme.primary.withValues(alpha: 0.3),
+                      width: 1.5,
                     ),
                   ),
-                  child: Center(
-                    child: Text(
-                      'D',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: colorScheme.onPrimary,
-                      ),
-                    ),
+                  child: ClipOval(
+                    child: hasCustomImage
+                        ? Image.file(
+                            File(profile.profileImagePath!),
+                            width: 56,
+                            height: 56,
+                            fit: BoxFit.cover,
+                          )
+                        : Center(
+                            child: Text(
+                              initial,
+                              style: TextStyle(
+                                fontFamily: 'Plus Jakarta Sans',
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                                color: colorScheme.onPrimary,
+                              ),
+                            ),
+                          ),
                   ),
                 ),
                 Positioned(
@@ -527,7 +555,7 @@ class SettingsScreen extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          'Dineth',
+                          name,
                           style: TextStyle(
                             fontFamily: 'Plus Jakarta Sans',
                             fontSize: 16,
@@ -548,7 +576,7 @@ class SettingsScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(100),
                         ),
                         child: Text(
-                          'PRO LIFTER',
+                          '${experience.toUpperCase()} LIFTER',
                           style: TextStyle(
                             fontFamily: 'Plus Jakarta Sans',
                             fontSize: 10,
@@ -562,7 +590,7 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '@dineth.fit',
+                    handle,
                     style: TextStyle(
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: 13,
