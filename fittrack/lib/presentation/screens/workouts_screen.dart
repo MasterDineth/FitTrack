@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -18,7 +20,6 @@ import '../providers/user_profile_provider.dart';
 ///   * Default Browse layout when search is inactive.
 ///   * Search Active layout when search input is focused or a category filter is selected.
 /// - Expandable bookmarks with "See All" / "Collapse" toggle (horizontal list vs 2-column grid).
-/// - FAB collapsing on scroll down via `ScrollController`.
 /// - Full bookmark toggling and routing to `/workouts/detail` with deep extra data.
 /// - 120px bottom padding to clear the floating FAB and persistent dock.
 class WorkoutsScreen extends ConsumerStatefulWidget {
@@ -35,7 +36,8 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
 
   bool _isSearchActive = false;
   bool _expandBookmarks = false;
-  bool _isFabExtended = true;
+  bool _isFabExtended = false;
+  Timer? _fabCollapseTimer;
 
   static const _filterOptions = <String>[
     'All',
@@ -64,23 +66,11 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
         setState(() {});
       }
     });
-
-    _scrollController.addListener(() {
-      final direction = _scrollController.position.userScrollDirection;
-      if (direction == ScrollDirection.reverse && _isFabExtended) {
-        setState(() {
-          _isFabExtended = false;
-        });
-      } else if (direction == ScrollDirection.forward && !_isFabExtended) {
-        setState(() {
-          _isFabExtended = true;
-        });
-      }
-    });
   }
 
   @override
   void dispose() {
+    _fabCollapseTimer?.cancel();
     _searchController.dispose();
     _searchFocusNode.dispose();
     _scrollController.dispose();
@@ -95,8 +85,105 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
     ref.read(schedulesNotifierProvider.notifier).updateSort(SortOption.relevant);
     setState(() {
       _isSearchActive = false;
-      _isFabExtended = true;
     });
+  }
+
+  void _expandFab() {
+    _fabCollapseTimer?.cancel();
+    setState(() => _isFabExtended = true);
+    _fabCollapseTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted && _isFabExtended) {
+        setState(() => _isFabExtended = false);
+      }
+    });
+  }
+
+  void _collapseFab() {
+    _fabCollapseTimer?.cancel();
+    if (_isFabExtended) {
+      setState(() => _isFabExtended = false);
+    }
+  }
+
+  void _handleFabTap() {
+    HapticFeedback.lightImpact();
+    if (_isFabExtended) {
+      _collapseFab();
+      context.push('/workouts/create-schedule');
+    } else {
+      _expandFab();
+    }
+  }
+
+  Widget _buildFAB(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
+    return TapRegion(
+      onTapOutside: (_) => _collapseFab(),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 2.0),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.fastOutSlowIn,
+          height: 56,
+          decoration: BoxDecoration(
+            color: colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: colorScheme.shadow.withValues(alpha: isDark ? 0.35 : 0.15),
+                blurRadius: 16,
+                spreadRadius: -2,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(28),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(28),
+              onTap: _handleFabTap,
+              child: AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.fastOutSlowIn,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.add_rounded,
+                        size: 24,
+                        color: colorScheme.onPrimaryContainer,
+                      ),
+                      if (_isFabExtended) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          'Create Schedule',
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.clip,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.2,
+                            color: colorScheme.onPrimaryContainer,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   String _sortLabel(SortOption sort) {
@@ -141,41 +228,15 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
       },
       child: Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 24.0),
-        child: FloatingActionButton.extended(
-          isExtended: _isFabExtended,
-          onPressed: () => context.push('/workouts/create-schedule'),
-          icon: const Icon(Icons.add, size: 22),
-          label: const Text(
-            'Create Schedule',
-            style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.2),
-          ),
-          backgroundColor: theme.colorScheme.primaryContainer,
-          foregroundColor: theme.colorScheme.onPrimaryContainer,
-          elevation: 4,
-        ),
-      ),
+      floatingActionButton: _buildFAB(context),
       body: SafeArea(
         bottom: false,
         child: NotificationListener<ScrollNotification>(
           onNotification: (notification) {
-            if (notification is UserScrollNotification) {
-              if (notification.direction == ScrollDirection.reverse && _isFabExtended) {
-                setState(() => _isFabExtended = false);
-              } else if (notification.direction == ScrollDirection.forward && !_isFabExtended) {
-                setState(() => _isFabExtended = true);
-              }
-            } else if (notification is ScrollUpdateNotification) {
-              final delta = notification.scrollDelta ?? 0;
-              if (delta > 2 && _isFabExtended) {
-                setState(() => _isFabExtended = false);
-              } else if (delta < -2 && !_isFabExtended) {
-                setState(() => _isFabExtended = true);
-              }
-              if (notification.metrics.pixels <= 10 && !_isFabExtended) {
-                setState(() => _isFabExtended = true);
-              }
+            if (_isFabExtended &&
+                notification is UserScrollNotification &&
+                notification.direction != ScrollDirection.idle) {
+              _collapseFab();
             }
             return false;
           },
