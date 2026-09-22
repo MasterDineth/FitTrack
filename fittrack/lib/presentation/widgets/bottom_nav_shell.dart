@@ -61,7 +61,7 @@ class _BottomNavShellState extends State<BottomNavShell> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              backgroundColor: const Color(0xFF0f172a),
+              backgroundColor: Theme.of(context).colorScheme.inverseSurface,
             ),
           );
           return;
@@ -73,7 +73,7 @@ class _BottomNavShellState extends State<BottomNavShell> {
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFf7f9fb),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: widget.navigationShell,
         bottomNavigationBar: _FloatingDock(
           currentIndex: widget.navigationShell.currentIndex,
@@ -118,6 +118,9 @@ class _FloatingDock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Container(
@@ -132,21 +135,21 @@ class _FloatingDock extends StatelessWidget {
         height: 68,
         decoration: BoxDecoration(
           // Glassmorphic background
-          color: Colors.white.withValues(alpha: 0.92),
+          color: colorScheme.surface.withValues(alpha: 0.92),
           borderRadius: BorderRadius.circular(28),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.8),
+            color: colorScheme.outlineVariant,
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF0f172a).withValues(alpha: 0.10),
+              color: colorScheme.shadow.withValues(alpha: isDark ? 0.35 : 0.08),
               blurRadius: 32,
               spreadRadius: -4,
               offset: const Offset(0, 12),
             ),
             BoxShadow(
-              color: const Color(0xFF0f172a).withValues(alpha: 0.04),
+              color: colorScheme.shadow.withValues(alpha: isDark ? 0.20 : 0.04),
               blurRadius: 12,
               spreadRadius: -2,
               offset: const Offset(0, 4),
@@ -160,6 +163,9 @@ class _FloatingDock extends StatelessWidget {
             children: List.generate(_tabs.length, (index) {
               final tab = _tabs[index];
               final isActive = currentIndex == index;
+              final unselectedColor =
+                  colorScheme.onSurface.withValues(alpha: 0.6);
+
               return Expanded(
                 child: GestureDetector(
                   onTap: () => onTap(index),
@@ -173,33 +179,30 @@ class _FloatingDock extends StatelessWidget {
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 220),
                           curve: Curves.easeInOut,
-                          width: 48,
+                          width: 44,
                           height: 32,
                           decoration: BoxDecoration(
                             color: isActive
-                                ? const Color(0xFF00d68f).withValues(alpha: 0.12)
+                                ? colorScheme.primaryContainer
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
                             isActive ? tab.activeIcon : tab.icon,
                             size: 20,
-                            color: isActive
-                                ? const Color(0xFF00d68f)
-                                : const Color(0xFF64748b),
+                            color: isActive ? colorScheme.onPrimaryContainer : unselectedColor,
                           ),
                         ),
                         const SizedBox(height: 2),
                         AnimatedDefaultTextStyle(
                           duration: const Duration(milliseconds: 220),
                           style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
                             fontSize: 10,
                             fontWeight: isActive
                                 ? FontWeight.w700
                                 : FontWeight.w500,
-                            color: isActive
-                                ? const Color(0xFF00d68f)
-                                : const Color(0xFF64748b),
+                            color: isActive ? colorScheme.primary : unselectedColor,
                             letterSpacing: -0.2,
                           ),
                           child: Text(tab.label),

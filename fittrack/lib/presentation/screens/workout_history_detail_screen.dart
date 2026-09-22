@@ -21,16 +21,16 @@ class _WorkoutHistoryDetailScreenState
   /// Index of the currently expanded exercise card. Null = none.
   int? _expandedIndex = 0; // auto-expand first
 
-  static const Color _bg = Color(0xFFf8fafc);
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final session =
         ref.watch(workoutSessionByIdProvider(widget.sessionId));
 
     if (session == null) {
       return Scaffold(
-        backgroundColor: _bg,
+        backgroundColor: theme.scaffoldBackgroundColor,
         body: const Center(child: Text('Session not found.')),
       );
     }
@@ -39,7 +39,7 @@ class _WorkoutHistoryDetailScreenState
     final exercises = _buildMockExercises(session);
 
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -51,30 +51,30 @@ class _WorkoutHistoryDetailScreenState
                 children: [
                   IconButton(
                     onPressed: () => context.pop(),
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.chevron_left_rounded,
                       size: 28,
-                      color: Color(0xFF0f172a),
+                      color: colorScheme.onSurface,
                     ),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Workout Details',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF0f172a),
+                        color: colorScheme.onSurface,
                         letterSpacing: -0.3,
                       ),
                     ),
                   ),
                   IconButton(
                     onPressed: () {},
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.share_outlined,
                       size: 20,
-                      color: Color(0xFF64748b),
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -104,12 +104,12 @@ class _WorkoutHistoryDetailScreenState
                     ],
 
                     // ── Exercises header ──────────────────────────────────
-                    const Text(
+                    Text(
                       'EXERCISES',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF94a3b8),
+                        color: colorScheme.onSurfaceVariant,
                         letterSpacing: 1.2,
                       ),
                     ),
@@ -397,18 +397,21 @@ class _HeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final dateStr =
         DateFormat('MMM d, yyyy').format(session.startTime);
     final timeStr = DateFormat('h:mm a').format(session.startTime);
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardTheme.color ?? colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -421,9 +424,13 @@ class _HeroCard extends StatelessWidget {
           // Top accent stripe
           Container(
             height: 4,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF34d399), Color(0xFF0d9488), Color(0xFF00d68f)],
+                colors: [
+                  colorScheme.primary.withValues(alpha: 0.7),
+                  colorScheme.primary,
+                  colorScheme.primary.withValues(alpha: 0.85),
+                ],
               ),
             ),
           ),
@@ -441,10 +448,10 @@ class _HeroCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFf0fdf4),
+                        color: colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                            color: const Color(0xFFbbf7d0)),
+                            color: colorScheme.primary.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -452,18 +459,18 @@ class _HeroCard extends StatelessWidget {
                           Container(
                             width: 6,
                             height: 6,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF22c55e),
+                            decoration: BoxDecoration(
+                              color: colorScheme.primary,
                               shape: BoxShape.circle,
                             ),
                           ),
                           const SizedBox(width: 5),
-                          const Text(
+                          Text(
                             'Completed',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF166534),
+                              color: colorScheme.onPrimaryContainer,
                             ),
                           ),
                         ],
@@ -500,10 +507,10 @@ class _HeroCard extends StatelessWidget {
 
                 Text(
                   _scheduleTitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 19,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF0f172a),
+                    color: colorScheme.onSurface,
                     letterSpacing: -0.3,
                   ),
                 ),
@@ -534,7 +541,7 @@ class _HeroCard extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 14),
-                const Divider(height: 1, color: Color(0xFFf1f5f9)),
+                Divider(height: 1, color: colorScheme.outlineVariant),
                 const SizedBox(height: 14),
 
                 // 3×2 metrics grid
@@ -563,7 +570,7 @@ class _HeroCard extends StatelessWidget {
                       Expanded(
                         child: _MiniMetric(
                           icon: Icons.fitness_center_rounded,
-                          iconColor: const Color(0xFF00d68f),
+                          iconColor: colorScheme.primary,
                           value: '${session.totalSets}',
                           label: 'Sets',
                         ),
@@ -631,13 +638,16 @@ class _MiniMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       constraints: const BoxConstraints(minHeight: 84),
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFFf8fafc),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -657,11 +667,11 @@ class _MiniMetric extends StatelessWidget {
             fit: BoxFit.scaleDown,
             child: Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF0f172a),
-                fontFeatures: [FontFeature.tabularFigures()],
+                color: colorScheme.onSurface,
+                fontFeatures: const [FontFeature.tabularFigures()],
               ),
               maxLines: 1,
             ),
@@ -669,10 +679,10 @@ class _MiniMetric extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF94a3b8),
+              color: colorScheme.onSurfaceVariant,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -692,30 +702,33 @@ class _NotesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardTheme.color ?? colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.notes_rounded,
                 size: 16,
-                color: Color(0xFF00d68f),
+                color: colorScheme.primary,
               ),
               const SizedBox(width: 6),
-              const Text(
+              Text(
                 'Session Notes',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF94a3b8),
+                  color: colorScheme.onSurfaceVariant,
                   letterSpacing: 0.5,
                 ),
               ),
@@ -724,9 +737,9 @@ class _NotesCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             notes,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: Color(0xFF1e293b),
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w500,
               height: 1.5,
             ),
@@ -779,6 +792,8 @@ class _ExerciseAccordion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final isSkipped = exercise.isSkipped;
     final totalVolume =
         exercise.sets.fold(0.0, (s, e) => s + e.volume);
@@ -788,19 +803,19 @@ class _ExerciseAccordion extends StatelessWidget {
       curve: Curves.easeInOut,
       decoration: BoxDecoration(
         color: isSkipped
-            ? const Color(0xFFfafafa)
-            : Colors.white,
+            ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.5)
+            : (theme.cardTheme.color ?? colorScheme.surface),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isExpanded
-              ? const Color(0xFF00d68f).withValues(alpha: 0.4)
-              : const Color(0xFFe2e8f0),
+              ? colorScheme.primary.withValues(alpha: 0.5)
+              : colorScheme.outlineVariant,
           width: isExpanded ? 1.5 : 1,
         ),
         boxShadow: isExpanded
             ? [
                 BoxShadow(
-                  color: const Color(0xFF00d68f).withValues(alpha: 0.08),
+                  color: colorScheme.primary.withValues(alpha: 0.12),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 )
@@ -824,8 +839,8 @@ class _ExerciseAccordion extends StatelessWidget {
                     height: 32,
                     decoration: BoxDecoration(
                       color: isSkipped
-                          ? const Color(0xFFf1f5f9)
-                          : const Color(0xFFf0fdf4),
+                          ? colorScheme.surfaceContainerHighest
+                          : colorScheme.primary,
                       borderRadius: BorderRadius.circular(9),
                     ),
                     child: Center(
@@ -835,8 +850,8 @@ class _ExerciseAccordion extends StatelessWidget {
                           fontWeight: FontWeight.w800,
                           fontSize: 13,
                           color: isSkipped
-                              ? const Color(0xFF94a3b8)
-                              : const Color(0xFF166534),
+                              ? colorScheme.onSurface.withValues(alpha: 0.5)
+                              : colorScheme.onPrimary,
                         ),
                       ),
                     ),
@@ -858,8 +873,8 @@ class _ExerciseAccordion extends StatelessWidget {
                                   fontWeight: FontWeight.w700,
                                   fontSize: 14,
                                   color: isSkipped
-                                      ? const Color(0xFF94a3b8)
-                                      : const Color(0xFF0f172a),
+                                      ? colorScheme.onSurface.withValues(alpha: 0.5)
+                                      : colorScheme.onSurface,
                                 ),
                               ),
                             ),
@@ -870,7 +885,7 @@ class _ExerciseAccordion extends StatelessWidget {
                                   horizontal: 7, vertical: 2),
                               decoration: BoxDecoration(
                                 color: isSkipped
-                                    ? const Color(0xFFf1f5f9)
+                                    ? colorScheme.surfaceContainerHighest
                                     : _muscleColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(6),
                               ),
@@ -880,7 +895,7 @@ class _ExerciseAccordion extends StatelessWidget {
                                   fontSize: 9,
                                   fontWeight: FontWeight.w800,
                                   color: isSkipped
-                                      ? const Color(0xFFcbd5e1)
+                                      ? colorScheme.onSurface.withValues(alpha: 0.5)
                                       : _muscleColor,
                                 ),
                               ),
@@ -915,9 +930,9 @@ class _ExerciseAccordion extends StatelessWidget {
                           Text(
                             '${exercise.sets.length} sets'
                             ' · ${totalVolume.toStringAsFixed(0)} kg total',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
-                              color: Color(0xFF94a3b8),
+                              color: colorScheme.onSurfaceVariant,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -929,19 +944,19 @@ class _ExerciseAccordion extends StatelessWidget {
 
                   // Chevron or lock
                   if (isSkipped)
-                    const Icon(
+                    Icon(
                       Icons.lock_outline_rounded,
                       size: 16,
-                      color: Color(0xFFcbd5e1),
+                      color: colorScheme.onSurface.withValues(alpha: 0.4),
                     )
                   else
                     AnimatedRotation(
                       turns: isExpanded ? 0.5 : 0,
                       duration: const Duration(milliseconds: 220),
-                      child: const Icon(
+                      child: Icon(
                         Icons.keyboard_arrow_down_rounded,
                         size: 22,
-                        color: Color(0xFF94a3b8),
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                 ],
@@ -971,12 +986,15 @@ class _SetLogTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFf8fafc),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         children: [
@@ -993,7 +1011,7 @@ class _SetLogTable extends StatelessWidget {
               ],
             ),
           ),
-          const Divider(height: 1, color: Color(0xFFe2e8f0)),
+          Divider(height: 1, color: colorScheme.outlineVariant),
           // Rows
           ...sets.indexed.map((r) {
             final i = r.$1;
@@ -1003,18 +1021,18 @@ class _SetLogTable extends StatelessWidget {
                   horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: i.isEven
-                    ? Colors.white.withValues(alpha: 0.6)
+                    ? colorScheme.surface.withValues(alpha: 0.6)
                     : Colors.transparent,
               ),
               child: Row(
                 children: [
-                  _ColCell('${s.number}', flex: 1, bold: true),
-                  _ColCell('${s.weightKg} kg', flex: 2),
-                  _ColCell('${s.reps}', flex: 2),
+                  _ColCell('${s.number}', flex: 1, bold: true, color: colorScheme.onSurface),
+                  _ColCell('${s.weightKg} kg', flex: 2, color: colorScheme.onSurface),
+                  _ColCell('${s.reps}', flex: 2, color: colorScheme.onSurface),
                   _ColCell(
                     '${s.volume.toStringAsFixed(0)} kg',
                     flex: 2,
-                    color: const Color(0xFF00d68f),
+                    color: colorScheme.primary,
                   ),
                 ],
               ),
@@ -1037,10 +1055,10 @@ class _ColHeader extends StatelessWidget {
         flex: flex,
         child: Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF94a3b8),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
             letterSpacing: 0.5,
           ),
         ),
@@ -1052,13 +1070,13 @@ class _ColCell extends StatelessWidget {
     this.text, {
     required this.flex,
     this.bold = false,
-    this.color = const Color(0xFF0f172a),
+    this.color,
   });
 
   final String text;
   final int flex;
   final bool bold;
-  final Color color;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) => Expanded(
@@ -1068,7 +1086,7 @@ class _ColCell extends StatelessWidget {
           style: TextStyle(
             fontSize: 13,
             fontWeight: bold ? FontWeight.w800 : FontWeight.w600,
-            color: color,
+            color: color ?? Theme.of(context).colorScheme.onSurface,
             fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),

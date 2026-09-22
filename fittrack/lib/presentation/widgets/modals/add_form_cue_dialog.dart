@@ -12,9 +12,6 @@ class AddFormCueDialog extends StatefulWidget {
 }
 
 class _AddFormCueDialogState extends State<AddFormCueDialog> {
-  static const Color _mint = Color(0xFF00d68f);
-  static const Color _dark = Color(0xFF0f172a);
-
   bool _isPositive = true;
   final _controller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -27,8 +24,10 @@ class _AddFormCueDialogState extends State<AddFormCueDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
       ),
@@ -41,13 +40,12 @@ class _AddFormCueDialogState extends State<AddFormCueDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
-              const Text(
+              Text(
                 'Add Form Cue',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: _dark,
+                  color: colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 4),
@@ -55,7 +53,7 @@ class _AddFormCueDialogState extends State<AddFormCueDialog> {
                 'Guide users with DO tips or warn with DON\'T mistakes.',
                 style: TextStyle(
                   fontSize: 13,
-                  color: _dark.withValues(alpha: 0.55),
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
               const SizedBox(height: 20),
@@ -63,14 +61,14 @@ class _AddFormCueDialogState extends State<AddFormCueDialog> {
               // DO / DON'T toggle
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFFf1f5f9),
+                  color: colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 padding: const EdgeInsets.all(4),
                 child: Row(
                   children: [
-                    _buildToggleChip('✓  DO', true),
-                    _buildToggleChip('✗  DON\'T', false),
+                    _buildToggleChip('✓  DO', true, colorScheme),
+                    _buildToggleChip('✗  DON\'T', false, colorScheme),
                   ],
                 ),
               ),
@@ -80,23 +78,26 @@ class _AddFormCueDialogState extends State<AddFormCueDialog> {
               TextFormField(
                 controller: _controller,
                 maxLines: 3,
+                style: TextStyle(color: colorScheme.onSurface),
                 decoration: InputDecoration(
                   hintText:
                       _isPositive ? 'e.g. Keep chest up throughout the movement' : 'e.g. Don\'t flare elbows out',
-                  hintStyle: TextStyle(color: _dark.withValues(alpha: 0.38)),
+                  hintStyle: TextStyle(
+                    color: colorScheme.onSurface.withValues(alpha: 0.4),
+                  ),
                   filled: true,
-                  fillColor: const Color(0xFFf8fafc),
+                  fillColor: colorScheme.surfaceContainerLow,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFe2e8f0)),
+                    borderSide: BorderSide(color: colorScheme.outlineVariant),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFe2e8f0)),
+                    borderSide: BorderSide(color: colorScheme.outlineVariant),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: _mint, width: 1.5),
+                    borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
                   ),
                 ),
                 validator: (v) => (v == null || v.trim().isEmpty)
@@ -112,8 +113,8 @@ class _AddFormCueDialogState extends State<AddFormCueDialog> {
                 child: ElevatedButton(
                   onPressed: _submit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _mint,
-                    foregroundColor: _dark,
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -135,7 +136,7 @@ class _AddFormCueDialogState extends State<AddFormCueDialog> {
     );
   }
 
-  Widget _buildToggleChip(String label, bool isPositiveValue) {
+  Widget _buildToggleChip(String label, bool isPositiveValue, ColorScheme colorScheme) {
     final isSelected = _isPositive == isPositiveValue;
     return Expanded(
       child: GestureDetector(
@@ -145,7 +146,9 @@ class _AddFormCueDialogState extends State<AddFormCueDialog> {
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             color: isSelected
-                ? (isPositiveValue ? _mint : const Color(0xFFef4444))
+                ? (isPositiveValue
+                    ? colorScheme.primaryContainer
+                    : colorScheme.errorContainer)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
@@ -155,7 +158,11 @@ class _AddFormCueDialogState extends State<AddFormCueDialog> {
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 13,
-                color: isSelected ? _dark : const Color(0xFF64748b),
+                color: isSelected
+                    ? (isPositiveValue
+                        ? colorScheme.onPrimaryContainer
+                        : colorScheme.onErrorContainer)
+                    : colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ),
@@ -165,12 +172,13 @@ class _AddFormCueDialogState extends State<AddFormCueDialog> {
   }
 
   void _submit() {
-    if (_formKey.currentState?.validate() != true) return;
-    Navigator.of(context).pop(
-      FormCueDraft(
-        isPositive: _isPositive,
-        description: _controller.text.trim(),
-      ),
-    );
+    if (_formKey.currentState?.validate() ?? false) {
+      Navigator.of(context).pop(
+        FormCueDraft(
+          description: _controller.text.trim(),
+          isPositive: _isPositive,
+        ),
+      );
+    }
   }
 }

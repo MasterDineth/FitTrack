@@ -5,27 +5,30 @@ class AboutScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF7F9FB),
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
             size: 20,
-            color: Color(0xFF0F172A),
+            color: colorScheme.onSurface,
           ),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
-        title: const Text(
+        title: Text(
           'About FitTrack',
           style: TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontSize: 18,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
+            color: colorScheme.onSurface,
           ),
         ),
         centerTitle: true,
@@ -38,32 +41,32 @@ class AboutScreen extends StatelessWidget {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: const Color(0xFF00D68F).withValues(alpha: 0.15),
+                color: colorScheme.primaryContainer,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.fitness_center_rounded,
-                color: Color(0xFF00D68F),
+                color: colorScheme.onPrimaryContainer,
                 size: 32,
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'FitTrack',
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF0F172A),
+                color: colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               'Version 1.4.2 (Latest)',
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: 14,
-                color: Color(0xFF64748B),
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ],

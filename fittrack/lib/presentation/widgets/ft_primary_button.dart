@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 
 /// Reusable primary CTA button with kinetic-mint gradient and glow shadow.
 class FtPrimaryButton extends StatefulWidget {
@@ -56,6 +55,10 @@ class _FtPrimaryButtonState extends State<FtPrimaryButton>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final primary = widget.backgroundColor ?? colorScheme.primary;
+    final onPrimary = widget.textColor ?? colorScheme.onPrimary;
+
     return GestureDetector(
       onTapDown: (_) => _scaleController.forward(),
       onTapUp: (_) {
@@ -73,8 +76,11 @@ class _FtPrimaryButtonState extends State<FtPrimaryButton>
           decoration: BoxDecoration(
             color: widget.backgroundColor,
             gradient: widget.backgroundColor == null
-                ? const LinearGradient(
-                    colors: [AppColors.kineticMint, Color(0xFF00F0A0)],
+                ? LinearGradient(
+                    colors: [
+                      primary,
+                      primary.withValues(alpha: 0.85),
+                    ],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   )
@@ -82,8 +88,7 @@ class _FtPrimaryButtonState extends State<FtPrimaryButton>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: (widget.backgroundColor ?? AppColors.kineticMint)
-                    .withValues(alpha: 0.38),
+                color: primary.withValues(alpha: 0.35),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
                 spreadRadius: -4,
@@ -91,14 +96,13 @@ class _FtPrimaryButtonState extends State<FtPrimaryButton>
             ],
           ),
           child: widget.isLoading
-              ? const Center(
+              ? Center(
                   child: SizedBox(
                     width: 22,
                     height: 22,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(AppColors.slateDark),
+                      valueColor: AlwaysStoppedAnimation<Color>(onPrimary),
                     ),
                   ),
                 )
@@ -108,7 +112,7 @@ class _FtPrimaryButtonState extends State<FtPrimaryButton>
                     Text(
                       widget.label,
                       style: TextStyle(
-                        color: widget.textColor ?? AppColors.slateDark,
+                        color: onPrimary,
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.2,

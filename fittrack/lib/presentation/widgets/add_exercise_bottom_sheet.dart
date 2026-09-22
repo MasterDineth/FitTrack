@@ -29,9 +29,6 @@ final _exercisesProvider = FutureProvider.autoDispose((ref) {
 
 class _AddExerciseBottomSheetState
     extends ConsumerState<AddExerciseBottomSheet> {
-  static const Color _mint = Color(0xFF00d68f);
-  static const Color _dark = Color(0xFF0f172a);
-
   String _query = '';
   String? _selectedMuscleFilter;
   final Set<String> _selectedIds = {};
@@ -44,6 +41,7 @@ class _AddExerciseBottomSheetState
   @override
   Widget build(BuildContext context) {
     final exercisesAsync = ref.watch(_exercisesProvider);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.9,
@@ -52,15 +50,15 @@ class _AddExerciseBottomSheetState
       expand: false,
       builder: (context, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFFf7f9fb),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
             children: [
               // ── Header ────────────────────────────────────────────────────
               Container(
-                color: Colors.white,
+                color: colorScheme.surface,
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                 child: Column(
                   children: [
@@ -70,18 +68,18 @@ class _AddExerciseBottomSheetState
                       height: 4,
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFe2e8f0),
+                        color: colorScheme.outlineVariant,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
                     Row(
                       children: [
-                        const Text(
+                        Text(
                           'Add Exercise',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
-                            color: _dark,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         const Spacer(),
@@ -91,15 +89,15 @@ class _AddExerciseBottomSheetState
                               horizontal: 10, vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: _mint,
+                              color: colorScheme.primaryContainer,
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
                               '${_selectedIds.length} selected',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
-                                color: _dark,
+                                color: colorScheme.onPrimaryContainer,
                               ),
                             ),
                           ),
@@ -110,11 +108,13 @@ class _AddExerciseBottomSheetState
                     // Search bar
                     TextField(
                       onChanged: (v) => setState(() => _query = v),
+                      style: TextStyle(color: colorScheme.onSurface, fontSize: 14),
                       decoration: InputDecoration(
                         hintText: 'Search exercises…',
-                        prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                        hintStyle: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 14),
+                        prefixIcon: Icon(Icons.search_rounded, size: 20, color: colorScheme.onSurface.withValues(alpha: 0.5)),
                         filled: true,
-                        fillColor: const Color(0xFFf1f5f9),
+                        fillColor: colorScheme.surfaceContainerLow,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -151,12 +151,12 @@ class _AddExerciseBottomSheetState
                               ),
                               decoration: BoxDecoration(
                                 color:
-                                    isActive ? _mint : Colors.white,
+                                    isActive ? colorScheme.primaryContainer : colorScheme.surface,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
                                   color: isActive
-                                      ? _mint
-                                      : const Color(0xFFe2e8f0),
+                                      ? colorScheme.primary
+                                      : colorScheme.outlineVariant,
                                 ),
                               ),
                               child: Text(
@@ -165,8 +165,8 @@ class _AddExerciseBottomSheetState
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   color: isActive
-                                      ? _dark
-                                      : const Color(0xFF64748b),
+                                      ? colorScheme.onPrimaryContainer
+                                      : colorScheme.onSurface.withValues(alpha: 0.6),
                                 ),
                               ),
                             ),
@@ -282,18 +282,16 @@ class _ExerciseTile extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onToggle;
 
-  static const Color _mint = Color(0xFF00d68f);
-  static const Color _dark = Color(0xFF0f172a);
-
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isSelected ? _mint : const Color(0xFFe2e8f0),
+          color: isSelected ? colorScheme.primary : colorScheme.outlineVariant,
           width: isSelected ? 1.5 : 1,
         ),
       ),
@@ -304,18 +302,18 @@ class _ExerciseTile extends StatelessWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: _mint.withValues(alpha: 0.12),
+            color: colorScheme.primary.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Icon(Icons.fitness_center_rounded,
-              color: _mint, size: 22),
+          child: Icon(Icons.fitness_center_rounded,
+              color: colorScheme.primary, size: 22),
         ),
         title: Text(
           exercise.name,
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 14,
-            color: _dark,
+            color: colorScheme.onSurface,
           ),
         ),
         subtitle: Row(
@@ -330,12 +328,12 @@ class _ExerciseTile extends StatelessWidget {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: isSelected ? _mint : const Color(0xFFf1f5f9),
+            color: isSelected ? colorScheme.primary : colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             isSelected ? Icons.check_rounded : Icons.add_rounded,
-            color: isSelected ? _dark : const Color(0xFF64748b),
+            color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface.withValues(alpha: 0.6),
             size: 18,
           ),
         ),
@@ -351,17 +349,18 @@ class _Tag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: const Color(0xFFf1f5f9),
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 11,
-          color: Color(0xFF64748b),
+          color: colorScheme.onSurface.withValues(alpha: 0.6),
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -382,20 +381,18 @@ class _BottomTray extends StatelessWidget {
   final VoidCallback onAddSelected;
   final VoidCallback onCreateNew;
 
-  static const Color _mint = Color(0xFF00d68f);
-  static const Color _dark = Color(0xFF0f172a);
-
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: EdgeInsets.fromLTRB(
         20, 16, 20, 16 + MediaQuery.of(context).padding.bottom,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: colorScheme.shadow.withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(0, -4),
           ),
@@ -410,8 +407,8 @@ class _BottomTray extends StatelessWidget {
               icon: const Icon(Icons.add_circle_outline_rounded, size: 16),
               label: const Text('Create New'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: _dark,
-                side: const BorderSide(color: Color(0xFFe2e8f0)),
+                foregroundColor: colorScheme.onSurface,
+                side: BorderSide(color: colorScheme.outlineVariant),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -427,9 +424,9 @@ class _BottomTray extends StatelessWidget {
             child: ElevatedButton(
               onPressed: selectedCount > 0 ? onAddSelected : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: _mint,
-                foregroundColor: _dark,
-                disabledBackgroundColor: const Color(0xFFe2e8f0),
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+                disabledBackgroundColor: colorScheme.surfaceContainerHighest,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

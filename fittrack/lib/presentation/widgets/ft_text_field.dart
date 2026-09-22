@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 
 /// Reusable labeled text field matching the FitTrack Stitch design.
 class FtTextField extends StatelessWidget {
@@ -34,15 +33,17 @@ class FtTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w700,
-            color: AppColors.slate800,
+            color: colorScheme.onSurface,
             letterSpacing: 0.4,
           ),
         ),
@@ -54,16 +55,16 @@ class FtTextField extends StatelessWidget {
           enabled: enabled,
           textInputAction: textInputAction,
           onFieldSubmitted: onSubmitted,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: AppColors.slateDark,
+            color: colorScheme.onSurface,
           ),
           decoration: InputDecoration(
             hintText: placeholder,
-            hintStyle: const TextStyle(
+            hintStyle: TextStyle(
               fontSize: 14,
-              color: AppColors.slate400,
+              color: colorScheme.onSurface.withValues(alpha: 0.4),
               fontWeight: FontWeight.w400,
             ),
             prefixIcon: prefixIcon != null
@@ -77,41 +78,39 @@ class FtTextField extends StatelessWidget {
             suffixIcon: suffixIcon,
             errorText: errorText,
             helperText: helperText,
-            helperStyle: const TextStyle(
+            helperStyle: TextStyle(
               fontSize: 11,
-              color: AppColors.slate400,
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
             ),
-            errorStyle: const TextStyle(
+            errorStyle: TextStyle(
               fontSize: 11,
-              color: AppColors.errorRed,
+              color: colorScheme.error,
             ),
             filled: true,
-            fillColor: AppColors.surface,
+            fillColor: colorScheme.surfaceContainerLow,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 14,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.slate200),
+              borderSide: BorderSide(color: colorScheme.outlineVariant),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.slate200),
+              borderSide: BorderSide(color: colorScheme.outlineVariant),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  const BorderSide(color: AppColors.kineticMint, width: 2),
+              borderSide: BorderSide(color: colorScheme.primary, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.errorRed),
+              borderSide: BorderSide(color: colorScheme.error),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  const BorderSide(color: AppColors.errorRed, width: 2),
+              borderSide: BorderSide(color: colorScheme.error, width: 2),
             ),
           ),
         ),

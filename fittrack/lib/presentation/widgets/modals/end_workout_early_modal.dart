@@ -6,11 +6,6 @@ import 'modal_backdrop_helper.dart';
 import 'save_session_modal.dart';
 
 /// Shows the End Workout Early bottom sheet with backdrop blur.
-/// The sheet has:
-///   - Session stats summary
-///   - Disabled "Finish & Save" if session < 2 min OR 0 sets done
-///   - Launches modern SaveSessionModal (Stitch ID: b42dc5d85712471eaaf22f1f2cc118e6)
-///   - Launches modern DiscardWorkoutModal (Stitch ID: a9255ebb92064a47ab69b52063e5e9f9)
 Future<void> showEndWorkoutEarlyModal(
   BuildContext context, {
   required ActiveWorkoutState state,
@@ -44,26 +39,25 @@ class _EndWorkoutEarlySheet extends StatelessWidget {
       onFinishAndSave;
   final VoidCallback onDiscard;
 
-  static const Color _mint = Color(0xFF00d68f);
-  static const Color _dark = Color(0xFF0f172a);
-
   bool get _canSave =>
       state.elapsedSeconds >= 120 && state.completedSetCount > 0;
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       constraints: const BoxConstraints(maxWidth: 460),
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
-        boxShadow: const [
+        border: Border.all(color: colorScheme.outlineVariant),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x33000000),
+            color: colorScheme.shadow.withValues(alpha: 0.15),
             blurRadius: 36,
-            offset: Offset(0, 14),
+            offset: const Offset(0, 14),
           ),
         ],
       ),
@@ -82,7 +76,7 @@ class _EndWorkoutEarlySheet extends StatelessWidget {
             width: 44,
             height: 5,
             decoration: BoxDecoration(
-              color: const Color(0xFFE2E8F0),
+              color: colorScheme.outlineVariant,
               borderRadius: BorderRadius.circular(3),
             ),
           ),
@@ -94,23 +88,26 @@ class _EndWorkoutEarlySheet extends StatelessWidget {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: const Color(0xFFfef2f2),
+              color: colorScheme.errorContainer,
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFfecaca), width: 1.5),
+              border: Border.all(
+                color: colorScheme.error.withValues(alpha: 0.3),
+                width: 1.5,
+              ),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.stop_circle_outlined,
               size: 32,
-              color: Color(0xFFef4444),
+              color: colorScheme.onErrorContainer,
             ),
           ),
 
           const SizedBox(height: 14),
 
-          const Text(
+          Text(
             'End Workout Early?',
             style: TextStyle(
-              color: Color(0xFF0f172a),
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w900,
               fontSize: 22,
               letterSpacing: -0.3,
@@ -123,7 +120,7 @@ class _EndWorkoutEarlySheet extends StatelessWidget {
             'Save your progress so far or discard the session.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: _dark.withValues(alpha: 0.5),
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
               fontSize: 13,
               fontWeight: FontWeight.w500,
             ),
@@ -134,41 +131,40 @@ class _EndWorkoutEarlySheet extends StatelessWidget {
           // ── Stats row ────────────────────────────────────────────────────
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFFf8fafc),
+              color: colorScheme.surfaceContainerLow,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFe2e8f0)),
+              border: Border.all(color: colorScheme.outlineVariant),
             ),
-            padding:
-                const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
             child: Row(
               children: [
                 _QuickStat(
                   label: 'Time',
                   value: state.elapsedFormatted,
                   icon: Icons.timer_outlined,
-                  color: const Color(0xFF0d9488),
+                  color: colorScheme.primary,
                 ),
-                _vDivider(),
+                _vDivider(colorScheme.outlineVariant),
                 _QuickStat(
                   label: 'Sets',
                   value: '${state.completedSetCount}',
                   icon: Icons.repeat_rounded,
-                  color: _mint,
+                  color: colorScheme.primary,
                 ),
-                _vDivider(),
+                _vDivider(colorScheme.outlineVariant),
                 _QuickStat(
                   label: 'Exercises',
                   value:
                       '${state.entries.where((e) => state.completedSets.any((s) => s.exerciseId == e.exerciseId)).length}/${state.entries.length}',
                   icon: Icons.fitness_center_rounded,
-                  color: const Color(0xFF8b5cf6),
+                  color: Colors.purple,
                 ),
-                _vDivider(),
+                _vDivider(colorScheme.outlineVariant),
                 _QuickStat(
                   label: 'Calories',
                   value: '${state.estimatedCalories}',
                   icon: Icons.local_fire_department_rounded,
-                  color: const Color(0xFFf97316),
+                  color: Colors.orange,
                 ),
               ],
             ),
@@ -182,16 +178,16 @@ class _EndWorkoutEarlySheet extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFFBEB),
+                color: Colors.amber.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFFDE68A)),
+                border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
                   const Icon(
                     Icons.warning_amber_rounded,
                     size: 16,
-                    color: Color(0xFFD97706),
+                    color: Colors.amber,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -199,10 +195,10 @@ class _EndWorkoutEarlySheet extends StatelessWidget {
                       state.elapsedSeconds < 120
                           ? 'Session too short to save (minimum 2 minutes)'
                           : 'No sets completed — nothing to save',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF92400E),
+                        color: Colors.amber.shade800,
                       ),
                     ),
                   ),
@@ -212,11 +208,10 @@ class _EndWorkoutEarlySheet extends StatelessWidget {
             const SizedBox(height: 14),
           ],
 
-          // ── Finish & Save (Launches SaveSessionModal) ─────────────────────
+          // ── Finish & Save ────────────────────────────────────────────────
           FilledButton.icon(
             onPressed: _canSave
                 ? () {
-                    // Close this sheet and present modern SaveSessionModal
                     Navigator.of(context).pop();
                     showSaveSessionModal(
                       context,
@@ -227,16 +222,20 @@ class _EndWorkoutEarlySheet extends StatelessWidget {
                     );
                   }
                 : null,
-            icon: const Icon(Icons.save_alt_rounded, size: 18),
-            label: const Text(
+            icon: Icon(Icons.save_alt_rounded, size: 18, color: _canSave ? colorScheme.onPrimary : null),
+            label: Text(
               'Finish & Save',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 15,
+                color: _canSave ? colorScheme.onPrimary : null,
+              ),
             ),
             style: FilledButton.styleFrom(
-              backgroundColor: _mint,
-              foregroundColor: _dark,
-              disabledBackgroundColor: const Color(0xFFe2e8f0),
-              disabledForegroundColor: const Color(0xFF94a3b8),
+              backgroundColor: colorScheme.primary,
+              foregroundColor: colorScheme.onPrimary,
+              disabledBackgroundColor: colorScheme.surfaceContainerHighest,
+              disabledForegroundColor: colorScheme.onSurface.withValues(alpha: 0.38),
               minimumSize: const Size(double.infinity, 52),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -246,10 +245,9 @@ class _EndWorkoutEarlySheet extends StatelessWidget {
 
           const SizedBox(height: 8),
 
-          // ── Discard (Launches DiscardWorkoutModal) ────────────────────────
+          // ── Discard ──────────────────────────────────────────────────────
           OutlinedButton.icon(
             onPressed: () {
-              // Close this sheet and present modern DiscardWorkoutModal
               Navigator.of(context).pop();
               showDiscardWorkoutModal(
                 context,
@@ -257,14 +255,14 @@ class _EndWorkoutEarlySheet extends StatelessWidget {
                 onDiscard: onDiscard,
               );
             },
-            icon: const Icon(Icons.delete_outline_rounded, size: 18),
-            label: const Text(
+            icon: Icon(Icons.delete_outline_rounded, size: 18, color: colorScheme.error),
+            label: Text(
               'Discard Workout',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: colorScheme.error),
             ),
             style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFFef4444),
-              side: const BorderSide(color: Color(0xFFfecaca)),
+              foregroundColor: colorScheme.error,
+              side: BorderSide(color: colorScheme.error.withValues(alpha: 0.3)),
               minimumSize: const Size(double.infinity, 50),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -279,7 +277,7 @@ class _EndWorkoutEarlySheet extends StatelessWidget {
             child: Text(
               'Keep Training',
               style: TextStyle(
-                color: _dark.withValues(alpha: 0.45),
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
               ),
@@ -290,10 +288,10 @@ class _EndWorkoutEarlySheet extends StatelessWidget {
     );
   }
 
-  Widget _vDivider() => Container(
+  Widget _vDivider(Color color) => Container(
         width: 1,
         height: 36,
-        color: const Color(0xFFe2e8f0),
+        color: color,
       );
 }
 
@@ -314,6 +312,7 @@ class _QuickStat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Expanded(
       child: Column(
         children: [
@@ -321,8 +320,8 @@ class _QuickStat extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
-              color: Color(0xFF0f172a),
+            style: TextStyle(
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w800,
               fontSize: 14,
             ),
@@ -330,8 +329,8 @@ class _QuickStat extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(
-              color: Color(0xFF94a3b8),
+            style: TextStyle(
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
               fontSize: 10,
               fontWeight: FontWeight.w600,
             ),

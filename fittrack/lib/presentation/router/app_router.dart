@@ -14,9 +14,10 @@ import '../screens/set_new_password_screen.dart';
 import '../screens/telemetry_setup_screen.dart';
 import '../screens/fitness_profile_setup_screen.dart';
 import '../screens/dashboard_screen.dart';
-import '../screens/workout_schedules_screen.dart';
+import '../screens/workouts_screen.dart';
 import '../screens/workout_detail_screen.dart';
 import '../screens/create_schedule_screen.dart';
+import '../../domain/entities/workout_schedule.dart';
 import '../screens/create_custom_exercise_screen.dart';
 import '../screens/active_workout_screen.dart';
 import '../screens/exercise_guide_details_screen.dart';
@@ -124,6 +125,22 @@ GoRouter router(Ref ref) {
         builder: (context, state) => const FitnessProfileSetupScreen(),
       ),
       GoRoute(
+        path: '/workouts/detail',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final extra = state.extra;
+          if (extra is WorkoutSchedule) {
+            return WorkoutDetailScreen(
+              scheduleId: extra.id,
+              workoutSchedule: extra,
+            );
+          }
+          return WorkoutDetailScreen(
+            scheduleId: (extra as dynamic)?.id?.toString() ?? '',
+          );
+        },
+      ),
+      GoRoute(
         path: '/workouts/detail/:scheduleId',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => WorkoutDetailScreen(
@@ -167,11 +184,6 @@ GoRouter router(Ref ref) {
         ),
       ),
       GoRoute(
-        path: '/settings/profile',
-        parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const ProfileScreen(),
-      ),
-      GoRoute(
         path: '/settings/account',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const AccountDetailsScreen(),
@@ -202,6 +214,11 @@ GoRouter router(Ref ref) {
         builder: (context, state) => const DataManagementScreen(),
       ),
       GoRoute(
+        path: '/settings/data/erase',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const EraseDataScreen(),
+      ),
+      GoRoute(
         path: '/settings/workout-preferences',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const WorkoutPreferencesScreen(),
@@ -215,6 +232,11 @@ GoRouter router(Ref ref) {
         path: '/settings/help',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const HelpCenterScreen(),
+      ),
+      GoRoute(
+        path: '/settings/profile',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(
         path: '/settings/about',
@@ -240,7 +262,7 @@ GoRouter router(Ref ref) {
             routes: [
               GoRoute(
                 path: '/workouts',
-                builder: (context, state) => const WorkoutSchedulesScreen(),
+                builder: (context, state) => const WorkoutsScreen(),
               ),
             ],
           ),

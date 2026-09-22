@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../theme/app_colors.dart';
 import '../widgets/ft_logo_emblem.dart';
 import '../providers/auth_provider.dart';
 
@@ -77,9 +76,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   Widget build(BuildContext context) {
     // Watch auth state — GoRouter will redirect once it resolves.
     ref.watch(authProvider);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           // Ambient glow orbs
@@ -93,7 +94,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.kineticMint.withValues(alpha: 0.15),
+                    colorScheme.primary.withValues(alpha: 0.15),
                     Colors.transparent,
                   ],
                 ),
@@ -110,7 +111,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFF064E3B).withValues(alpha: 0.12),
+                    colorScheme.primary.withValues(alpha: 0.08),
                     Colors.transparent,
                   ],
                 ),
@@ -146,12 +147,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                               shape: BoxShape.circle,
                               gradient: RadialGradient(
                                 colors: [
-                                  AppColors.kineticMint.withValues(alpha: 0.22),
+                                  colorScheme.primary.withValues(alpha: 0.22),
                                   Colors.transparent,
                                 ],
                               ),
                             ),
-                            child: Center(
+                            child: const Center(
                               child: FtLogoEmblem(size: 96),
                             ),
                           ),
@@ -163,19 +164,20 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               RichText(
-                                text: const TextSpan(
+                                text: TextSpan(
                                   style: TextStyle(
                                     fontSize: 38,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: -0.8,
-                                    color: AppColors.slateDark,
+                                    color: colorScheme.onSurface,
                                   ),
                                   children: [
-                                    TextSpan(text: 'Fit'),
+                                    const TextSpan(text: 'Fit'),
                                     TextSpan(
                                       text: 'Track',
                                       style: TextStyle(
-                                          color: AppColors.kineticMint),
+                                        color: colorScheme.primary,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -183,28 +185,28 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                               // Ping dot
                               Padding(
                                 padding: const EdgeInsets.only(top: 6, left: 3),
-                                child: _PingDot(),
+                                child: _PingDot(color: colorScheme.primary),
                               ),
                             ],
                           ),
 
                           const SizedBox(height: 6),
-                          const Text(
+                          Text(
                             'SMART HYPERTROPHY & TELEMETRY',
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
                               letterSpacing: 2.5,
-                              color: AppColors.slate400,
+                              color: colorScheme.onSurface.withValues(alpha: 0.5),
                             ),
                           ),
                           const SizedBox(height: 12),
-                          const Text(
+                          Text(
                             'Your high-performance personal fitness companion',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.slate500,
+                              color: colorScheme.onSurface.withValues(alpha: 0.7),
                             ),
                           ),
                         ],
@@ -228,25 +230,25 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                             children: [
                               Row(
                                 children: [
-                                  _PulsingDot(),
+                                  _PulsingDot(color: colorScheme.primary),
                                   const SizedBox(width: 8),
                                   Text(
                                     _loadingMessage(p),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
-                                      color: AppColors.slate600,
+                                      color: colorScheme.onSurface.withValues(alpha: 0.7),
                                     ),
                                   ),
                                 ],
                               ),
                               Text(
                                 '$pct%',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w800,
                                   fontFamily: 'monospace',
-                                  color: AppColors.slateDark,
+                                  color: colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -257,23 +259,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                             borderRadius: BorderRadius.circular(99),
                             child: Container(
                               height: 7,
-                              color: AppColors.slate200,
+                              color: colorScheme.outlineVariant.withValues(alpha: 0.5),
                               child: Stack(
                                 children: [
                                   FractionallySizedBox(
                                     widthFactor: p,
                                     child: Container(
                                       decoration: BoxDecoration(
-                                        gradient: const LinearGradient(
+                                        gradient: LinearGradient(
                                           colors: [
-                                            Color(0xFF0D5C4A),
-                                            Color(0xFF059669),
-                                            AppColors.kineticMint,
+                                            colorScheme.primary.withValues(alpha: 0.7),
+                                            colorScheme.primary,
                                           ],
                                         ),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: AppColors.kineticMint
+                                            color: colorScheme.primary
                                                 .withValues(alpha: 0.5),
                                             blurRadius: 12,
                                           ),
@@ -303,8 +304,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                                 gradient: LinearGradient(
                                                   colors: [
                                                     Colors.transparent,
-                                                    Colors.white
-                                                        .withValues(alpha: 0.5),
+                                                    colorScheme.onPrimary
+                                                        .withValues(alpha: 0.4),
                                                     Colors.transparent,
                                                   ],
                                                 ),
@@ -326,14 +327,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                               Icon(
                                 Icons.verified_user,
                                 size: 12,
-                                color: AppColors.kineticMintDark,
+                                color: colorScheme.primary,
                               ),
                               const SizedBox(width: 4),
-                              const Text(
+                              Text(
                                 'End-to-End Vault',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: AppColors.slate400,
+                                  color: colorScheme.onSurface.withValues(alpha: 0.5),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -341,17 +342,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                               Container(
                                 width: 3,
                                 height: 3,
-                                decoration: const BoxDecoration(
+                                decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: AppColors.slate400,
+                                  color: colorScheme.onSurface.withValues(alpha: 0.3),
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              const Text(
+                              Text(
                                 'v2.4.0 Pro',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: AppColors.slate400,
+                                  color: colorScheme.onSurface.withValues(alpha: 0.5),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -372,6 +373,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 }
 
 class _PingDot extends StatefulWidget {
+  const _PingDot({required this.color});
+  final Color color;
+
   @override
   State<_PingDot> createState() => _PingDotState();
 }
@@ -405,15 +409,14 @@ class _PingDotState extends State<_PingDot>
         children: [
           AnimatedBuilder(
             animation: _c,
-            builder: (_, __) => Transform.scale(
+            builder: (_, _) => Transform.scale(
               scale: 1 + _c.value,
               child: Container(
                 width: 8,
                 height: 8,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color:
-                      AppColors.kineticMint.withValues(alpha: 1 - _c.value),
+                  color: widget.color.withValues(alpha: 1 - _c.value),
                 ),
               ),
             ),
@@ -421,9 +424,9 @@ class _PingDotState extends State<_PingDot>
           Container(
             width: 7,
             height: 7,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.kineticMintDark,
+              color: widget.color,
             ),
           ),
         ],
@@ -433,6 +436,9 @@ class _PingDotState extends State<_PingDot>
 }
 
 class _PulsingDot extends StatefulWidget {
+  const _PulsingDot({required this.color});
+  final Color color;
+
   @override
   State<_PulsingDot> createState() => _PulsingDotState();
 }
@@ -460,16 +466,12 @@ class _PulsingDotState extends State<_PulsingDot>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _c,
-      builder: (_, __) => Container(
+      builder: (_, _) => Container(
         width: 6,
         height: 6,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Color.lerp(
-            AppColors.kineticMint,
-            AppColors.kineticMintDark,
-            _c.value,
-          ),
+          color: widget.color.withValues(alpha: 0.6 + 0.4 * _c.value),
         ),
       ),
     );

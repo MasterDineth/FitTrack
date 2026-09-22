@@ -4,13 +4,6 @@ import '../../providers/active_workout_provider.dart';
 import 'modal_backdrop_helper.dart';
 
 /// Shows the modern Save Session Modal from Stitch (ID: b42dc5d85712471eaaf22f1f2cc118e6).
-/// Features:
-///   - Full-screen stationary dimmed backdrop blur
-///   - Illuminated mint hero icon with cloud save & checkmark badge
-///   - Title: "Save this session?"
-///   - Session Progress telemetry card (Time, Sets, Exercises, Est. Burn)
-///   - Primary button: "Yes, Save It" with kinetic mint glow
-///   - Secondary button: "Keep Training"
 Future<void> showSaveSessionModal(
   BuildContext context, {
   required ActiveWorkoutState state,
@@ -41,18 +34,10 @@ class _SaveSessionCard extends StatefulWidget {
 class _SaveSessionCardState extends State<_SaveSessionCard> {
   bool _saving = false;
 
-  static const Color _mint = Color(0xFF00D68F);
-  static const Color _mintDark = Color(0xFF00B578);
-  static const Color _mintSoft = Color(0xFFE6FBF3);
-  static const Color _mintBorder = Color(0xFFABF3D6);
-  static const Color _slate900 = Color(0xFF0F172A);
-  static const Color _slate800 = Color(0xFF1E293B);
-  static const Color _slate700 = Color(0xFF334155);
-  static const Color _slate500 = Color(0xFF64748B);
-  static const Color _slate400 = Color(0xFF94A3B8);
-
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final completedCount = widget.state.entries
         .where(
           (e) => widget.state.completedSets.any((s) => s.exerciseId == e.exerciseId),
@@ -67,14 +52,14 @@ class _SaveSessionCardState extends State<_SaveSessionCard> {
       constraints: const BoxConstraints(maxWidth: 460),
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(36),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
-        boxShadow: const [
+        border: Border.all(color: colorScheme.outlineVariant),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x33000000),
+            color: colorScheme.shadow.withValues(alpha: 0.15),
             blurRadius: 36,
-            offset: Offset(0, 14),
+            offset: const Offset(0, 14),
           ),
         ],
       ),
@@ -96,7 +81,7 @@ class _SaveSessionCardState extends State<_SaveSessionCard> {
                   width: 44,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFCBD5E1),
+                    color: colorScheme.outlineVariant,
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -109,14 +94,14 @@ class _SaveSessionCardState extends State<_SaveSessionCard> {
                 child: Container(
                   width: 32,
                   height: 32,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF1F5F9),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest,
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.close_rounded),
-                    color: _slate500,
+                    color: colorScheme.onSurface.withValues(alpha: 0.7),
                     iconSize: 18,
                     visualDensity: VisualDensity.compact,
                     splashRadius: 18,
@@ -125,7 +110,7 @@ class _SaveSessionCardState extends State<_SaveSessionCard> {
                 ),
               ),
 
-              // ── Illuminated Mint Hero Icon Pill ────────────────────────────
+              // ── Hero Icon Pill ────────────────────────────────────────────
               SizedBox(
                 width: 68,
                 height: 68,
@@ -135,21 +120,24 @@ class _SaveSessionCardState extends State<_SaveSessionCard> {
                       width: 64,
                       height: 64,
                       decoration: BoxDecoration(
-                        color: _mintSoft,
+                        color: colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: _mintBorder, width: 1.2),
+                        border: Border.all(
+                          color: colorScheme.primary.withValues(alpha: 0.3),
+                          width: 1.2,
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: _mint.withValues(alpha: 0.25),
+                            color: colorScheme.primary.withValues(alpha: 0.25),
                             blurRadius: 16,
                             offset: const Offset(0, 4),
                           ),
                         ],
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.cloud_done_outlined,
-                          color: _mintDark,
+                          color: colorScheme.onPrimaryContainer,
                           size: 32,
                         ),
                       ),
@@ -161,14 +149,14 @@ class _SaveSessionCardState extends State<_SaveSessionCard> {
                         width: 22,
                         height: 22,
                         decoration: BoxDecoration(
-                          color: _mint,
+                          color: colorScheme.primary,
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
+                          border: Border.all(color: colorScheme.surface, width: 2),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Icon(
                             Icons.check,
-                            color: _slate900,
+                            color: colorScheme.onPrimary,
                             size: 13,
                           ),
                         ),
@@ -180,24 +168,24 @@ class _SaveSessionCardState extends State<_SaveSessionCard> {
               const SizedBox(height: 14),
 
               // ── Title & Value Reassurance ──────────────────────────────────
-              const Text(
+              Text(
                 'Save this session?',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: _slate900,
+                  color: colorScheme.onSurface,
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.3,
                 ),
               ),
               const SizedBox(height: 6),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Text(
                   'Your completed sets, reps, and workout telemetry will be securely stored to your training log.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: _slate500,
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                     fontSize: 13.5,
                     fontWeight: FontWeight.w500,
                     height: 1.4,
@@ -209,9 +197,9 @@ class _SaveSessionCardState extends State<_SaveSessionCard> {
               // ── Session Telemetry Summary Card ─────────────────────────────
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF7F9FB),
+                  color: colorScheme.surfaceContainerLow,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: Border.all(color: colorScheme.outlineVariant),
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 child: Column(
@@ -221,41 +209,48 @@ class _SaveSessionCardState extends State<_SaveSessionCard> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             'SESSION PROGRESS',
                             style: TextStyle(
-                              color: _slate500,
+                              color: colorScheme.onSurface.withValues(alpha: 0.6),
                               fontWeight: FontWeight.w700,
                               fontSize: 10.5,
                               letterSpacing: 0.8,
                             ),
                           ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: const BoxDecoration(
-                                  color: _mint,
-                                  shape: BoxShape.circle,
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: colorScheme.primaryContainer,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primary,
+                                    shape: BoxShape.circle,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 5),
-                              const Text(
-                                'Ready to sync',
-                                style: TextStyle(
-                                  color: _mintDark,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 11,
+                                const SizedBox(width: 5),
+                                Text(
+                                  'Ready to sync',
+                                  style: TextStyle(
+                                    color: colorScheme.onPrimaryContainer,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 11,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                    Divider(height: 1, color: colorScheme.outlineVariant),
                     const SizedBox(height: 10),
                     Row(
                       children: [
@@ -267,7 +262,7 @@ class _SaveSessionCardState extends State<_SaveSessionCard> {
                             value: widget.state.elapsedFormatted,
                           ),
                         ),
-                        _divider(),
+                        _divider(colorScheme.outlineVariant),
                         // 2: Sets
                         Expanded(
                           child: _TelemetryMetric(
@@ -276,7 +271,7 @@ class _SaveSessionCardState extends State<_SaveSessionCard> {
                             value: '${widget.state.completedSetCount}',
                           ),
                         ),
-                        _divider(),
+                        _divider(colorScheme.outlineVariant),
                         // 3: Exercises
                         Expanded(
                           child: _TelemetryMetric(
@@ -285,12 +280,12 @@ class _SaveSessionCardState extends State<_SaveSessionCard> {
                             value: '$completedCount / $totalCount',
                           ),
                         ),
-                        _divider(),
+                        _divider(colorScheme.outlineVariant),
                         // 4: Est. Burn
                         Expanded(
                           child: _TelemetryMetric(
                             icon: Icons.local_fire_department_rounded,
-                            iconColor: const Color(0xFFF59E0B),
+                            iconColor: Colors.orange,
                             label: 'Est. Burn',
                             richValue: RichText(
                               textAlign: TextAlign.center,
@@ -298,16 +293,16 @@ class _SaveSessionCardState extends State<_SaveSessionCard> {
                                 children: [
                                   TextSpan(
                                     text: '${widget.state.estimatedCalories} ',
-                                    style: const TextStyle(
-                                      color: _slate800,
+                                    style: TextStyle(
+                                      color: colorScheme.onSurface,
                                       fontSize: 14,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
-                                  const TextSpan(
+                                  TextSpan(
                                     text: 'kcal',
                                     style: TextStyle(
-                                      color: _slate400,
+                                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                                       fontSize: 10,
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -331,7 +326,7 @@ class _SaveSessionCardState extends State<_SaveSessionCard> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: _mint.withValues(alpha: 0.45),
+                      color: colorScheme.primary.withValues(alpha: 0.35),
                       blurRadius: 18,
                       offset: const Offset(0, 4),
                     ),
@@ -350,25 +345,26 @@ class _SaveSessionCardState extends State<_SaveSessionCard> {
                           }
                         },
                   icon: _saving
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 18,
                           height: 18,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: _slate900,
+                            color: colorScheme.onPrimary,
                           ),
                         )
-                      : const Icon(Icons.save_rounded, size: 20),
+                      : Icon(Icons.save_rounded, size: 20, color: colorScheme.onPrimary),
                   label: Text(
                     _saving ? 'Saving...' : 'Yes, Save It',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 15.5,
+                      color: colorScheme.onPrimary,
                     ),
                   ),
                   style: FilledButton.styleFrom(
-                    backgroundColor: _mint,
-                    foregroundColor: _slate900,
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
                     minimumSize: const Size(double.infinity, 52),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -382,17 +378,18 @@ class _SaveSessionCardState extends State<_SaveSessionCard> {
               // Secondary Action: Keep Training
               FilledButton.icon(
                 onPressed: _saving ? null : () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.play_arrow_rounded, size: 20),
-                label: const Text(
+                icon: Icon(Icons.play_arrow_rounded, size: 20, color: colorScheme.onSurface),
+                label: Text(
                   'Keep Training',
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFF1F5F9),
-                  foregroundColor: _slate700,
+                  backgroundColor: colorScheme.surfaceContainerHighest,
+                  foregroundColor: colorScheme.onSurface,
                   minimumSize: const Size(double.infinity, 48),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -403,11 +400,11 @@ class _SaveSessionCardState extends State<_SaveSessionCard> {
               const SizedBox(height: 12),
 
               // ── Microcopy Dismiss Hint ─────────────────────────────────────
-              const Text(
+              Text(
                 'Tap outside or swipe down to cancel',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: _slate400,
+                  color: colorScheme.onSurface.withValues(alpha: 0.5),
                   fontSize: 11.5,
                   fontWeight: FontWeight.w500,
                 ),
@@ -419,11 +416,11 @@ class _SaveSessionCardState extends State<_SaveSessionCard> {
     );
   }
 
-  Widget _divider() {
+  Widget _divider(Color color) {
     return Container(
       width: 1,
       height: 30,
-      color: const Color(0xFFE2E8F0),
+      color: color,
     );
   }
 }
@@ -445,6 +442,7 @@ class _TelemetryMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -452,15 +450,19 @@ class _TelemetryMetric extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 12, color: iconColor ?? const Color(0xFF94A3B8)),
+            Icon(
+              icon,
+              size: 12,
+              color: iconColor ?? colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
             const SizedBox(width: 3),
             Flexible(
               child: Text(
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Color(0xFF94A3B8),
+                style: TextStyle(
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 10.5,
                   fontWeight: FontWeight.w600,
                 ),
@@ -473,8 +475,8 @@ class _TelemetryMetric extends StatelessWidget {
             Text(
               value ?? '',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF1E293B),
+              style: TextStyle(
+                color: colorScheme.onSurface,
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
               ),

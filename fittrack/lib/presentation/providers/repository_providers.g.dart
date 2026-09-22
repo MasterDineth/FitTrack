@@ -91,7 +91,7 @@ final class UserRepositoryProvider
   }
 }
 
-String _$userRepositoryHash() => r'568d084ff40cfcde34fbcae41bd36cdbba5d1118';
+String _$userRepositoryHash() => r'52341a8219e1f9f697e0111873cd3bca44d342cf';
 
 @ProviderFor(scheduleRepository)
 final scheduleRepositoryProvider = ScheduleRepositoryProvider._();
@@ -236,3 +236,97 @@ final class ExerciseRepositoryProvider
 
 String _$exerciseRepositoryHash() =>
     r'a484562bb533b2e343472675ab332a13a7426327';
+
+@ProviderFor(securityRepository)
+final securityRepositoryProvider = SecurityRepositoryProvider._();
+
+final class SecurityRepositoryProvider
+    extends
+        $FunctionalProvider<
+          ISecurityRepository,
+          ISecurityRepository,
+          ISecurityRepository
+        >
+    with $Provider<ISecurityRepository> {
+  SecurityRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'securityRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$securityRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<ISecurityRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  ISecurityRepository create(Ref ref) {
+    return securityRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ISecurityRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ISecurityRepository>(value),
+    );
+  }
+}
+
+String _$securityRepositoryHash() =>
+    r'fbdc023a9206056afc2ce6860944fe3485bbaf28';
+
+@ProviderFor(themeRepository)
+final themeRepositoryProvider = ThemeRepositoryProvider._();
+
+final class ThemeRepositoryProvider
+    extends
+        $FunctionalProvider<
+          IThemeRepository,
+          IThemeRepository,
+          IThemeRepository
+        >
+    with $Provider<IThemeRepository> {
+  ThemeRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'themeRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$themeRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<IThemeRepository> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  IThemeRepository create(Ref ref) {
+    return themeRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(IThemeRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<IThemeRepository>(value),
+    );
+  }
+}
+
+String _$themeRepositoryHash() => r'0f31e09dc6e3b2f206f29f959ddb67ead342b2e5';

@@ -20,8 +20,6 @@ class ActiveWorkoutScreen extends ConsumerStatefulWidget {
 
 class _ActiveWorkoutScreenState
     extends ConsumerState<ActiveWorkoutScreen> {
-  static const Color _bg = Color(0xFFf7f9fb);
-
   bool _initialized = false;
 
   @override
@@ -41,13 +39,15 @@ class _ActiveWorkoutScreenState
   Widget build(BuildContext context) {
     final state = ref.watch(activeWorkoutProvider);
     final notifier = ref.read(activeWorkoutProvider.notifier);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     // ── Loading ──────────────────────────────────────────────────────────────
     if (state.phase == WorkoutPhase.loading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFFf7f9fb),
+      return Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFF00d68f)),
+          child: CircularProgressIndicator(color: colorScheme.primary),
         ),
       );
     }
@@ -55,7 +55,7 @@ class _ActiveWorkoutScreenState
     // ── Error ────────────────────────────────────────────────────────────────
     if (state.phase == WorkoutPhase.error) {
       return Scaffold(
-        backgroundColor: _bg,
+        backgroundColor: theme.scaffoldBackgroundColor,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -81,10 +81,10 @@ class _ActiveWorkoutScreenState
         if (mounted) context.pushReplacement('/workouts/summary');
       });
       // Show a transient loading scaffold while navigation happens
-      return const Scaffold(
-        backgroundColor: Color(0xFFf7f9fb),
+      return Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFF00d68f)),
+          child: CircularProgressIndicator(color: colorScheme.primary),
         ),
       );
     }
@@ -94,10 +94,10 @@ class _ActiveWorkoutScreenState
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) context.go('/dashboard');
       });
-      return const Scaffold(
-        backgroundColor: Color(0xFFf7f9fb),
+      return Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFF00d68f)),
+          child: CircularProgressIndicator(color: colorScheme.primary),
         ),
       );
     }
@@ -111,30 +111,20 @@ class _ActiveWorkoutScreenState
         _showPaused(context, state, notifier);
       },
       child: Scaffold(
-        backgroundColor: _bg,
-        body: SafeArea(
-          child: Stack(
-            children: [
-              // ── Scrollable body ─────────────────────────────────────────
-              CustomScrollView(
-                clipBehavior: Clip.none,
-                slivers: [
-                  // Sticky header
-                  SliverAppBar(
-                    pinned: true,
-                    backgroundColor: _bg.withValues(alpha: 0.95),
-                    elevation: 0,
-                    scrolledUnderElevation: 0,
-                    automaticallyImplyLeading: false,
-                    title: _WorkoutHeader(
-                      state: state,
-                      onSettingsTap: () => _showSessionOptions(context, state, notifier),
-                    ),
+        backgroundColor: theme.scaffoldBackgroundColor,
+        body: Stack(
+          children: [
+            // ── Scrollable body ─────────────────────────────────────────
+            CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    MediaQuery.paddingOf(context).top + 68,
+                    16,
+                    MediaQuery.paddingOf(context).bottom + 130,
                   ),
-
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 120),
-                    sliver: SliverList(
+                  sliver: SliverList(
                       delegate: SliverChildListDelegate([
                         // Render the entire list: Past, Active, and Upcoming
                         ...state.entries.asMap().entries.map((mapEntry) {
@@ -234,20 +224,30 @@ class _ActiveWorkoutScreenState
                 ],
               ),
 
-              // ── Sticky footer ───────────────────────────────────────────
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: _SessionFooter(
-                  state: state,
-                  notifier: notifier,
-                  onPause: () => _showPaused(context, state, notifier),
-                  onStop: () => _showEndEarly(context, state, notifier),
-                ),
+            // ── Sticky header ───────────────────────────────────────────
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: _WorkoutHeader(
+                state: state,
+                onSettingsTap: () => _showSessionOptions(context, state, notifier),
               ),
-            ],
-          ),
+            ),
+
+            // ── Sticky footer ───────────────────────────────────────────
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _SessionFooter(
+                state: state,
+                notifier: notifier,
+                onPause: () => _showPaused(context, state, notifier),
+                onStop: () => _showEndEarly(context, state, notifier),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -307,107 +307,137 @@ class _WorkoutHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPaused = state.phase == WorkoutPhase.paused;
+    final topPadding = MediaQuery.paddingOf(context).top;
 
-    return Row(
-      children: [
-        // Minimize
-        GestureDetector(
-          onTap: () => context.pop(),
-          child: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFFe2e8f0)),
-              boxShadow: const [
-                BoxShadow(
-                    color: Color(0x0A000000), blurRadius: 4, offset: Offset(0, 2)),
-              ],
-            ),
-            child: const Icon(Icons.keyboard_arrow_down,
-                color: Color(0xFF475569), size: 22),
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
+        child: Container(
+          padding: EdgeInsets.only(
+            top: topPadding + 12,
+            left: 16,
+            right: 16,
+            bottom: 12,
           ),
-        ),
-        const SizedBox(width: 10),
-
-        // Title + timer pill
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                state.schedule.name,
-                style: const TextStyle(
-                  color: Color(0xFF0f172a),
-                  fontWeight: FontWeight.w800,
-                  fontSize: 13,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
+            border: Border(
+              bottom: BorderSide(
+                color: Theme.of(context).colorScheme.outlineVariant,
+                width: 1,
               ),
-              const SizedBox(height: 2),
-              Row(
-                children: [
-                  if (!isPaused)
-                    _PulseDot()
-                  else
-                    const Icon(Icons.pause_circle,
-                        color: Color(0xFFf59e0b), size: 10),
-                  const SizedBox(width: 4),
-                  Text(
-                    state.elapsedFormatted,
-                    style: const TextStyle(
-                      color: Color(0xFF475569),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 11,
-                      fontFeatures: [FontFeature.tabularFigures()],
-                    ),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.04),
+                blurRadius: 12,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Minimize
+              GestureDetector(
+                onTap: () => context.pop(),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 2)),
+                    ],
                   ),
-                  const SizedBox(width: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: isPaused
-                          ? const Color(0xFFfef3c7)
-                          : const Color(0xFFe6faf3),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      isPaused ? 'PAUSED' : 'ACTIVE',
+                  child: Icon(Icons.keyboard_arrow_down,
+                      color: Theme.of(context).colorScheme.onSurface, size: 22),
+                ),
+              ),
+              const SizedBox(width: 10),
+
+              // Title + timer pill
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      state.schedule.name,
                       style: TextStyle(
-                        color: isPaused
-                            ? const Color(0xFFd97706)
-                            : const Color(0xFF00875a),
-                        fontSize: 9,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w800,
-                        letterSpacing: 0.8,
+                        fontSize: 13,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        if (!isPaused)
+                          _PulseDot()
+                        else
+                          const Icon(Icons.pause_circle,
+                              color: Color(0xFFf59e0b), size: 10),
+                        const SizedBox(width: 4),
+                        Text(
+                          state.elapsedFormatted,
+                          style: const TextStyle(
+                            color: Color(0xFF475569),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 11,
+                            fontFeatures: [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: isPaused
+                                ? const Color(0xFFfef3c7)
+                                : const Color(0xFFe6faf3),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            isPaused ? 'PAUSED' : 'ACTIVE',
+                            style: TextStyle(
+                              color: isPaused
+                                  ? const Color(0xFFd97706)
+                                  : const Color(0xFF00875a),
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Settings cog
+              GestureDetector(
+                onTap: onSettingsTap,
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                   ),
-                ],
+                  child: Icon(Icons.settings_outlined,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7), size: 18),
+                ),
               ),
             ],
           ),
         ),
-
-        // Settings cog
-        GestureDetector(
-          onTap: onSettingsTap,
-          child: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFFe2e8f0)),
-            ),
-            child: const Icon(Icons.settings_outlined,
-                color: Color(0xFF475569), size: 18),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -442,6 +472,7 @@ class _PulseDotState extends State<_PulseDot>
 
   @override
   Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
     return AnimatedBuilder(
       animation: _anim,
       builder: (context, child) => Opacity(
@@ -449,8 +480,8 @@ class _PulseDotState extends State<_PulseDot>
         child: Container(
           width: 8,
           height: 8,
-          decoration: const BoxDecoration(
-            color: Color(0xFF00d68f),
+          decoration: BoxDecoration(
+            color: primary,
             shape: BoxShape.circle,
           ),
         ),
@@ -478,20 +509,22 @@ class _ActiveExerciseCard extends StatelessWidget {
     final setIndex = state.currentSetIndex;
     final totalSets = entry.totalSets;
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          // Dark green ambient glow
+          // Theme ambient glow
           BoxShadow(
-            color: const Color(0xFF166534).withValues(alpha: 0.18),
+            color: colorScheme.primary.withValues(alpha: 0.18),
             blurRadius: 16,
             spreadRadius: 0,
             offset: const Offset(0, 3),
           ),
           BoxShadow(
-            color: const Color(0xFF166534).withValues(alpha: 0.08),
+            color: colorScheme.primary.withValues(alpha: 0.08),
             blurRadius: 22,
             spreadRadius: 1,
             offset: const Offset(0, 5),
@@ -537,8 +570,8 @@ class _ActiveExerciseCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       entry.name,
-                      style: const TextStyle(
-                        color: Color(0xFF0f172a),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w900,
                         fontSize: 22,
                         height: 1.1,
@@ -597,8 +630,8 @@ class _ActiveExerciseCard extends StatelessWidget {
                         children: [
                           TextSpan(
                             text: 'Set ${setIndex + 1} ',
-                            style: const TextStyle(
-                              color: Color(0xFF0f172a),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontWeight: FontWeight.w900,
                               fontSize: 18,
                             ),
@@ -620,16 +653,16 @@ class _ActiveExerciseCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFf0fdf4),
+                    color: colorScheme.primaryContainer.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFbbf7d0)),
+                    border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
                   ),
                   child: Column(
                     children: [
-                      const Text(
+                      Text(
                         'TARGET REPS',
                         style: TextStyle(
-                          color: Color(0xFF166534),
+                          color: colorScheme.primary,
                           fontSize: 9,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.2,
@@ -637,11 +670,11 @@ class _ActiveExerciseCard extends StatelessWidget {
                       ),
                       Text(
                         '${entry.targetReps} reps',
-                        style: const TextStyle(
-                          color: Color(0xFF14532d),
+                        style: TextStyle(
+                          color: colorScheme.onPrimaryContainer,
                           fontWeight: FontWeight.w800,
                           fontSize: 13,
-                          fontFeatures: [FontFeature.tabularFigures()],
+                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
                     ],
@@ -656,9 +689,9 @@ class _ActiveExerciseCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFf8fafc),
+              color: colorScheme.surfaceContainer,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFe2e8f0)),
+              border: Border.all(color: colorScheme.outlineVariant),
             ),
             child: Column(
               children: [
@@ -676,7 +709,7 @@ class _ActiveExerciseCard extends StatelessWidget {
                             notifier.adjustWeight(-2.5),
                         onIncrement: () =>
                             notifier.adjustWeight(2.5),
-                        captionColor: const Color(0xFF64748b),
+                        captionColor: colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -689,7 +722,7 @@ class _ActiveExerciseCard extends StatelessWidget {
                             'Target: ${entry.targetReps}',
                         onDecrement: () => notifier.adjustReps(-1),
                         onIncrement: () => notifier.adjustReps(1),
-                        captionColor: const Color(0xFF059669),
+                        captionColor: colorScheme.primary,
                       ),
                     ),
                   ],
@@ -701,13 +734,13 @@ class _ActiveExerciseCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.timer_outlined,
-                            size: 13, color: Color(0xFF00875a)),
+                        Icon(Icons.timer_outlined,
+                            size: 13, color: colorScheme.primary),
                         const SizedBox(width: 4),
                         Text(
                           'Rest timer: ${entry.restDurationSeconds}s on complete',
-                          style: const TextStyle(
-                            color: Color(0xFF475569),
+                          style: TextStyle(
+                            color: colorScheme.onSurface.withValues(alpha: 0.7),
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
                           ),
@@ -716,10 +749,10 @@ class _ActiveExerciseCard extends StatelessWidget {
                     ),
                     GestureDetector(
                       onTap: () {},
-                      child: const Text(
+                      child: Text(
                         'Edit',
                         style: TextStyle(
-                          color: Color(0xFF0f172a),
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           decoration: TextDecoration.underline,
@@ -739,8 +772,8 @@ class _ActiveExerciseCard extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: notifier.completeSet,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF166534),
-                foregroundColor: Colors.white,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 18),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -787,7 +820,7 @@ class _ActiveExerciseCard extends StatelessWidget {
                 showSkipExerciseModal(context, args: args);
               },
               style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF166534),
+                foregroundColor: colorScheme.primary,
               ),
               icon: const Icon(Icons.skip_next, size: 14),
               label: const Text(
@@ -889,21 +922,22 @@ class _SetBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     Color bg;
     Color fg;
     Widget child;
 
     if (isCompleted) {
-      bg = const Color(0xFF166534);
-      fg = Colors.white;
-      child = const Icon(Icons.check, size: 16, color: Colors.white);
+      bg = colorScheme.primary;
+      fg = colorScheme.onPrimary;
+      child = Icon(Icons.check, size: 16, color: colorScheme.onPrimary);
     } else if (isActive) {
-      bg = const Color(0xFF166534);
-      fg = Colors.white;
+      bg = colorScheme.primary;
+      fg = colorScheme.onPrimary;
       child = Text(
         '$setNumber',
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: colorScheme.onPrimary,
           fontWeight: FontWeight.w900,
           fontSize: 13,
         ),
@@ -931,8 +965,8 @@ class _SetBadge extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: isActive
                 ? [
-                    const BoxShadow(
-                      color: Color(0x5000d68f),
+                    BoxShadow(
+                      color: colorScheme.primary.withValues(alpha: 0.35),
                       blurRadius: 10,
                       spreadRadius: 2,
                     )
@@ -950,7 +984,7 @@ class _SetBadge extends StatelessWidget {
                   : '$weightLabel kg',
           style: TextStyle(
             color: isActive
-                ? const Color(0xFF166534)
+                ? colorScheme.primary
                 : const Color(0xFF64748b),
             fontSize: 9,
             fontWeight: FontWeight.w700,
@@ -985,7 +1019,7 @@ class _PastCard extends StatelessWidget {
               width: 6,
               height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFF00d68f),
+                color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
@@ -1014,7 +1048,7 @@ class _PastCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.check_circle, color: Color(0xFF00d68f)),
+            Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary),
           ],
         ),
       ),
@@ -1031,7 +1065,7 @@ class _UpcomingCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
           BoxShadow(
@@ -1058,8 +1092,8 @@ class _UpcomingCard extends StatelessWidget {
               children: [
                 Text(
                   entry.name,
-                  style: const TextStyle(
-                    color: Color(0xFF0f172a),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
                   ),
@@ -1099,103 +1133,106 @@ class _SessionFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPaused = state.phase == WorkoutPhase.paused;
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          padding: EdgeInsets.only(
+            left: 16,
+            top: 12,
+            right: 16,
+            bottom: bottomPadding + 16,
+          ),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.85),
+            color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
             border: Border(
               top: BorderSide(
-                color: Colors.white.withValues(alpha: 0.8),
+                color: Theme.of(context).colorScheme.outlineVariant,
                 width: 1,
               ),
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF0F172A).withValues(alpha: 0.08),
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, -4),
               ),
             ],
           ),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Metrics row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _MetricChip(
-                      label: 'DONE',
-                      value:
-                          '${state.completedSetCount}/${state.totalSetCount}',
-                    ),
-                    _MetricChip(
-                      label: 'KCAL',
-                      value: '~${state.estimatedCalories}',
-                    ),
-                    _MetricChip(
-                      label: 'TIME',
-                      value: state.elapsedFormatted,
-                      mono: true,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                // Action buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: isPaused ? notifier.resumeSession : onPause,
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: Colors.white.withValues(alpha: 0.90),
-                          foregroundColor: const Color(0xFF0f172a),
-                          side: const BorderSide(color: Color(0xFFe2e8f0)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
-                        ),
-                        icon: Icon(
-                          isPaused ? Icons.play_arrow : Icons.pause,
-                          size: 18,
-                        ),
-                        label: Text(
-                          isPaused ? 'Resume' : 'Pause',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 13),
-                        ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Metrics row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _MetricChip(
+                    label: 'DONE',
+                    value:
+                        '${state.completedSetCount}/${state.totalSetCount}',
+                  ),
+                  _MetricChip(
+                    label: 'KCAL',
+                    value: '~${state.estimatedCalories}',
+                  ),
+                  _MetricChip(
+                    label: 'TIME',
+                    value: state.elapsedFormatted,
+                    mono: true,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              // Action buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: isPaused ? notifier.resumeSession : onPause,
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        foregroundColor: Theme.of(context).colorScheme.onSurface,
+                        side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                      ),
+                      icon: Icon(
+                        isPaused ? Icons.play_arrow : Icons.pause,
+                        size: 18,
+                      ),
+                      label: Text(
+                        isPaused ? 'Resume' : 'Pause',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 13),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: onStop,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFef4444),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
-                          elevation: 0,
-                        ),
-                        icon: const Icon(Icons.stop, size: 18),
-                        label: const Text(
-                          'Stop Session',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 13),
-                        ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: onStop,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                        foregroundColor: Theme.of(context).colorScheme.onError,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                        elevation: 0,
+                      ),
+                      icon: const Icon(Icons.stop, size: 18),
+                      label: const Text(
+                        'Stop Session',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 13),
                       ),
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -1227,7 +1264,7 @@ class _MetricChip extends StatelessWidget {
         Text(
           value,
           style: TextStyle(
-            color: const Color(0xFF0f172a),
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.w800,
             fontSize: 15,
             fontFeatures: mono ? const [FontFeature.tabularFigures()] : null,
@@ -1297,15 +1334,16 @@ class _StepperInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFe2e8f0)),
-        boxShadow: const [
+        border: Border.all(color: colorScheme.outlineVariant),
+        boxShadow: [
           BoxShadow(
-              color: Color(0x05000000), blurRadius: 4, offset: Offset(0, 2)),
+              color: colorScheme.shadow.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 2)),
         ],
       ),
       child: Column(
@@ -1315,8 +1353,8 @@ class _StepperInput extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  color: Color(0xFF64748b),
+                style: TextStyle(
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.8,
@@ -1326,13 +1364,13 @@ class _StepperInput extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 5, vertical: 1.5),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFf1f5f9),
+                  color: colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   badge,
-                  style: const TextStyle(
-                    color: Color(0xFF64748b),
+                  style: TextStyle(
+                    color: colorScheme.onSurface.withValues(alpha: 0.7),
                     fontSize: 9,
                     fontWeight: FontWeight.w700,
                   ),
@@ -1347,11 +1385,11 @@ class _StepperInput extends StatelessWidget {
               _StepBtn(icon: Icons.remove, onTap: onDecrement),
               Text(
                 value,
-                style: const TextStyle(
-                  color: Color(0xFF0f172a),
+                style: TextStyle(
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.w900,
                   fontSize: 20,
-                  fontFeatures: [FontFeature.tabularFigures()],
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
               _StepBtn(icon: Icons.add, onTap: onIncrement),
@@ -1379,16 +1417,17 @@ class _StepBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: const Color(0xFFf1f5f9),
+          color: colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, size: 16, color: const Color(0xFF475569)),
+        child: Icon(icon, size: 16, color: colorScheme.onSurface),
       ),
     );
   }

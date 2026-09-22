@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 
 /// FitTrack kinetic barbell / dumbbell logo emblem.
 /// Renders the SVG-derived icon as a Flutter [CustomPainter].
@@ -10,36 +9,53 @@ class FtLogoEmblem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final primary = colorScheme.primary;
+
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0E3B2E), Color(0xFF064E3B)],
+        gradient: LinearGradient(
+          colors: [
+            primary.withValues(alpha: 0.8),
+            primary.withValues(alpha: 0.4),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(size * 0.28),
         border: Border.all(
-          color: AppColors.kineticMint.withValues(alpha: 0.6),
+          color: primary.withValues(alpha: 0.6),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.kineticMint.withValues(alpha: 0.35),
+            color: primary.withValues(alpha: 0.35),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
         ],
       ),
       child: CustomPaint(
-        painter: _DumbbellPainter(),
+        painter: _DumbbellPainter(
+          primaryColor: primary,
+          onPrimaryColor: colorScheme.onPrimary,
+        ),
       ),
     );
   }
 }
 
 class _DumbbellPainter extends CustomPainter {
+  const _DumbbellPainter({
+    required this.primaryColor,
+    required this.onPrimaryColor,
+  });
+
+  final Color primaryColor;
+  final Color onPrimaryColor;
+
   @override
   void paint(Canvas canvas, Size size) {
     final cx = size.width / 2;
@@ -48,7 +64,7 @@ class _DumbbellPainter extends CustomPainter {
     // Shaft gradient
     final shaftPaint = Paint()
       ..shader = LinearGradient(
-        colors: [Colors.white, AppColors.kineticMint],
+        colors: [onPrimaryColor, primaryColor],
         begin: Alignment.bottomLeft,
         end: Alignment.topRight,
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
@@ -65,11 +81,11 @@ class _DumbbellPainter extends CustomPainter {
       shaftPaint,
     );
 
-    // Left weight (white)
-    final whitePaint = Paint()..color = Colors.white;
-    final mintPaint = Paint()..color = AppColors.kineticMint;
+    // Left weight (onPrimary)
+    final onPrimaryPaint = Paint()..color = onPrimaryColor;
+    final primaryPaint = Paint()..color = primaryColor;
 
-    // Outer white weight block
+    // Outer onPrimary weight block
     final rrInner = RRect.fromRectAndRadius(
       Rect.fromCenter(
         center: Offset(-size.width * 0.30, 0),
@@ -78,10 +94,10 @@ class _DumbbellPainter extends CustomPainter {
       ),
       Radius.circular(size.width * 0.05),
     );
-    canvas.drawRRect(rrInner, whitePaint);
+    canvas.drawRRect(rrInner, onPrimaryPaint);
 
-    // Mint inner accent
-    final rrMintL = RRect.fromRectAndRadius(
+    // Primary inner accent
+    final rrPrimaryL = RRect.fromRectAndRadius(
       Rect.fromCenter(
         center: Offset(-size.width * 0.38, 0),
         width: size.width * 0.11,
@@ -89,9 +105,12 @@ class _DumbbellPainter extends CustomPainter {
       ),
       Radius.circular(size.width * 0.04),
     );
-    canvas.drawRRect(rrMintL, Paint()..color = AppColors.kineticMint.withValues(alpha: 0.8));
+    canvas.drawRRect(
+      rrPrimaryL,
+      Paint()..color = primaryColor.withValues(alpha: 0.8),
+    );
 
-    // Right weight (mint)
+    // Right weight (primary)
     final rrRight = RRect.fromRectAndRadius(
       Rect.fromCenter(
         center: Offset(size.width * 0.30, 0),
@@ -100,10 +119,10 @@ class _DumbbellPainter extends CustomPainter {
       ),
       Radius.circular(size.width * 0.05),
     );
-    canvas.drawRRect(rrRight, mintPaint);
+    canvas.drawRRect(rrRight, primaryPaint);
 
-    // Right accent (white)
-    final rrWhiteR = RRect.fromRectAndRadius(
+    // Right accent (onPrimary)
+    final rrOnPrimaryR = RRect.fromRectAndRadius(
       Rect.fromCenter(
         center: Offset(size.width * 0.38, 0),
         width: size.width * 0.11,
@@ -111,11 +130,14 @@ class _DumbbellPainter extends CustomPainter {
       ),
       Radius.circular(size.width * 0.04),
     );
-    canvas.drawRRect(rrWhiteR, Paint()..color = Colors.white.withValues(alpha: 0.9));
+    canvas.drawRRect(
+      rrOnPrimaryR,
+      Paint()..color = onPrimaryColor.withValues(alpha: 0.9),
+    );
 
     // Arrow accent
     final arrowPaint = Paint()
-      ..color = AppColors.kineticMint
+      ..color = onPrimaryColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = size.width * 0.06
       ..strokeCap = StrokeCap.round
@@ -140,16 +162,24 @@ class _DumbbellPainter extends CustomPainter {
     final shimmerPaint = Paint()
       ..shader = LinearGradient(
         colors: [
-          Colors.transparent,
-          Colors.white.withValues(alpha: 0.12),
+          Colors.white.withValues(alpha: 0.25),
           Colors.transparent,
         ],
         begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
+        end: Alignment.center,
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), shimmerPaint);
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+        Radius.circular(size.width * 0.28),
+      ),
+      shimmerPaint,
+    );
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _DumbbellPainter oldDelegate) =>
+      oldDelegate.primaryColor != primaryColor ||
+      oldDelegate.onPrimaryColor != onPrimaryColor;
 }

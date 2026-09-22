@@ -30,11 +30,6 @@ class _WorkoutSummaryScreenState
 
   bool _saving = false;
 
-  // Colors
-  static const Color _mint = Color(0xFF00d68f);
-  static const Color _dark = Color(0xFF0f172a);
-  static const Color _bg = Color(0xFFf7f9fb);
-
   @override
   void initState() {
     super.initState();
@@ -78,6 +73,8 @@ class _WorkoutSummaryScreenState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final workoutState = ref.watch(activeWorkoutProvider);
     final schedule = workoutState.schedule;
 
@@ -108,7 +105,7 @@ class _WorkoutSummaryScreenState
         if (leave && mounted) router.go('/dashboard');
       },
       child: Scaffold(
-        backgroundColor: _bg,
+        backgroundColor: theme.scaffoldBackgroundColor,
         body: SafeArea(
           child: Column(
             children: [
@@ -118,23 +115,23 @@ class _WorkoutSummaryScreenState
                     horizontal: 20, vertical: 12),
                 child: Row(
                   children: [
-                    // Mint dot
+                    // Primary dot
                     Container(
                       width: 8,
                       height: 8,
-                      decoration: const BoxDecoration(
-                        color: _mint,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary,
                         shape: BoxShape.circle,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'WORKOUT COMPLETE',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF94a3b8),
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
                           letterSpacing: 1,
                         ),
                       ),
@@ -142,8 +139,11 @@ class _WorkoutSummaryScreenState
                     // Share placeholder
                     IconButton(
                       onPressed: () {},
-                      icon: const Icon(Icons.share_outlined,
-                          size: 20, color: Color(0xFF64748b)),
+                      icon: Icon(
+                        Icons.share_outlined,
+                        size: 20,
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
                     ),
                   ],
                 ),
@@ -211,10 +211,11 @@ class _WorkoutSummaryScreenState
                 14,
           ),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorScheme.surface,
+            border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
+                color: colorScheme.shadow.withValues(alpha: 0.06),
                 blurRadius: 20,
                 offset: const Offset(0, -4),
               ),
@@ -223,20 +224,20 @@ class _WorkoutSummaryScreenState
           child: FilledButton(
             onPressed: _saving ? null : _save,
             style: FilledButton.styleFrom(
-              backgroundColor: _mint,
-              foregroundColor: _dark,
+              backgroundColor: colorScheme.primary,
+              foregroundColor: colorScheme.onPrimary,
               minimumSize: const Size(double.infinity, 56),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
             ),
             child: _saving
-                ? const SizedBox(
+                ? SizedBox(
                     width: 22,
                     height: 22,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
-                      color: Color(0xFF0f172a),
+                      color: colorScheme.onPrimary,
                     ),
                   )
                 : const Text(
@@ -268,6 +269,7 @@ class _TrophyHeroSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final pct =
         totalExercises == 0 ? 100 : (completedExercises * 100 ~/ totalExercises);
     return Column(
@@ -285,7 +287,7 @@ class _TrophyHeroSection extends StatelessWidget {
                 gradient: RadialGradient(
                   colors: [
                     const Color(0xFFfef3c7).withValues(alpha: 0.8),
-                    const Color(0xFF00d68f).withValues(alpha: 0.1),
+                    colorScheme.primary.withValues(alpha: 0.1),
                   ],
                 ),
                 boxShadow: [
@@ -314,16 +316,16 @@ class _TrophyHeroSection extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00d68f),
+                  color: colorScheme.primary,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(color: colorScheme.surface, width: 2),
                 ),
                 child: Text(
                   '$pct%',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF0f172a),
+                    color: colorScheme.onPrimary,
                   ),
                 ),
               ),
@@ -331,12 +333,12 @@ class _TrophyHeroSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        const Text(
+        Text(
           'Workout Complete!',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.w900,
-            color: Color(0xFF0f172a),
+            color: colorScheme.onSurface,
             letterSpacing: -0.5,
           ),
         ),
@@ -344,18 +346,18 @@ class _TrophyHeroSection extends StatelessWidget {
         Text(
           'You crushed ',
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
-            color: Color(0xFF64748b),
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
             fontWeight: FontWeight.w500,
           ),
         ),
         Text(
           scheduleName,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
-            color: Color(0xFF1e293b),
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -389,18 +391,19 @@ class _StatsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final volumeStr = totalVolumeKg >= 1000
         ? '${(totalVolumeKg / 1000).toStringAsFixed(1)}k'
         : totalVolumeKg.toStringAsFixed(0);
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -416,8 +419,8 @@ class _StatsCard extends StatelessWidget {
               Container(
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF00d68f),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -425,10 +428,10 @@ class _StatsCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   scheduleName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF94a3b8),
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                     letterSpacing: 0.5,
                   ),
                   maxLines: 1,
@@ -438,7 +441,7 @@ class _StatsCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          const Divider(height: 1, color: Color(0xFFf1f5f9)),
+          Divider(height: 1, color: colorScheme.outlineVariant),
           const SizedBox(height: 14),
 
           // 2×3 metrics grid
@@ -453,42 +456,42 @@ class _StatsCard extends StatelessWidget {
               _MetricTile(
                 icon: Icons.timer_outlined,
                 iconColor: const Color(0xFF0d9488),
-                iconBg: const Color(0xFFf0fdfa),
+                iconBg: const Color(0xFF0d9488).withValues(alpha: 0.12),
                 label: 'Total Time',
                 value: timeStr,
               ),
               _MetricTile(
                 icon: Icons.fitness_center_rounded,
-                iconColor: const Color(0xFF00d68f),
-                iconBg: const Color(0xFFf0fdf4),
+                iconColor: colorScheme.primary,
+                iconBg: colorScheme.primary.withValues(alpha: 0.12),
                 label: 'Exercises',
                 value: '$completedExercises of $totalExercises',
               ),
               _MetricTile(
                 icon: Icons.repeat_rounded,
                 iconColor: const Color(0xFF8b5cf6),
-                iconBg: const Color(0xFFfaf5ff),
+                iconBg: const Color(0xFF8b5cf6).withValues(alpha: 0.12),
                 label: 'Sets Done',
                 value: '$totalSets',
               ),
               _MetricTile(
                 icon: Icons.format_list_numbered_rounded,
                 iconColor: const Color(0xFF3b82f6),
-                iconBg: const Color(0xFFeff6ff),
+                iconBg: const Color(0xFF3b82f6).withValues(alpha: 0.12),
                 label: 'Total Reps',
                 value: '$totalReps',
               ),
               _MetricTile(
                 icon: Icons.show_chart_rounded,
                 iconColor: const Color(0xFFf97316),
-                iconBg: const Color(0xFFfff7ed),
+                iconBg: const Color(0xFFf97316).withValues(alpha: 0.12),
                 label: 'Volume',
                 value: '${volumeStr}kg',
               ),
               _MetricTile(
                 icon: Icons.local_fire_department_rounded,
                 iconColor: const Color(0xFFef4444),
-                iconBg: const Color(0xFFfef2f2),
+                iconBg: const Color(0xFFef4444).withValues(alpha: 0.12),
                 label: 'Calories',
                 value: '~$calories kcal',
               ),
@@ -517,12 +520,14 @@ class _MetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFf8fafc),
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         children: [
@@ -543,21 +548,21 @@ class _MetricTile extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 9,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF94a3b8),
+                    color: colorScheme.onSurface.withValues(alpha: 0.5),
                     letterSpacing: 0.4,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF0f172a),
-                    fontFeatures: [FontFeature.tabularFigures()],
+                    color: colorScheme.onSurface,
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -598,22 +603,24 @@ class _FeelingSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'How did it feel?',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF0f172a),
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 12),
@@ -631,12 +638,12 @@ class _FeelingSelector extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? _colors[i].withValues(alpha: 0.12)
-                            : const Color(0xFFf8fafc),
+                            : colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: isSelected
                               ? _colors[i]
-                              : const Color(0xFFe2e8f0),
+                              : colorScheme.outlineVariant,
                           width: isSelected ? 1.5 : 1,
                         ),
                       ),
@@ -646,7 +653,7 @@ class _FeelingSelector extends StatelessWidget {
                             _icons[i],
                             color: isSelected
                                 ? _colors[i]
-                                : const Color(0xFF94a3b8),
+                                : colorScheme.onSurface.withValues(alpha: 0.5),
                             size: 22,
                           ),
                           const SizedBox(height: 4),
@@ -657,7 +664,7 @@ class _FeelingSelector extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                               color: isSelected
                                   ? _colors[i]
-                                  : const Color(0xFF94a3b8),
+                                  : colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                         ],
@@ -683,22 +690,24 @@ class _NotesInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFe2e8f0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Session Notes',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF0f172a),
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 10),
@@ -706,33 +715,33 @@ class _NotesInput extends StatelessWidget {
             controller: controller,
             maxLines: 4,
             minLines: 3,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: Color(0xFF1e293b),
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w500,
             ),
             decoration: InputDecoration(
               hintText:
                   'How was the session? Any PRs, notes, or thoughts...',
-              hintStyle: const TextStyle(
-                color: Color(0xFFcbd5e1),
+              hintStyle: TextStyle(
+                color: colorScheme.onSurface.withValues(alpha: 0.4),
                 fontSize: 13,
               ),
               filled: true,
-              fillColor: const Color(0xFFf8fafc),
+              fillColor: colorScheme.surfaceContainerHighest,
               contentPadding: const EdgeInsets.all(14),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: Color(0xFFe2e8f0)),
+                borderSide: BorderSide(color: colorScheme.outlineVariant),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: Color(0xFFe2e8f0)),
+                borderSide: BorderSide(color: colorScheme.outlineVariant),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(
-                    color: Color(0xFF00d68f), width: 1.5),
+                borderSide: BorderSide(
+                    color: colorScheme.primary, width: 1.5),
               ),
             ),
           ),

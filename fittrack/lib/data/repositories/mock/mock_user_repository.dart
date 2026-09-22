@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../domain/entities/body_telemetry.dart';
 import '../../../domain/entities/fitness_profile.dart';
+import '../../../domain/entities/user_profile.dart';
 import '../../../domain/repositories/i_user_repository.dart';
 
 class MockUserRepository implements IUserRepository {
@@ -88,5 +89,17 @@ class MockUserRepository implements IUserRepository {
       'updatedAt': profile.updatedAt.toIso8601String(),
     };
     await prefs.setString('fitness_profile_${profile.userId}', jsonEncode(map));
+  }
+
+  UserProfile? _userProfile;
+
+  @override
+  Future<UserProfile?> getUserProfile(String userId) async {
+    return _userProfile;
+  }
+
+  @override
+  Future<void> saveUserProfile(UserProfile profile) async {
+    _userProfile = profile;
   }
 }

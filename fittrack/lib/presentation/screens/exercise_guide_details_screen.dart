@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -55,39 +56,28 @@ class ExerciseGuideDetailsScreen extends ConsumerStatefulWidget {
 
 class _ExerciseGuideDetailsScreenState
     extends ConsumerState<ExerciseGuideDetailsScreen> {
-  bool _fullscreenOpen = false;
-
   @override
   Widget build(BuildContext context) {
     final guideAsync =
         ref.watch(_exerciseGuideProvider(widget.exerciseId));
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFf7f9fb),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: guideAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: Color(0xFF00d68f)),
+        loading: () => Center(
+          child: CircularProgressIndicator(color: colorScheme.primary),
         ),
         error: (e, _) => _ErrorBody(
           message: e.toString(),
           onBack: () => context.pop(),
         ),
-        data: (data) => Stack(
-          children: [
-            _GuideBody(
-              data: data,
-              onFullscreen: () =>
-                  setState(() => _fullscreenOpen = true),
-              onBack: () => context.pop(),
-            ),
-            // Fullscreen modal overlay
-            if (_fullscreenOpen)
-              _FullscreenModal(
-                exerciseName: data.exercise.name,
-                onClose: () =>
-                    setState(() => _fullscreenOpen = false),
-              ),
-          ],
+        data: (data) => _GuideBody(
+          data: data,
+          onFullscreen: () =>
+              _showExerciseCuesModal(context, data.exercise.name),
+          onBack: () => context.pop(),
         ),
       ),
     );
@@ -106,17 +96,18 @@ class _GuideBody extends StatelessWidget {
   final VoidCallback onFullscreen;
   final VoidCallback onBack;
 
-
   @override
   Widget build(BuildContext context) {
     final ex = data.exercise;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return CustomScrollView(
       slivers: [
         // ── Sticky header ──────────────────────────────────────────────
         SliverAppBar(
           pinned: true,
-          backgroundColor: const Color(0xFFf7f9fb),
+          backgroundColor: theme.scaffoldBackgroundColor,
           elevation: 0,
           scrolledUnderElevation: 1,
           automaticallyImplyLeading: false,
@@ -128,12 +119,12 @@ class _GuideBody extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: colorScheme.surface,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFe2e8f0)),
+                    border: Border.all(color: colorScheme.outlineVariant),
                   ),
-                  child: const Icon(Icons.arrow_back,
-                      color: Color(0xFF475569), size: 20),
+                  child: Icon(Icons.arrow_back,
+                      color: colorScheme.onSurface, size: 20),
                 ),
               ),
               const SizedBox(width: 10),
@@ -141,10 +132,10 @@ class _GuideBody extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'ACTIVE WORKOUT GUIDE',
                       style: TextStyle(
-                        color: Color(0xFF00875a),
+                        color: colorScheme.primary,
                         fontSize: 9,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1.6,
@@ -152,8 +143,8 @@ class _GuideBody extends StatelessWidget {
                     ),
                     Text(
                       ex.name,
-                      style: const TextStyle(
-                        color: Color(0xFF0f172a),
+                      style: TextStyle(
+                        color: colorScheme.onSurface,
                         fontWeight: FontWeight.w800,
                         fontSize: 14,
                       ),
@@ -230,36 +221,38 @@ class _TagsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Row(
       children: [
         _Tag(
           label: exercise.equipment.name.toUpperCase(),
-          bg: const Color(0xFFfff1f2),
-          fg: const Color(0xFFe11d48),
-          border: const Color(0xFFfecdd3),
+          bg: colorScheme.errorContainer.withValues(alpha: 0.5),
+          fg: colorScheme.onErrorContainer,
+          border: colorScheme.error.withValues(alpha: 0.2),
         ),
         const SizedBox(width: 6),
         _Tag(
           label: exercise.movementClassification.name.toUpperCase(),
-          bg: const Color(0xFFf1f5f9),
-          fg: const Color(0xFF475569),
-          border: const Color(0xFFe2e8f0),
+          bg: colorScheme.surfaceContainerHighest,
+          fg: colorScheme.onSurface.withValues(alpha: 0.8),
+          border: colorScheme.outlineVariant,
         ),
         const Spacer(),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: const Color(0xFFe6faf3),
+            color: colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(20),
           ),
-          child: const Row(
+          child: Row(
             children: [
-              Icon(Icons.bolt, color: Color(0xFF00875a), size: 13),
-              SizedBox(width: 3),
+              Icon(Icons.bolt, color: colorScheme.onPrimaryContainer, size: 13),
+              const SizedBox(width: 3),
               Text(
                 'PRIMARY LIFT',
                 style: TextStyle(
-                  color: Color(0xFF00875a),
+                  color: colorScheme.onPrimaryContainer,
                   fontSize: 9,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.8,
@@ -283,6 +276,8 @@ class _HeroMedia extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return AspectRatio(
       aspectRatio: 16 / 9,
       child: ClipRRect(
@@ -292,16 +287,19 @@ class _HeroMedia extends StatelessWidget {
           children: [
             // Placeholder hero
             Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF1e3a5f), Color(0xFF0f172a)],
+                  colors: [
+                    colorScheme.surfaceContainerHighest,
+                    colorScheme.surface,
+                  ],
                 ),
               ),
-              child: const Center(
+              child: Center(
                 child: Icon(Icons.fitness_center,
-                    color: Color(0xFF00d68f), size: 48),
+                    color: colorScheme.primary, size: 48),
               ),
             ),
             // Gradient overlay
@@ -325,20 +323,20 @@ class _HeroMedia extends StatelessWidget {
                   color: Colors.black.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
                     SizedBox(
                       width: 7,
                       height: 7,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
-                          color: Color(0xFF00d68f),
+                          color: colorScheme.primary,
                           shape: BoxShape.circle,
                         ),
                       ),
                     ),
-                    SizedBox(width: 5),
-                    Text(
+                    const SizedBox(width: 5),
+                    const Text(
                       'FORM FOCUS',
                       style: TextStyle(
                         color: Colors.white,
@@ -369,7 +367,7 @@ class _HeroMedia extends StatelessWidget {
               ),
             ),
             // Bottom badge
-            const Positioned(
+            Positioned(
               bottom: 10,
               left: 10,
               child: Column(
@@ -378,12 +376,12 @@ class _HeroMedia extends StatelessWidget {
                   Row(
                     children: [
                       Icon(Icons.verified,
-                          color: Color(0xFF00d68f), size: 14),
-                      SizedBox(width: 4),
+                          color: colorScheme.primary, size: 14),
+                      const SizedBox(width: 4),
                       Text(
                         'GOLDEN RATIO SETUP',
                         style: TextStyle(
-                          color: Color(0xFF00d68f),
+                          color: colorScheme.primary,
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.8,
@@ -391,8 +389,8 @@ class _HeroMedia extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 4),
-                  Text(
+                  const SizedBox(height: 4),
+                  const Text(
                     'Flat Bench • Arch Retained • 45° Elbow Tuck',
                     style: TextStyle(
                       color: Colors.white,
@@ -428,18 +426,20 @@ class _YouTubeLauncher extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: _launch,
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
-              color: Color(0x06000000),
+              color: colorScheme.shadow.withValues(alpha: 0.04),
               blurRadius: 12,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -462,10 +462,10 @@ class _YouTubeLauncher extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Text(
+                      Text(
                         'Watch on YouTube',
                         style: TextStyle(
-                          color: Color(0xFF0f172a),
+                          color: colorScheme.onSurface,
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
                         ),
@@ -491,8 +491,8 @@ class _YouTubeLauncher extends StatelessWidget {
                   ),
                   Text(
                     'Search tutorials for "$exerciseName form"',
-                    style: const TextStyle(
-                      color: Color(0xFF64748b),
+                    style: TextStyle(
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                       fontSize: 12,
                     ),
                     maxLines: 1,
@@ -501,8 +501,8 @@ class _YouTubeLauncher extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.open_in_new,
-                color: Color(0xFF94a3b8), size: 18),
+            Icon(Icons.open_in_new,
+                color: colorScheme.onSurface.withValues(alpha: 0.4), size: 18),
           ],
         ),
       ),
@@ -518,6 +518,7 @@ class _OverviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final desc = exercise.biomechanicsNotes ??
         '${exercise.name} is a ${exercise.movementClassification.name} '
             '${exercise.equipment.name} exercise targeting multiple muscle groups. '
@@ -526,28 +527,28 @@ class _OverviewCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x05000000),
+            color: colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 12,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(Icons.menu_book_outlined,
-                  color: Color(0xFF00d68f), size: 20),
-              SizedBox(width: 8),
+                  color: colorScheme.primary, size: 20),
+              const SizedBox(width: 8),
               Text(
                 'Overview & Mechanics',
                 style: TextStyle(
-                  color: Color(0xFF0f172a),
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
                 ),
@@ -557,8 +558,8 @@ class _OverviewCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             desc,
-            style: const TextStyle(
-              color: Color(0xFF475569),
+            style: TextStyle(
+              color: colorScheme.onSurface.withValues(alpha: 0.75),
               fontSize: 14,
               height: 1.6,
             ),
@@ -577,16 +578,18 @@ class _ExecutionStepsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x05000000),
+            color: colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 12,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -596,15 +599,15 @@ class _ExecutionStepsCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Row(
+              Row(
                 children: [
                   Icon(Icons.checklist_outlined,
-                      color: Color(0xFF00d68f), size: 20),
-                  SizedBox(width: 8),
+                      color: colorScheme.primary, size: 20),
+                  const SizedBox(width: 8),
                   Text(
                     'Execution Steps',
                     style: TextStyle(
-                      color: Color(0xFF0f172a),
+                      color: colorScheme.onSurface,
                       fontWeight: FontWeight.w700,
                       fontSize: 15,
                     ),
@@ -613,8 +616,8 @@ class _ExecutionStepsCard extends StatelessWidget {
               ),
               Text(
                 '${steps.length} Phases',
-                style: const TextStyle(
-                  color: Color(0xFF64748b),
+                style: TextStyle(
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                 ),
@@ -640,21 +643,23 @@ class _StepCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           width: 28,
           height: 28,
-          decoration: const BoxDecoration(
-            color: Color(0xFF00d68f),
+          decoration: BoxDecoration(
+            color: colorScheme.primary,
             shape: BoxShape.circle,
           ),
           child: Center(
             child: Text(
               '${step.stepNumber}',
-              style: const TextStyle(
-                color: Color(0xFF0f172a),
+              style: TextStyle(
+                color: colorScheme.onPrimary,
                 fontWeight: FontWeight.w800,
                 fontSize: 12,
               ),
@@ -668,8 +673,8 @@ class _StepCard extends StatelessWidget {
             children: [
               Text(
                 step.title,
-                style: const TextStyle(
-                  color: Color(0xFF0f172a),
+                style: TextStyle(
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.w700,
                   fontSize: 13,
                 ),
@@ -677,8 +682,8 @@ class _StepCard extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 step.instructions,
-                style: const TextStyle(
-                  color: Color(0xFF475569),
+                style: TextStyle(
+                  color: colorScheme.onSurface.withValues(alpha: 0.75),
                   fontSize: 13,
                   height: 1.5,
                 ),
@@ -699,31 +704,33 @@ class _FormCuesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x05000000),
+            color: colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 12,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(Icons.balance_outlined,
-                  color: Color(0xFF00d68f), size: 20),
-              SizedBox(width: 8),
+                  color: colorScheme.primary, size: 20),
+              const SizedBox(width: 8),
               Text(
                 'Form Cues & Pitfalls',
                 style: TextStyle(
-                  color: Color(0xFF0f172a),
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
                 ),
@@ -749,13 +756,18 @@ class _CueTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final isPositive = cue.isPositive;
+
+    final bgColor = isPositive
+        ? colorScheme.primaryContainer.withValues(alpha: 0.35)
+        : colorScheme.errorContainer.withValues(alpha: 0.35);
+    final fgColor = isPositive ? colorScheme.primary : colorScheme.error;
+
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: isPositive
-            ? const Color(0xFFf0fdf4)
-            : const Color(0xFFfef2f2),
+        color: bgColor,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
@@ -763,9 +775,7 @@ class _CueTile extends StatelessWidget {
         children: [
           Icon(
             isPositive ? Icons.check_circle : Icons.cancel,
-            color: isPositive
-                ? const Color(0xFF00d68f)
-                : const Color(0xFFef4444),
+            color: fgColor,
             size: 18,
           ),
           const SizedBox(width: 8),
@@ -776,9 +786,7 @@ class _CueTile extends StatelessWidget {
                 Text(
                   isPositive ? 'DO' : "DON'T",
                   style: TextStyle(
-                    color: isPositive
-                        ? const Color(0xFF00875a)
-                        : const Color(0xFFdc2626),
+                    color: fgColor,
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.0,
@@ -787,8 +795,8 @@ class _CueTile extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   cue.description,
-                  style: const TextStyle(
-                    color: Color(0xFF0f172a),
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                     height: 1.4,
@@ -811,16 +819,18 @@ class _MuscleActivationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return _ActivationCardShell(
       children: activations.map((a) {
         Color barColor;
         switch (a.role) {
           case MuscleRole.agonist:
-            barColor = const Color(0xFF00d68f);
+            barColor = colorScheme.primary;
           case MuscleRole.synergist:
-            barColor = const Color(0xFF0284c7);
+            barColor = colorScheme.secondary;
           case MuscleRole.stabilizer:
-            barColor = const Color(0xFF94a3b8);
+            barColor = colorScheme.outline;
         }
         return _ActivationBar(
           label: a.muscleName,
@@ -839,22 +849,24 @@ class _StaticMuscleActivationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return _ActivationCardShell(
-      children: const [
+      children: [
         _ActivationBar(
           label: 'Primary Muscles',
           percentage: 85,
-          barColor: Color(0xFF00d68f),
+          barColor: colorScheme.primary,
         ),
         _ActivationBar(
           label: 'Secondary Muscles',
           percentage: 60,
-          barColor: Color(0xFF0284c7),
+          barColor: colorScheme.secondary,
         ),
         _ActivationBar(
           label: 'Stabilizers',
           percentage: 40,
-          barColor: Color(0xFF94a3b8),
+          barColor: colorScheme.outline,
         ),
       ],
     );
@@ -867,16 +879,18 @@ class _ActivationCardShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x05000000),
+            color: colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 12,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -886,25 +900,25 @@ class _ActivationCardShell extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Row(
+              Row(
                 children: [
                   Icon(Icons.fitness_center,
-                      color: Color(0xFF00d68f), size: 20),
-                  SizedBox(width: 8),
+                      color: colorScheme.primary, size: 20),
+                  const SizedBox(width: 8),
                   Text(
                     'Muscle Activation',
                     style: TextStyle(
-                      color: Color(0xFF0f172a),
+                      color: colorScheme.onSurface,
                       fontWeight: FontWeight.w700,
                       fontSize: 15,
                     ),
                   ),
                 ],
               ),
-              const Text(
+              Text(
                 'Kinematic Load',
                 style: TextStyle(
-                  color: Color(0xFF64748b),
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                 ),
@@ -931,6 +945,8 @@ class _ActivationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -941,8 +957,8 @@ class _ActivationBar extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  color: Color(0xFF0f172a),
+                style: TextStyle(
+                  color: colorScheme.onSurface,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
@@ -964,7 +980,7 @@ class _ActivationBar extends StatelessWidget {
               children: [
                 Container(
                   height: 8,
-                  color: const Color(0xFFf1f5f9),
+                  color: colorScheme.surfaceContainerHighest,
                 ),
                 FractionallySizedBox(
                   widthFactor: percentage / 100,
@@ -985,133 +1001,157 @@ class _ActivationBar extends StatelessWidget {
   }
 }
 
-// ── Back-to-workout sticky bar (handled by parent layout via bottom padding) ──
-// Note: shown via the SliverPadding bottom=120 and Positioned in the parent
-
 // ── Fullscreen Modal ──────────────────────────────────────────────────────────
 
-class _FullscreenModal extends StatelessWidget {
-  const _FullscreenModal(
+void _showExerciseCuesModal(BuildContext context, String exerciseName) {
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: 0.4),
+    builder: (context) => _ExerciseCuesModal(
+      exerciseName: exerciseName,
+      onClose: () => Navigator.of(context).pop(),
+    ),
+  );
+}
+
+class _ExerciseCuesModal extends StatelessWidget {
+  const _ExerciseCuesModal(
       {required this.exerciseName, required this.onClose});
   final String exerciseName;
   final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.black.withValues(alpha: 0.95),
-      child: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '$exerciseName Cues',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: onClose,
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.close,
-                          color: Colors.white, size: 22),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: Container(
-                  margin: const EdgeInsets.all(16),
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
+        child: Container(
+          color: colorScheme.surface.withValues(alpha: 0.75),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 12),
+                // Drag handle
+                Container(
+                  width: 40,
+                  height: 4,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF1e3a5f), Color(0xFF0f172a)],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
+                    color: colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  child: const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.fitness_center,
-                            color: Color(0xFF00d68f), size: 64),
-                        SizedBox(height: 16),
-                        Text(
-                          'Form Focus Preview',
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '$exerciseName Cues',
+                        style: TextStyle(
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: onClose,
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.close,
+                              color: colorScheme.onSurface, size: 20),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.fitness_center,
+                          color: colorScheme.primary, size: 56),
+                      const SizedBox(height: 14),
+                      Text(
+                        'Form Focus Preview',
+                        style: TextStyle(
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'Wrist stacked over elbows. Scapula pinned against the bench pad throughout the entire repetition.',
                           style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 18,
+                            color: colorScheme.onSurface.withValues(alpha: 0.7),
+                            fontSize: 13,
+                            height: 1.5,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'QUICK CHECKPOINT',
+                          style: TextStyle(
+                            color: colorScheme.primary,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.4,
                           ),
                         ),
-                        SizedBox(height: 8),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 32),
-                          child: Text(
-                            'Wrist stacked over elbows. Scapula pinned against the bench pad throughout the entire repetition.',
-                            style: TextStyle(
-                              color: Color(0xFF94a3b8),
-                              fontSize: 13,
-                              height: 1.5,
-                            ),
-                            textAlign: TextAlign.center,
+                        const SizedBox(height: 4),
+                        Text(
+                          'Wrist stacked over elbows. Scapula pinned against the bench pad throughout entire repetition.',
+                          style: TextStyle(
+                            color: colorScheme.onSurface,
+                            fontSize: 13,
+                            height: 1.4,
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 8),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'QUICK CHECKPOINT',
-                      style: TextStyle(
-                        color: Color(0xFF00d68f),
-                        fontSize: 9,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.4,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Wrist stacked over elbows. Scapula pinned against the bench pad throughout entire repetition.',
-                      style: TextStyle(
-                        color: Color(0xFFcbd5e1),
-                        fontSize: 13,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -1127,18 +1167,20 @@ class _ErrorBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+            Icon(Icons.error_outline, color: colorScheme.error, size: 48),
             const SizedBox(height: 12),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Color(0xFF64748b)),
+              style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.7)),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
