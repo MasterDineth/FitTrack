@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/security_provider.dart';
-import '../../theme/app_colors.dart';
 import '../../widgets/security_modals.dart';
 
 /// Local private card decoration helper matching Stitch specifications.
@@ -134,10 +133,10 @@ class _PasswordSecurityScreenState
         backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        leadingWidth: 54,
-        titleSpacing: 0,
+        leadingWidth: 56,
+        titleSpacing: 12,
         leading: Padding(
-          padding: const EdgeInsets.only(left: 14),
+          padding: const EdgeInsets.only(left: 16),
           child: Center(
             child: InkWell(
               borderRadius: BorderRadius.circular(12),
@@ -188,52 +187,6 @@ class _PasswordSecurityScreenState
             ),
           ],
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: isLight
-                      ? const Color(0xFF54FEB3)
-                      : AppColors.kineticMint.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(999),
-                  border: isLight
-                      ? null
-                      : Border.all(
-                          color: AppColors.kineticMint.withValues(alpha: 0.35),
-                        ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.verified_user_rounded,
-                      size: 14,
-                      color: isLight
-                          ? const Color(0xFF002112)
-                          : AppColors.kineticMint,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      '2FA Enabled',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        color: isLight
-                          ? const Color(0xFF002112)
-                          : AppColors.kineticMint,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         controller: _scrollController,
@@ -256,9 +209,9 @@ class _PasswordSecurityScreenState
                       color: colorScheme.surfaceContainer,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.lock_reset_rounded,
-                      color: AppColors.kineticMintDark,
+                      color: colorScheme.primary,
                       size: 24,
                     ),
                   ),
@@ -290,7 +243,7 @@ class _PasswordSecurityScreenState
                                   height: 7,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: AppColors.kineticMint
+                                    color: colorScheme.primary
                                         .withValues(alpha: opacity),
                                   ),
                                 );
@@ -335,13 +288,13 @@ class _PasswordSecurityScreenState
                   onTap: () {
                     setState(() => _showForgotHelper = !_showForgotHelper);
                   },
-                  child: const Text(
+                  child: Text(
                     'Forgot Password?',
                     style: TextStyle(
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.kineticMintDark,
+                      color: colorScheme.primary,
                     ),
                   ),
                 ),
@@ -502,10 +455,10 @@ class _PasswordSecurityScreenState
                   Row(
                     children: [
                       if (state.passwordStrength >= 4) ...[
-                        const Icon(
+                        Icon(
                           Icons.verified_rounded,
                           size: 13,
-                          color: AppColors.kineticMintDark,
+                          color: colorScheme.primary,
                         ),
                         const SizedBox(width: 4),
                       ],
@@ -516,7 +469,7 @@ class _PasswordSecurityScreenState
                           fontSize: 11.5,
                           fontWeight: FontWeight.w700,
                           color: state.passwordStrength >= 3
-                              ? AppColors.kineticMintDark
+                              ? colorScheme.primary
                               : (state.passwordStrength >= 2
                                   ? const Color(0xFFD97706)
                                   : (state.newPassword.isEmpty
@@ -544,7 +497,7 @@ class _PasswordSecurityScreenState
                     decoration: BoxDecoration(
                       color: isFilled
                           ? (state.passwordStrength >= 4
-                              ? AppColors.kineticMint
+                              ? colorScheme.primary
                               : (state.passwordStrength >= 2
                                   ? const Color(0xFFF59E0B)
                                   : const Color(0xFFF43F5E)))
@@ -636,7 +589,7 @@ class _PasswordSecurityScreenState
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: state.passwordsMatch
-                            ? AppColors.kineticMint
+                            ? colorScheme.primary
                             : const Color(0xFFE11D48),
                       ),
                     ),
@@ -650,7 +603,7 @@ class _PasswordSecurityScreenState
                         fontSize: 11.5,
                         fontWeight: FontWeight.w600,
                         color: state.passwordsMatch
-                            ? AppColors.kineticMintDark
+                            ? colorScheme.primary
                             : const Color(0xFFE11D48),
                       ),
                     ),
@@ -725,11 +678,13 @@ class _PasswordSecurityScreenState
               child: ElevatedButton(
                 onPressed: _handleUpdatePassword,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.kineticMint,
-                  foregroundColor: AppColors.slateDark,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.primary.computeLuminance() > 0.55
+                      ? const Color(0xFF002112)
+                      : Colors.white,
                   elevation: isLight ? 4 : 0,
                   shadowColor: isLight
-                      ? AppColors.kineticMint.withValues(alpha: 0.4)
+                      ? colorScheme.primary.withValues(alpha: 0.4)
                       : Colors.transparent,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -765,10 +720,10 @@ class _PasswordSecurityScreenState
                 children: [
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.manage_history_rounded,
                         size: 20,
-                        color: AppColors.kineticMintDark,
+                        color: colorScheme.primary,
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -842,12 +797,12 @@ class _PasswordSecurityScreenState
                           fontSize: 12,
                           color: colorScheme.onSurfaceVariant,
                         ),
-                        children: const [
+                        children: [
                           TextSpan(
                             text: 'Contact Support ↗',
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
-                              color: AppColors.kineticMintDark,
+                              color: colorScheme.primary,
                             ),
                           ),
                         ],
@@ -881,14 +836,18 @@ class _PasswordSecurityScreenState
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: isMet
-                ? AppColors.kineticMint
+                ? colorScheme.primary
                 : colorScheme.surfaceContainerHighest,
           ),
           child: Center(
             child: Icon(
               Icons.check_rounded,
               size: 13,
-              color: isMet ? AppColors.slateDark : colorScheme.onSurfaceVariant,
+              color: isMet
+                  ? (colorScheme.primary.computeLuminance() > 0.55
+                      ? const Color(0xFF002112)
+                      : Colors.white)
+                  : colorScheme.onSurfaceVariant,
             ),
           ),
         ),
@@ -919,11 +878,8 @@ class _PasswordSecurityScreenState
     final Color badgeBg;
     final Color badgeText;
     if (isSuccess) {
-      badgeBg = isLight
-          ? const Color(0xFFECFDF5)
-          : AppColors.kineticMint.withValues(alpha: 0.15);
-      badgeText =
-          isLight ? const Color(0xFF047857) : AppColors.kineticMint;
+      badgeBg = colorScheme.primary.withValues(alpha: isLight ? 0.12 : 0.18);
+      badgeText = colorScheme.primary;
     } else if (isVerified) {
       badgeBg = isLight
           ? const Color(0xFFEFF6FF)
@@ -966,7 +922,7 @@ class _PasswordSecurityScreenState
                   eventIcon,
                   size: 18,
                   color: isSuccess
-                      ? AppColors.kineticMintDark
+                      ? colorScheme.primary
                       : (isVerified
                           ? const Color(0xFF2563EB)
                           : colorScheme.onSurfaceVariant),

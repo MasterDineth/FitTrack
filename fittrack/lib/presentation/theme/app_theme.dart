@@ -199,10 +199,17 @@ ThemeData buildAppTheme([ThemeSettings? settings]) {
 /// Builds the Light theme based on [ThemeSettings] and optional [dynamicScheme].
 ThemeData buildLightTheme(ThemeSettings settings, [ColorScheme? dynamicScheme]) {
   final seedColor = Color(settings.accentColorValue);
-  var colorScheme = (settings.useDynamicAccent && dynamicScheme != null)
+  final isCustomAccent = !settings.useDynamicAccent || dynamicScheme == null;
+  final onPrimary = seedColor.computeLuminance() > 0.55
+      ? const Color(0xFF002112)
+      : Colors.white;
+
+  var colorScheme = (!isCustomAccent)
       ? dynamicScheme
       : ColorScheme.fromSeed(
           seedColor: seedColor,
+          primary: seedColor,
+          onPrimary: onPrimary,
           brightness: Brightness.light,
         );
 
@@ -324,11 +331,17 @@ ThemeData buildLightTheme(ThemeSettings settings, [ColorScheme? dynamicScheme]) 
 ThemeData buildDarkTheme(ThemeSettings settings, [ColorScheme? dynamicScheme]) {
   final seedColor = Color(settings.accentColorValue);
   final isOled = settings.useOledBlack;
+  final isCustomAccent = !settings.useDynamicAccent || dynamicScheme == null;
+  final onPrimary = seedColor.computeLuminance() > 0.55
+      ? const Color(0xFF002112)
+      : Colors.white;
 
-  var colorScheme = (settings.useDynamicAccent && dynamicScheme != null)
+  var colorScheme = (!isCustomAccent)
       ? dynamicScheme
       : ColorScheme.fromSeed(
           seedColor: seedColor,
+          primary: seedColor,
+          onPrimary: onPrimary,
           brightness: Brightness.dark,
         );
 

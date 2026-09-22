@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 import 'modals/modal_backdrop_helper.dart';
 
 /// Local private card decoration helper matching Stitch specifications.
@@ -119,7 +118,7 @@ class _PasswordConfirmationModalView extends StatelessWidget {
                               height: 7,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: AppColors.kineticMint.withValues(alpha: val),
+                                color: colorScheme.primary.withValues(alpha: val),
                               ),
                             ),
                           ),
@@ -177,11 +176,9 @@ class _PasswordConfirmationModalView extends StatelessWidget {
                         height: 76,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(22),
-                          color: isLight
-                              ? const Color(0xFFE6FAF3)
-                              : AppColors.kineticMint.withValues(alpha: 0.12),
+                          color: colorScheme.primary.withValues(alpha: isLight ? 0.1 : 0.12),
                           border: Border.all(
-                            color: AppColors.kineticMint.withValues(alpha: 0.35),
+                            color: colorScheme.primary.withValues(alpha: isLight ? 0.3 : 0.35),
                             width: 1.5,
                           ),
                         ),
@@ -204,9 +201,9 @@ class _PasswordConfirmationModalView extends StatelessWidget {
                                     ]
                                   : null,
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.lock_rounded,
-                              color: AppColors.kineticMintDark,
+                              color: colorScheme.primary,
                               size: 26,
                             ),
                           ),
@@ -217,15 +214,17 @@ class _PasswordConfirmationModalView extends StatelessWidget {
                         height: 22,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: AppColors.kineticMint,
+                          color: colorScheme.primary,
                           border: Border.all(
                             color: isLight ? Colors.white : colorScheme.surface,
                             width: 2,
                           ),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.check,
-                          color: AppColors.slateDark,
+                          color: colorScheme.primary.computeLuminance() > 0.55
+                              ? const Color(0xFF002112)
+                              : Colors.white,
                           size: 13,
                         ),
                       ),
@@ -296,9 +295,9 @@ class _PasswordConfirmationModalView extends StatelessWidget {
                               Container(
                                 width: 6,
                                 height: 6,
-                                decoration: const BoxDecoration(
+                                decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: AppColors.kineticMint,
+                                  color: colorScheme.primary,
                                 ),
                               ),
                               const SizedBox(width: 6),
@@ -344,12 +343,10 @@ class _PasswordConfirmationModalView extends StatelessWidget {
                               vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: isLight
-                                  ? const Color(0xFFECFDF5)
-                                  : AppColors.kineticMint.withValues(alpha: 0.12),
+                              color: colorScheme.primary.withValues(alpha: isLight ? 0.1 : 0.12),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: AppColors.kineticMint.withValues(alpha: 0.4),
+                                color: colorScheme.primary.withValues(alpha: isLight ? 0.3 : 0.4),
                               ),
                             ),
                             child: Text(
@@ -358,9 +355,7 @@ class _PasswordConfirmationModalView extends StatelessWidget {
                                 fontFamily: 'Plus Jakarta Sans',
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
-                                color: isLight
-                                    ? const Color(0xFF047857)
-                                    : AppColors.kineticMint,
+                                color: colorScheme.primary,
                               ),
                             ),
                           ),
@@ -434,8 +429,10 @@ class _PasswordConfirmationModalView extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: onConfirm,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.kineticMint,
-                      foregroundColor: AppColors.slateDark,
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: colorScheme.primary.computeLuminance() > 0.55
+                          ? const Color(0xFF002112)
+                          : Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -563,12 +560,10 @@ class _PasswordSuccessModalView extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: isLight
-                            ? const Color(0xFFECFDF5)
-                            : AppColors.kineticMint.withValues(alpha: 0.12),
+                        color: colorScheme.primary.withValues(alpha: isLight ? 0.1 : 0.12),
                         borderRadius: BorderRadius.circular(999),
                         border: Border.all(
-                          color: AppColors.kineticMint.withValues(alpha: 0.4),
+                          color: colorScheme.primary.withValues(alpha: isLight ? 0.3 : 0.4),
                         ),
                       ),
                       child: Row(
@@ -577,9 +572,9 @@ class _PasswordSuccessModalView extends StatelessWidget {
                           Container(
                             width: 7,
                             height: 7,
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: AppColors.kineticMint,
+                              color: colorScheme.primary,
                             ),
                           ),
                           const SizedBox(width: 6),
@@ -590,9 +585,7 @@ class _PasswordSuccessModalView extends StatelessWidget {
                               fontSize: 10.5,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 0.6,
-                              color: isLight
-                                  ? const Color(0xFF047857)
-                                  : AppColors.kineticMint,
+                              color: colorScheme.primary,
                             ),
                           ),
                         ],
@@ -634,10 +627,10 @@ class _PasswordSuccessModalView extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: isLight
-                          ? const Color(0xFFE6FAF3)
-                          : AppColors.kineticMint.withValues(alpha: 0.15),
+                          ? colorScheme.primary.withValues(alpha: 0.12)
+                          : colorScheme.primary.withValues(alpha: 0.15),
                       border: Border.all(
-                        color: AppColors.kineticMint.withValues(alpha: 0.45),
+                        color: colorScheme.primary.withValues(alpha: isLight ? 0.35 : 0.45),
                         width: 1.5,
                       ),
                     ),
@@ -645,13 +638,15 @@ class _PasswordSuccessModalView extends StatelessWidget {
                       child: Container(
                         width: 48,
                         height: 48,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: AppColors.kineticMint,
+                          color: colorScheme.primary,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.check_rounded,
-                          color: AppColors.slateDark,
+                          color: colorScheme.primary.computeLuminance() > 0.55
+                              ? const Color(0xFF002112)
+                              : Colors.white,
                           size: 30,
                         ),
                       ),
@@ -750,10 +745,10 @@ class _PasswordSuccessModalView extends StatelessWidget {
                           ),
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.shield_rounded,
                                 size: 14,
-                                color: AppColors.kineticMintDark,
+                                color: colorScheme.primary,
                               ),
                               const SizedBox(width: 4),
                               Text(
@@ -762,9 +757,7 @@ class _PasswordSuccessModalView extends StatelessWidget {
                                   fontFamily: 'Plus Jakarta Sans',
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: isLight
-                                      ? const Color(0xFF047857)
-                                      : AppColors.kineticMint,
+                                  color: colorScheme.primary,
                                 ),
                               ),
                             ],
@@ -815,8 +808,10 @@ class _PasswordSuccessModalView extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: onDone,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.kineticMint,
-                      foregroundColor: AppColors.slateDark,
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: colorScheme.primary.computeLuminance() > 0.55
+                          ? const Color(0xFF002112)
+                          : Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -1138,8 +1133,10 @@ class _PasswordFailedModalView extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: onTryAgain,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.kineticMint,
-                      foregroundColor: AppColors.slateDark,
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: colorScheme.primary.computeLuminance() > 0.55
+                          ? const Color(0xFF002112)
+                          : Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
