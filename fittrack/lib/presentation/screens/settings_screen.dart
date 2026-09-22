@@ -15,7 +15,7 @@ import '../widgets/modals/modal_backdrop_helper.dart';
 /// - 4 grouped sections: Account & Security, Workout & Timers, App Preferences, Support & About
 /// - Status pill badges ("Biometrics On", "Enabled")
 /// - Outlined destructive Log Out button with confirmation dialog
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   void _showLogoutDialog(BuildContext context) {
@@ -187,17 +187,32 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    final hasProviderScope = context.findAncestorWidgetOfExactType<ProviderScope>() != null ||
+        context.findAncestorWidgetOfExactType<UncontrolledProviderScope>() != null;
+
+    if (hasProviderScope) {
+      return Consumer(
+        builder: (context, ref, _) {
+          final userProfileAsync = ref.watch(userProfileProvider);
+          return _buildScaffold(context, userProfileAsync.value);
+        },
+      );
+    }
+
+    return _buildScaffold(context, null);
+  }
+
+  Widget _buildScaffold(BuildContext context, UserProfile? profile) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final userProfileAsync = ref.watch(userProfileProvider);
-    final profile = userProfileAsync.value;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         bottom: false,
         child: CustomScrollView(
+          clipBehavior: Clip.none,
           physics: const BouncingScrollPhysics(),
           slivers: [
             // ── Top Header ───────────────────────────────────────────────
@@ -206,13 +221,20 @@ class SettingsScreen extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
                 child: Row(
                   children: [
-                    // Dynamic accent dot indicator
+                    // Dynamic accent dot indicator with subtle halo glow
                     Container(
                       width: 10,
                       height: 10,
                       decoration: BoxDecoration(
                         color: colorScheme.primary,
                         shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: colorScheme.primary.withValues(alpha: 0.5),
+                            blurRadius: 6,
+                            spreadRadius: 1,
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -236,7 +258,7 @@ class SettingsScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  // Search Bar
+                  // Search Bar with focus glow effect & soft outline
                   _buildSearchBar(context),
                   const SizedBox(height: 16),
 
@@ -353,7 +375,7 @@ class SettingsScreen extends ConsumerWidget {
 
                   // Destructive Log Out Action Button
                   _buildLogoutButton(context),
-                ]),
+                ], addRepaintBoundaries: false),
               ),
             ),
           ],
@@ -364,69 +386,7 @@ class SettingsScreen extends ConsumerWidget {
 
   // ── Search Bar Component ────────────────────────────────────────────────
   Widget _buildSearchBar(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-    final iconBg = isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: TextField(
-        enabled: false,
-        style: TextStyle(
-          fontFamily: 'Plus Jakarta Sans',
-          fontSize: 14,
-          color: colorScheme.onSurface,
-        ),
-        decoration: InputDecoration(
-          hintText: 'Search settings...',
-          hintStyle: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontSize: 14,
-            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-          ),
-          prefixIcon: Icon(
-            Icons.search_rounded,
-            size: 20,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          suffixIcon: Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: iconBg,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    '⌘K',
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-        ),
-      ),
-    );
+    return const _SettingsSearchBar();
   }
 
   // ── Profile & Account Header Card ───────────────────────────────────────
@@ -435,14 +395,16 @@ class SettingsScreen extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final cardBg = theme.cardTheme.color ?? colorScheme.surface;
-    final border = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final border = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : const Color(0xFFE2E8F0);
 
     final hasCustomImage = profile?.profileImagePath != null &&
         File(profile!.profileImagePath!).existsSync();
     final name = (profile?.name.trim().isNotEmpty == true) ? profile!.name : 'Dineth';
     final initial = name.isNotEmpty ? name[0].toUpperCase() : 'D';
     final handle = '@${name.toLowerCase().replaceAll(' ', '')}.fit';
-    final experience = profile?.experienceLevel ?? 'Advanced';
+    final experience = profile?.experienceLevel ?? 'Pro';
 
     return InkWell(
       onTap: () => context.push('/settings/profile'),
@@ -452,7 +414,7 @@ class SettingsScreen extends ConsumerWidget {
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: border),
+          border: Border.all(color: border, width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
@@ -644,17 +606,21 @@ class SettingsScreen extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final cardBg = theme.cardTheme.color ?? colorScheme.surface;
-    final border = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
-    final dividerColor = isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9);
+    final border = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : const Color(0xFFE2E8F0);
+    final dividerColor = isDark
+        ? Colors.white.withValues(alpha: 0.06)
+        : const Color(0xFFF1F5F9);
 
     return Container(
       decoration: BoxDecoration(
         color: cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: border),
+        border: Border.all(color: border, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -682,9 +648,9 @@ class SettingsScreen extends ConsumerWidget {
   // ── Outlined Log Out Button ─────────────────────────────────────────────
   Widget _buildLogoutButton(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final cardBg = theme.cardTheme.color ?? colorScheme.surface;
-    const errorRed = Color(0xFFBA1A1A);
+    final isDark = theme.brightness == Brightness.dark;
+    final cardBg = theme.cardTheme.color ?? theme.colorScheme.surface;
+    const errorRed = Color(0xFFEF4444);
 
     return InkWell(
       onTap: () => _showLogoutDialog(context),
@@ -696,7 +662,7 @@ class SettingsScreen extends ConsumerWidget {
           color: cardBg,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: errorRed.withValues(alpha: 0.25),
+            color: errorRed.withValues(alpha: isDark ? 0.35 : 0.25),
             width: 1,
           ),
           boxShadow: [
@@ -854,6 +820,181 @@ class _BadgePill extends StatelessWidget {
           fontWeight: FontWeight.w600,
           letterSpacing: -0.2,
           color: textColor,
+        ),
+      ),
+    );
+  }
+}
+
+// ── Interactive Search Bar with Rounded Corners & Focus Glow Effect ────────
+class _SettingsSearchBar extends StatefulWidget {
+  const _SettingsSearchBar();
+
+  @override
+  State<_SettingsSearchBar> createState() => _SettingsSearchBarState();
+}
+
+class _SettingsSearchBarState extends State<_SettingsSearchBar> {
+  late final FocusNode _focusNode;
+  late final TextEditingController _controller;
+  bool _isFocused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _controller = TextEditingController();
+    _focusNode.addListener(_handleFocusChange);
+  }
+
+  void _handleFocusChange() {
+    if (_isFocused != _focusNode.hasFocus) {
+      setState(() {
+        _isFocused = _focusNode.hasFocus;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_handleFocusChange);
+    _focusNode.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final iconBg = isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
+    final barBg = colorScheme.surfaceContainerHighest;
+
+    return PopScope(
+      canPop: !_isFocused && _controller.text.isEmpty,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          _focusNode.unfocus();
+          _controller.clear();
+          setState(() {
+            _isFocused = false;
+          });
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          color: barBg,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: _isFocused
+                ? colorScheme.primary.withValues(alpha: 0.75)
+                : (isDark
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : colorScheme.outlineVariant.withValues(alpha: 0.5)),
+            width: _isFocused ? 1.5 : 1.0,
+          ),
+          boxShadow: _isFocused
+              ? [
+                  BoxShadow(
+                    color: colorScheme.primary.withValues(alpha: isDark ? 0.3 : 0.2),
+                    blurRadius: 10,
+                    spreadRadius: 0,
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.02),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+        ),
+        child: TextField(
+          focusNode: _focusNode,
+          controller: _controller,
+          enabled: true,
+          onTapOutside: (_) => _focusNode.unfocus(),
+          style: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: 14,
+            color: colorScheme.onSurface,
+          ),
+          cursorColor: colorScheme.primary,
+          decoration: InputDecoration(
+            hintText: 'Search settings...',
+            hintStyle: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: 14,
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+            ),
+            prefixIcon: Icon(
+              Icons.search_rounded,
+              size: 20,
+              color: _isFocused
+                  ? colorScheme.primary
+                  : colorScheme.onSurfaceVariant,
+            ),
+            suffixIcon: Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (_isFocused && _controller.text.isNotEmpty)
+                    GestureDetector(
+                      onTap: () {
+                        _controller.clear();
+                        setState(() {});
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 16,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: _isFocused
+                          ? colorScheme.primary.withValues(alpha: 0.15)
+                          : iconBg,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '⌘K',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: _isFocused
+                            ? colorScheme.primary
+                            : colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            isDense: true,
+            filled: false,
+            contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          ),
         ),
       ),
     );
