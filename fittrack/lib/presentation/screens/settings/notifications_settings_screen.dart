@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/notification_settings_provider.dart';
-import '../../theme/app_colors.dart';
 
 /// Notifications & Alerts Settings Screen for FitTrack.
 ///
@@ -296,7 +295,7 @@ class NotificationsSettingsScreen extends ConsumerWidget {
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
                     color: colorScheme.onSurfaceVariant,
-                    height: 1.35,
+                    height: 1.4,
                   ),
                 ),
               ],
@@ -361,7 +360,7 @@ class NotificationsSettingsScreen extends ConsumerWidget {
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
                         color: colorScheme.onSurfaceVariant,
-                        height: 1.35,
+                        height: 1.4,
                       ),
                     ),
                   ],
@@ -507,14 +506,14 @@ class NotificationsSettingsScreen extends ConsumerWidget {
                         Container(
                           width: 22,
                           height: 22,
-                          decoration: const BoxDecoration(
-                            color: AppColors.kineticMint,
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.fitness_center_rounded,
                             size: 13,
-                            color: Color(0xFF002112),
+                            color: colorScheme.onPrimary,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -648,9 +647,9 @@ class NotificationsSettingsScreen extends ConsumerWidget {
                 Row(
                   children: [
                     _buildPreviewGhostButton('-15s'),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 5),
                     _buildPreviewGhostButton('+15s'),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 5),
                     _buildPreviewGhostButton('Skip'),
                     const Spacer(),
                     Container(
@@ -663,25 +662,15 @@ class NotificationsSettingsScreen extends ConsumerWidget {
                           width: 1,
                         ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.check_rounded,
-                            size: 14,
-                            color: colorScheme.primary,
-                          ),
-                          const SizedBox(width: 3),
-                          Text(
-                            'Complete',
-                            style: TextStyle(
-                              fontFamily: 'Plus Jakarta Sans',
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: colorScheme.primary,
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        'Complete',
+                        textScaler: TextScaler.noScaling,
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.primary,
+                        ),
                       ),
                     ),
                   ],
@@ -696,7 +685,7 @@ class NotificationsSettingsScreen extends ConsumerWidget {
 
   Widget _buildPreviewGhostButton(String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(8),
@@ -707,9 +696,10 @@ class NotificationsSettingsScreen extends ConsumerWidget {
       ),
       child: Text(
         label,
+        textScaler: TextScaler.noScaling,
         style: const TextStyle(
           fontFamily: 'Plus Jakarta Sans',
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: FontWeight.w600,
           color: Colors.white,
         ),
@@ -807,9 +797,9 @@ class NotificationsSettingsScreen extends ConsumerWidget {
         color: colorScheme.surfaceContainerLow.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(14),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             child: Column(
@@ -824,70 +814,69 @@ class NotificationsSettingsScreen extends ConsumerWidget {
                     color: colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 Text(
                   'Keep optimal hydration balance',
+                  maxLines: 2,
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
                     color: colorScheme.onSurfaceVariant,
+                    height: 1.4,
                   ),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-
-          // Interactive Pill Interval Selector (Guardrail 3)
-          Container(
-            height: 34,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: currentInterval,
-                icon: Icon(
-                  Icons.expand_more_rounded,
-                  size: 16,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-                elevation: 4,
-                borderRadius: BorderRadius.circular(16),
-                dropdownColor: colorScheme.surface,
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
-                ),
-                onChanged: (String? newValue) {
-                  if (newValue != null) {
-                    notifier.setHydrationInterval(newValue);
-                  }
-                },
-                items: intervals.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(
-                      value,
+                const SizedBox(height: 12),
+                Container(
+                  height: 34,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: currentInterval,
+                      icon: Icon(
+                        Icons.expand_more_rounded,
+                        size: 16,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      elevation: 4,
+                      borderRadius: BorderRadius.circular(16),
+                      dropdownColor: colorScheme.surface,
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: colorScheme.onSurface,
                       ),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          notifier.setHydrationInterval(newValue);
+                        }
+                      },
+                      items: intervals.map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(
+                            value,
+                            style: TextStyle(
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                        );
+                      }).toList(),
                     ),
-                  );
-                }).toList(),
-              ),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 8),
-
+          const SizedBox(width: 12),
           Switch(
             value: state.hydrationReminders,
             activeTrackColor: colorScheme.primary,
@@ -946,7 +935,7 @@ class NotificationsSettingsScreen extends ConsumerWidget {
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
                         color: colorScheme.onSurfaceVariant,
-                        height: 1.35,
+                        height: 1.4,
                       ),
                     ),
                   ],
@@ -1091,7 +1080,7 @@ class NotificationsSettingsScreen extends ConsumerWidget {
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
                         color: colorScheme.onSurfaceVariant,
-                        height: 1.35,
+                        height: 1.4,
                       ),
                     ),
                   ],
@@ -1223,6 +1212,7 @@ class NotificationsSettingsScreen extends ConsumerWidget {
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
                     color: colorScheme.onSurfaceVariant,
+                    height: 1.4,
                   ),
                 ),
               ],
@@ -1258,15 +1248,18 @@ class NotificationsSettingsScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: colorScheme.onSurface,
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: colorScheme.onSurface,
+              ),
             ),
           ),
+          const SizedBox(width: 8),
           Switch(
             value: value,
             activeTrackColor: colorScheme.primary,
@@ -1314,6 +1307,7 @@ class NotificationsSettingsScreen extends ConsumerWidget {
                 style: theme.textTheme.labelSmall?.copyWith(
                   fontFamily: 'Plus Jakarta Sans',
                   color: colorScheme.onSurfaceVariant,
+                  height: 1.4,
                 ),
               ),
             ],
