@@ -214,6 +214,11 @@ GoRouter router(Ref ref) {
         builder: (context, state) => const DataManagementScreen(),
       ),
       GoRoute(
+        path: '/settings/data/erase',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const EraseDataScreen(),
+      ),
+      GoRoute(
         path: '/settings/workout-preferences',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const WorkoutPreferencesScreen(),

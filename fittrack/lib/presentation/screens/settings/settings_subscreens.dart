@@ -5,6 +5,7 @@ export 'password_security_screen.dart';
 export 'appearance_settings_screen.dart';
 export 'notifications_settings_screen.dart';
 export 'data_management_screen.dart';
+export 'erase_data_screen.dart';
 export 'workout_preferences_screen.dart';
 export 'units_equipment_screen.dart';
 export 'help_center_screen.dart';
