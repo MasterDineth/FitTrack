@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import 'modals/modal_backdrop_helper.dart';
 
 /// Local private card decoration helper matching Stitch specifications.
 BoxDecoration _buildCardDecoration(BuildContext context, {double radius = 16}) {
@@ -33,25 +34,24 @@ BoxDecoration _buildCardDecoration(BuildContext context, {double radius = 16}) {
 // 1. CONFIRMATION MODAL
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// Opens the interactive password change confirmation bottom sheet modal.
+/// Opens the interactive password change confirmation modal with frosted glass blur backdrop.
 Future<bool?> showPasswordConfirmationModal({
   required BuildContext context,
   String targetAccount = 'dineth@fittrack.io',
   int strengthScore = 4,
   required VoidCallback onConfirm,
 }) {
-  return showModalBottomSheet<bool>(
+  return showBlurModal<bool>(
     context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withValues(alpha: 0.65),
-    builder: (ctx) => _PasswordConfirmationModalView(
-      targetAccount: targetAccount,
-      strengthScore: strengthScore,
-      onConfirm: () {
-        Navigator.of(ctx).pop(true);
-        onConfirm();
-      },
+    child: Builder(
+      builder: (ctx) => _PasswordConfirmationModalView(
+        targetAccount: targetAccount,
+        strengthScore: strengthScore,
+        onConfirm: () {
+          Navigator.of(ctx).pop(true);
+          onConfirm();
+        },
+      ),
     ),
   );
 }
@@ -73,18 +73,20 @@ class _PasswordConfirmationModalView extends StatelessWidget {
     final isLight = theme.brightness == Brightness.light;
     final colorScheme = theme.colorScheme;
 
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 440),
-        child: Padding(
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          child: Container(
-            decoration: _buildCardDecoration(context, radius: 28),
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 22),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 440),
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        ),
+        child: Container(
+          decoration: _buildCardDecoration(context, radius: 28),
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 22),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -500,22 +502,21 @@ class _PasswordConfirmationModalView extends StatelessWidget {
 // 2. SUCCESS MODAL
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// Opens the interactive password change success bottom sheet modal.
+/// Opens the interactive password change success modal with frosted glass blur backdrop.
 Future<void> showPasswordSuccessModal({
   required BuildContext context,
   VoidCallback? onViewActivityLog,
 }) {
-  return showModalBottomSheet<void>(
+  return showBlurModal<void>(
     context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withValues(alpha: 0.65),
-    builder: (ctx) => _PasswordSuccessModalView(
-      onDone: () => Navigator.of(ctx).pop(),
-      onViewActivityLog: () {
-        Navigator.of(ctx).pop();
-        onViewActivityLog?.call();
-      },
+    child: Builder(
+      builder: (ctx) => _PasswordSuccessModalView(
+        onDone: () => Navigator.of(ctx).pop(),
+        onViewActivityLog: () {
+          Navigator.of(ctx).pop();
+          onViewActivityLog?.call();
+        },
+      ),
     ),
   );
 }
@@ -535,18 +536,20 @@ class _PasswordSuccessModalView extends StatelessWidget {
     final isLight = theme.brightness == Brightness.light;
     final colorScheme = theme.colorScheme;
 
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 440),
-        child: Padding(
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          child: Container(
-            decoration: _buildCardDecoration(context, radius: 28),
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 22),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 440),
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        ),
+        child: Container(
+          decoration: _buildCardDecoration(context, radius: 28),
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 22),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -889,26 +892,25 @@ class _PasswordSuccessModalView extends StatelessWidget {
 // 3. FAILED MODAL
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// Opens the interactive password change failed bottom sheet modal.
+/// Opens the interactive password change failed modal with frosted glass blur backdrop.
 Future<void> showPasswordFailedModal({
   required BuildContext context,
   VoidCallback? onTryAgain,
   VoidCallback? onForgotPassword,
 }) {
-  return showModalBottomSheet<void>(
+  return showBlurModal<void>(
     context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withValues(alpha: 0.65),
-    builder: (ctx) => _PasswordFailedModalView(
-      onTryAgain: () {
-        Navigator.of(ctx).pop();
-        onTryAgain?.call();
-      },
-      onForgotPassword: () {
-        Navigator.of(ctx).pop();
-        onForgotPassword?.call();
-      },
+    child: Builder(
+      builder: (ctx) => _PasswordFailedModalView(
+        onTryAgain: () {
+          Navigator.of(ctx).pop();
+          onTryAgain?.call();
+        },
+        onForgotPassword: () {
+          Navigator.of(ctx).pop();
+          onForgotPassword?.call();
+        },
+      ),
     ),
   );
 }
@@ -928,18 +930,20 @@ class _PasswordFailedModalView extends StatelessWidget {
     final isLight = theme.brightness == Brightness.light;
     final colorScheme = theme.colorScheme;
 
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 440),
-        child: Padding(
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          child: Container(
-            decoration: _buildCardDecoration(context, radius: 28),
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 22),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 440),
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        ),
+        child: Container(
+          decoration: _buildCardDecoration(context, radius: 28),
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 22),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [

@@ -134,8 +134,10 @@ class _PasswordSecurityScreenState
         backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
+        leadingWidth: 54,
+        titleSpacing: 0,
         leading: Padding(
-          padding: const EdgeInsets.only(left: 12),
+          padding: const EdgeInsets.only(left: 14),
           child: Center(
             child: InkWell(
               borderRadius: BorderRadius.circular(12),
@@ -164,20 +166,24 @@ class _PasswordSecurityScreenState
               'ACCOUNT SETTINGS',
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
-                fontSize: 10.5,
+                fontSize: 10,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.8,
                 color: colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 2),
-            Text(
-              'Password & Security',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                color: colorScheme.onSurface,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Password & Security',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: 16.5,
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                ),
               ),
             ),
           ],
@@ -887,13 +893,15 @@ class _PasswordSecurityScreenState
           ),
         ),
         const SizedBox(width: 10),
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontSize: 13,
-            fontWeight: isMet ? FontWeight.w600 : FontWeight.w500,
-            color: isMet ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: 13,
+              fontWeight: isMet ? FontWeight.w600 : FontWeight.w500,
+              color: isMet ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
       ],
@@ -945,54 +953,57 @@ class _PasswordSecurityScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainer,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      eventIcon,
-                      size: 18,
-                      color: isSuccess
-                          ? AppColors.kineticMintDark
-                          : (isVerified
-                              ? const Color(0xFF2563EB)
-                              : colorScheme.onSurfaceVariant),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        activity.title,
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        activity.timestamp,
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainer,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  eventIcon,
+                  size: 18,
+                  color: isSuccess
+                      ? AppColors.kineticMintDark
+                      : (isVerified
+                          ? const Color(0xFF2563EB)
+                          : colorScheme.onSurfaceVariant),
+                ),
               ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      activity.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      activity.timestamp,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
