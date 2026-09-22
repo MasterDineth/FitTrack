@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/workout_settings_provider.dart';
+import '../../widgets/modals/default_rest_timer_modal.dart';
 
 /// Workout Preferences Screen for FitTrack.
 ///
@@ -96,11 +97,7 @@ class WorkoutPreferencesScreen extends ConsumerWidget {
                 children: [
                   // Default Rest Timer
                   InkWell(
-                    onTap: () => _showRestTimerModal(
-                      context,
-                      ref,
-                      state.defaultRestTimer,
-                    ),
+                    onTap: () => showDefaultRestTimerModal(context),
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(16),
                     ),
@@ -530,121 +527,6 @@ class WorkoutPreferencesScreen extends ConsumerWidget {
       color: isLight
           ? const Color(0xFFF1F5F9)
           : colorScheme.outline.withValues(alpha: 0.15),
-    );
-  }
-
-  void _showRestTimerModal(
-    BuildContext context,
-    WidgetRef ref,
-    String currentTimer,
-  ) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isLight = theme.brightness == Brightness.light;
-    final options = ['00:45', '01:00', '01:30', '02:00', '02:30', '03:00'];
-
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (bottomSheetContext) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: colorScheme.outline.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Select Default Rest',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.close_rounded,
-                        size: 20,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      onPressed: () => Navigator.of(bottomSheetContext).pop(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                GridView.count(
-                  crossAxisCount: 3,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
-                  childAspectRatio: 2.3,
-                  children: options.map((option) {
-                    final isSelected = option == currentTimer;
-                    return InkWell(
-                      onTap: () {
-                        ref
-                            .read(workoutSettingsNotifierProvider.notifier)
-                            .setDefaultRestTimer(option);
-                        Navigator.of(bottomSheetContext).pop();
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? colorScheme.primary
-                              : (isLight
-                                  ? colorScheme.surfaceContainerHighest
-                                  : colorScheme.surfaceContainerHigh),
-                          borderRadius: BorderRadius.circular(12),
-                          border: isSelected
-                              ? null
-                              : Border.all(
-                                  color: colorScheme.outline
-                                      .withValues(alpha: 0.2),
-                                  width: 1,
-                                ),
-                        ),
-                        child: Text(
-                          option,
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: isSelected
-                                ? colorScheme.onPrimary
-                                : colorScheme.onSurface,
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }
