@@ -429,3 +429,343 @@ class _EraseConfirmationModalSheetState
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DATA MANAGEMENT INFORMATIONAL MODAL
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Displays the custom interactive Data Management Info modal explaining all screen features
+/// with a frosted-glass background blur.
+Future<void> showDataManagementInfoModal({
+  required BuildContext context,
+}) {
+  return showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: 0.65),
+    isScrollControlled: true,
+    useSafeArea: true,
+    builder: (modalContext) {
+      return BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: const _DataManagementInfoModalSheet(),
+      );
+    },
+  );
+}
+
+class _DataManagementInfoModalSheet extends StatelessWidget {
+  const _DataManagementInfoModalSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isLight = theme.brightness == Brightness.light;
+    final colorScheme = theme.colorScheme;
+
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        constraints: BoxConstraints(
+          maxWidth: 440,
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        margin: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          top: 24,
+        ),
+        decoration: _buildCardDecoration(context, radius: 28),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Subtle Drag Handle
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isLight
+                      ? const Color(0xFFCBD5E1)
+                      : colorScheme.outline.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Header Graphic Badge
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colorScheme.primary.withValues(alpha: 0.12),
+                    ),
+                  ),
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isLight
+                          ? const Color(0xFFECFDF5)
+                          : colorScheme.primary.withValues(alpha: 0.18),
+                      border: Border.all(
+                        color: colorScheme.primary.withValues(alpha: 0.4),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.folder_special_rounded,
+                      color: colorScheme.primary,
+                      size: 24,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Modal Title
+              Text(
+                'Data Management Guide',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 4),
+
+              // Modal Subtitle
+              Text(
+                'FitTrack secures, backs up, and synchronizes your workout records across offline and cloud storage.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: 12,
+                  height: 1.4,
+                  color: isLight
+                      ? const Color(0xFF64748B)
+                      : colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Scrollable List of Features
+              Flexible(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    children: [
+                      _buildFeatureItem(
+                        context,
+                        icon: Icons.cloud_upload_rounded,
+                        iconColor: colorScheme.primary,
+                        iconBg: isLight
+                            ? const Color(0xFFECFDF5)
+                            : colorScheme.primary.withValues(alpha: 0.15),
+                        title: 'Cloud Vault Backup',
+                        badge: 'Encrypted',
+                        description:
+                            'Creates an end-to-end encrypted snapshot of your workout telemetry, custom exercises, schedules, and personal records stored in your vault.',
+                      ),
+                      const SizedBox(height: 10),
+                      _buildFeatureItem(
+                        context,
+                        icon: Icons.sync_rounded,
+                        iconColor: const Color(0xFF0284C7),
+                        iconBg: isLight
+                            ? const Color(0xFFF0F9FF)
+                            : const Color(0xFF0C4A6E).withValues(alpha: 0.3),
+                        title: 'Daily Auto-Backup',
+                        badge: 'Wi-Fi',
+                        description:
+                            'Automatically pushes your updated logs over Wi-Fi when the app is idle, safeguarding against accidental phone loss or damage.',
+                      ),
+                      const SizedBox(height: 10),
+                      _buildFeatureItem(
+                        context,
+                        icon: Icons.history_rounded,
+                        iconColor: const Color(0xFFD97706),
+                        iconBg: isLight
+                            ? const Color(0xFFFEF3C7)
+                            : const Color(0xFF78350F).withValues(alpha: 0.3),
+                        title: 'Saved Backups & Rollback',
+                        badge: '4 Backups',
+                        description:
+                            'Retains up to 4 previous database checkpoints. You can instantly restore any historical state with a single tap.',
+                      ),
+                      const SizedBox(height: 10),
+                      _buildFeatureItem(
+                        context,
+                        icon: Icons.file_open_rounded,
+                        iconColor: const Color(0xFF6366F1),
+                        iconBg: isLight
+                            ? const Color(0xFFEEF2FF)
+                            : const Color(0xFF312E81).withValues(alpha: 0.3),
+                        title: 'Restore & Transfer',
+                        badge: 'Imports',
+                        description:
+                            'Import offline .fittrack archive files or migrate existing workout templates from popular third-party training applications.',
+                      ),
+                      const SizedBox(height: 10),
+                      _buildFeatureItem(
+                        context,
+                        icon: Icons.delete_sweep_rounded,
+                        iconColor: colorScheme.error,
+                        iconBg: isLight
+                            ? colorScheme.error.withValues(alpha: 0.08)
+                            : const Color(0xFF450A0A),
+                        title: 'Danger Zone & Clear Data',
+                        badge: 'Warning',
+                        description:
+                            'Granularly wipe specific categories (such as completed history or custom routines) or trigger a master factory reset of all local flash data.',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Action: Got It Button
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: FilledButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.primary.computeLuminance() > 0.55
+                        ? const Color(0xFF002112)
+                        : Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text(
+                    'Got It',
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureItem(
+    BuildContext context, {
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBg,
+    required String title,
+    required String badge,
+    required String description,
+  }) {
+    final theme = Theme.of(context);
+    final isLight = theme.brightness == Brightness.light;
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isLight ? const Color(0xFFF8FAFC) : colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(14),
+        border: isLight
+            ? Border.all(color: const Color(0xFFE2E8F0), width: 0.8)
+            : Border.all(
+                color: colorScheme.outline.withValues(alpha: 0.35),
+                width: 0.8,
+              ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: iconBg,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 19),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isLight
+                            ? const Color(0xFFE2E8F0)
+                            : colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(
+                        badge,
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w700,
+                          color: isLight
+                              ? const Color(0xFF475569)
+                              : colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  description,
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: 11.5,
+                    height: 1.38,
+                    color: isLight
+                        ? const Color(0xFF64748B)
+                        : colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

@@ -91,26 +91,6 @@ class EraseDataScreen extends ConsumerWidget {
           ),
         ),
         centerTitle: true,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: colorScheme.primary,
-              ),
-              child: Icon(
-                Icons.person_rounded,
-                size: 18,
-                color: colorScheme.primary.computeLuminance() > 0.55
-                    ? const Color(0xFF002112)
-                    : Colors.white,
-              ),
-            ),
-          ),
-        ],
       ),
       body: SafeArea(
         child: ListView(

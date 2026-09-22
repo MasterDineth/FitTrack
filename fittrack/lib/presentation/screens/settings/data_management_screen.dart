@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/data_management_provider.dart';
+import '../../widgets/data_modals.dart';
 
 /// Data Management Settings screen for FitTrack.
 ///
@@ -100,7 +101,7 @@ class DataManagementScreen extends ConsumerWidget {
                   ? const Color(0xFF64748B)
                   : colorScheme.onSurfaceVariant,
             ),
-            onPressed: () => _showVaultInfoDialog(context),
+            onPressed: () => showDataManagementInfoModal(context: context),
           ),
           const SizedBox(width: 4),
         ],
@@ -938,30 +939,6 @@ class DataManagementScreen extends ConsumerWidget {
     );
   }
 
-  void _showVaultInfoDialog(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text(
-          'FitTrack Cloud Vault',
-          style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
-        ),
-        content: const Text(
-          'Your workout telemetry, exercise modifications, personal records, and schedule templates are encrypted locally before being backed up to your personal vault.\n\nAutomatic daily syncs occur over Wi-Fi when the app enters background state.',
-          style: TextStyle(fontFamily: 'Plus Jakarta Sans', fontSize: 13),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(
-              'Understood',
-              style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _handleExportArchive(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
