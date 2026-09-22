@@ -367,77 +367,64 @@ class SettingsScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    final cardBg = theme.cardTheme.color ?? colorScheme.surface;
-    final border = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
     final iconBg = isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
 
     return Container(
-      height: 44,
       decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
-            blurRadius: 6,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Icon(
-              Icons.search_rounded,
-              size: 20,
-              color: colorScheme.onSurfaceVariant,
-            ),
+      child: TextField(
+        enabled: false,
+        style: TextStyle(
+          fontFamily: 'Plus Jakarta Sans',
+          fontSize: 14,
+          color: colorScheme.onSurface,
+        ),
+        decoration: InputDecoration(
+          hintText: 'Search settings...',
+          hintStyle: TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: 14,
+            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
           ),
-          Expanded(
-            child: TextField(
-              enabled: false,
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: 14,
-                color: colorScheme.onSurface,
-              ),
-              decoration: InputDecoration(
-                hintText: 'Search settings...',
-                hintStyle: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: 14,
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                ),
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            size: 20,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          Padding(
+          suffixIcon: Padding(
             padding: const EdgeInsets.only(right: 12),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: iconBg,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                '⌘K',
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurfaceVariant,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: iconBg,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    '⌘K',
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
-        ],
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+        ),
       ),
     );
   }
