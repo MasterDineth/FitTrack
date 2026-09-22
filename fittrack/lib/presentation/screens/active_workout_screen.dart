@@ -28,9 +28,16 @@ class _ActiveWorkoutScreenState
     if (!_initialized) {
       _initialized = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref
-            .read(activeWorkoutProvider.notifier)
-            .startSession(widget.scheduleId);
+        final current = ref.read(activeWorkoutProvider);
+        if (current.schedule.id != widget.scheduleId ||
+            current.phase == WorkoutPhase.loading ||
+            current.phase == WorkoutPhase.error ||
+            current.phase == WorkoutPhase.discarded ||
+            current.phase == WorkoutPhase.finished) {
+          ref
+              .read(activeWorkoutProvider.notifier)
+              .startWorkout(widget.scheduleId);
+        }
       });
     }
   }
@@ -81,19 +88,6 @@ class _ActiveWorkoutScreenState
         if (mounted) context.pushReplacement('/workouts/summary');
       });
       // Show a transient loading scaffold while navigation happens
-      return Scaffold(
-        backgroundColor: theme.scaffoldBackgroundColor,
-        body: Center(
-          child: CircularProgressIndicator(color: colorScheme.primary),
-        ),
-      );
-    }
-
-    // ── Discarded ─────────────────────────────────────────────────────────────
-    if (state.phase == WorkoutPhase.discarded) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) context.go('/dashboard');
-      });
       return Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
         body: Center(
@@ -280,7 +274,9 @@ class _ActiveWorkoutScreenState
       },
       onDiscard: () {
         notifier.discardSession();
-        if (context.mounted) context.go('/dashboard');
+        if (context.mounted && context.canPop()) {
+          context.pop();
+        }
       },
     );
   }

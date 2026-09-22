@@ -165,6 +165,13 @@ GoRouter router(Ref ref) {
         ),
       ),
       GoRoute(
+        path: '/workout/execute/:id',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => ActiveWorkoutScreen(
+          scheduleId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
         path: '/workouts/guide/:exerciseId',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => ExerciseGuideDetailsScreen(
