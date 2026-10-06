@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import '../theme/glass_tokens.dart';
+import 'ambient_mesh_background.dart';
 import 'ft_exit_confirmation.dart';
+import 'glass/frosted_glass_box.dart';
 
-/// Glassmorphic floating bottom navigation dock.
+/// Luminous Frosted Kinetic floating bottom navigation shell.
 ///
-/// Renders a pill-shaped translucent dock fixed above the bottom of the screen
-/// with four navigation tabs: Dashboard, Workouts, History, and Settings. The
-/// active tab is highlighted with a mint-green ([Color(0xFF00d68f)]) accent pill
-/// and smooth [AnimatedContainer] transitions.
+/// Features a detached 64px floating glass dock centered 24px above the bottom screen
+/// edge with [GlassTier.floating] blur, an animated pill for the active route,
+/// minimal 48×48px icon buttons for inactive routes, and persistent ambient mesh canvas.
 class BottomNavShell extends StatefulWidget {
   const BottomNavShell({
     super.key,
@@ -26,6 +28,7 @@ class _BottomNavShellState extends State<BottomNavShell> {
   DateTime? _lastPressedAt;
 
   void _goBranch(int index) {
+    if (index == widget.navigationShell.currentIndex) return;
     HapticFeedback.lightImpact();
     widget.navigationShell.goBranch(
       index,
@@ -73,8 +76,11 @@ class _BottomNavShellState extends State<BottomNavShell> {
         }
       },
       child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        body: widget.navigationShell,
+        extendBody: true,
+        backgroundColor: Colors.transparent,
+        body: AmbientMeshBackground(
+          child: widget.navigationShell,
+        ),
         bottomNavigationBar: _FloatingDock(
           currentIndex: widget.navigationShell.currentIndex,
           onTap: _goBranch,
@@ -96,18 +102,18 @@ class _FloatingDock extends StatelessWidget {
   static const _tabs = [
     _NavTab(
       label: 'Dashboard',
-      icon: Icons.dashboard_rounded,
-      activeIcon: Icons.dashboard_rounded,
+      icon: Icons.grid_view_rounded,
+      activeIcon: Icons.grid_view_rounded,
     ),
     _NavTab(
       label: 'Workouts',
-      icon: Icons.fitness_center_outlined,
+      icon: Icons.fitness_center_rounded,
       activeIcon: Icons.fitness_center_rounded,
     ),
     _NavTab(
       label: 'History',
-      icon: Icons.history_rounded,
-      activeIcon: Icons.history_rounded,
+      icon: Icons.schedule_rounded,
+      activeIcon: Icons.schedule_rounded,
     ),
     _NavTab(
       label: 'Settings',
@@ -119,100 +125,85 @@ class _FloatingDock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final primary = theme.colorScheme.primary;
     final isDark = theme.brightness == Brightness.dark;
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final textMuted = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF6B6785);
 
-    return Container(
-      color: Colors.transparent,
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        bottom: bottomPadding + 12,
-        top: 0,
-      ),
-      child: Container(
-        height: 68,
-        decoration: BoxDecoration(
-          // Glassmorphic background
-          color: colorScheme.surface.withValues(alpha: 0.92),
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(
-            color: colorScheme.outlineVariant,
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: isDark ? 0.35 : 0.08),
-              blurRadius: 32,
-              spreadRadius: -4,
-              offset: const Offset(0, 12),
-            ),
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: isDark ? 0.20 : 0.04),
-              blurRadius: 12,
-              spreadRadius: -2,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(28),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(_tabs.length, (index) {
-              final tab = _tabs[index];
-              final isActive = currentIndex == index;
-              final unselectedColor =
-                  colorScheme.onSurface.withValues(alpha: 0.6);
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 24.0, left: 20, right: 20),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 353),
+            child: FrostedGlassBox(
+              tier: GlassTier.floating,
+              height: 64,
+              borderRadius: BorderRadius.circular(9999),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(_tabs.length, (index) {
+                  final tab = _tabs[index];
+                  final isActive = currentIndex == index;
 
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => onTap(index),
-                  behavior: HitTestBehavior.opaque,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeInOut,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 220),
-                          curve: Curves.easeInOut,
-                          width: 44,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: isActive
-                                ? colorScheme.primaryContainer
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            isActive ? tab.activeIcon : tab.icon,
+                  if (isActive) {
+                    return FrostedGlassBox(
+                      tier: GlassTier.elevated,
+                      borderRadius: BorderRadius.circular(9999),
+                      border: Border.all(
+                        color: primary.withValues(alpha: 0.25),
+                        width: 1,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      onTap: () => onTap(index),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            tab.activeIcon,
                             size: 20,
-                            color: isActive ? colorScheme.onPrimaryContainer : unselectedColor,
+                            color: primary,
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        AnimatedDefaultTextStyle(
-                          duration: const Duration(milliseconds: 220),
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: 10,
-                            fontWeight: isActive
-                                ? FontWeight.w700
-                                : FontWeight.w500,
-                            color: isActive ? colorScheme.primary : unselectedColor,
-                            letterSpacing: -0.2,
+                          const SizedBox(width: 8),
+                          Text(
+                            tab.label,
+                            style: TextStyle(
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: primary,
+                              letterSpacing: -0.2,
+                            ),
                           ),
-                          child: Text(tab.label),
-                        ),
-                      ],
+                        ],
+                      ),
+                    );
+                  }
+
+                  return SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      onPressed: () => onTap(index),
+                      icon: Icon(
+                        tab.icon,
+                        size: 20,
+                        color: textMuted,
+                      ),
                     ),
-                  ),
-                ),
-              );
-            }),
+                  );
+                }),
+              ),
+            ),
           ),
         ),
       ),

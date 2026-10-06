@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/theme_settings.dart';
 import 'app_colors.dart';
 
+export 'app_colors.dart';
+export 'glass_tokens.dart';
+
 /// Style configuration for muscle group pill badges.
 @immutable
 class MusclePillStyle {
@@ -220,13 +223,13 @@ ThemeData buildLightTheme(ThemeSettings settings, [ColorScheme? dynamicScheme]) 
     outlineVariant: const Color(0xFFE2E8F0),
     shadow: const Color(0xFF0F172A),
     tertiary: const Color(0xFFF97316),
-    secondary: const Color(0xFF0D9488),
+    secondary: AppColors.brandTealDark,
   );
 
   return ThemeData(
     useMaterial3: true,
     colorScheme: colorScheme,
-    scaffoldBackgroundColor: const Color(0xFFF7F9FB),
+    scaffoldBackgroundColor: AppColors.canvasBaseLight,
     cardColor: const Color(0xFFFFFFFF),
     cardTheme: CardThemeData(
       elevation: 0,
@@ -368,7 +371,7 @@ ThemeData buildDarkTheme(ThemeSettings settings, [ColorScheme? dynamicScheme]) {
     );
   }
 
-  final scaffoldBg = isOled ? const Color(0xFF000000) : const Color(0xFF0B131F);
+  final scaffoldBg = isOled ? const Color(0xFF000000) : AppColors.darkNavy;
   final cardColor = isOled ? const Color(0xFF0C1017) : const Color(0xFF15202E);
 
   return ThemeData(

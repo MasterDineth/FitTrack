@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'ambient_mesh_background.dart';
+
+/// App scaffold integrating [AmbientMeshBackground] to provide persistent
+/// frosted mesh underglow canvas across all shell tabs.
 class MainScaffold extends StatelessWidget {
   const MainScaffold({
-    Key? key,
+    super.key,
     required this.navigationShell,
-  }) : super(key: key ?? const ValueKey('MainScaffold'));
+  });
 
   final StatefulNavigationShell navigationShell;
 
@@ -19,7 +23,10 @@ class MainScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: navigationShell,
+      backgroundColor: Colors.transparent,
+      body: AmbientMeshBackground(
+        child: navigationShell,
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: _goBranch,
