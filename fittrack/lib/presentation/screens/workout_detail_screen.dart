@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/repository_providers.dart';
+import '../providers/active_workout_provider.dart';
 import '../../domain/entities/schedule.dart';
 import '../../domain/entities/schedule_exercise.dart';
 import '../../domain/entities/workout_schedule.dart';
@@ -140,6 +141,9 @@ class WorkoutDetailScreen extends ConsumerWidget {
         backgroundColor: theme.scaffoldBackgroundColor,
         bottomNavigationBar: _StickyStartDock(
           onStartTap: () {
+            ref
+                .read(activeWorkoutProvider.notifier)
+                .startWorkout(scheduleId);
             context.push('/workouts/active/$scheduleId');
           },
         ),
@@ -170,6 +174,9 @@ class WorkoutDetailScreen extends ConsumerWidget {
       backgroundColor: theme.scaffoldBackgroundColor,
       bottomNavigationBar: _StickyStartDock(
         onStartTap: () {
+          ref
+              .read(activeWorkoutProvider.notifier)
+              .startWorkout(scheduleId);
           context.push('/workouts/active/$scheduleId');
         },
       ),

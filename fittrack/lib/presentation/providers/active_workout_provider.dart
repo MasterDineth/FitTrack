@@ -3,12 +3,12 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../domain/entities/schedule.dart';
-import '../../domain/entities/schedule_exercise.dart';
 import '../../domain/entities/exercise.dart';
 import '../../domain/entities/exercise_log.dart';
 import '../../domain/entities/set_log.dart';
 import '../../domain/entities/workout_session.dart';
 import 'repository_providers.dart';
+import 'schedules_provider.dart';
 
 part 'active_workout_provider.g.dart';
 
@@ -186,12 +186,43 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
 
   // ── Session Lifecycle ──────────────────────────────────────────────────────
 
+  Future<void> startWorkout(String scheduleId) => startSession(scheduleId);
+
   Future<void> startSession(String scheduleId) async {
     try {
       final scheduleRepo = ref.read(scheduleRepositoryProvider);
       final exerciseRepo = ref.read(exerciseRepositoryProvider);
 
-      final schedule = await scheduleRepo.getScheduleById(scheduleId);
+      Schedule? schedule = await scheduleRepo.getScheduleById(scheduleId);
+      List<ScheduleExercise> scheduleExercises = [];
+
+      if (schedule == null) {
+        // Fallback: search schedulesProvider for predefined / in-memory schedules
+        final schedulesState = ref.read(schedulesProvider);
+        final ws = schedulesState.allSchedules
+            .where((s) => s.id == scheduleId)
+            .firstOrNull;
+        if (ws != null) {
+          schedule = Schedule(
+            id: ws.id,
+            name: ws.title,
+            description: ws.description,
+            targetMuscles: ws.targetMuscles.isNotEmpty
+                ? ws.targetMuscles
+                : [ws.focus],
+            assignedWeekdays: List.generate(
+              ws.daysPerWeek.clamp(1, 7),
+              (i) => i + 1,
+            ),
+            orderIndex: 0,
+          );
+          scheduleExercises = ws.exercises;
+        }
+      } else {
+        scheduleExercises =
+            await scheduleRepo.getScheduleExercises(scheduleId);
+      }
+
       if (schedule == null) {
         state = state.copyWith(
           phase: WorkoutPhase.error,
@@ -200,18 +231,23 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
         return;
       }
 
-      final scheduleExercises =
-          await scheduleRepo.getScheduleExercises(scheduleId);
+      if (scheduleExercises.isEmpty) {
+        scheduleExercises = _fallbackScheduleExercises(schedule.id);
+      }
 
       final entries = <LiveExerciseEntry>[];
       for (final se in scheduleExercises) {
-        final exercise = await exerciseRepo.getExerciseById(se.exerciseId);
-        if (exercise != null) {
-          entries.add(LiveExerciseEntry(
-            scheduleExercise: se,
-            exercise: exercise,
-          ));
-        }
+        var exercise = await exerciseRepo.getExerciseById(se.exerciseId);
+        exercise ??= Exercise(
+          id: se.exerciseId,
+          name: _resolveExerciseName(se.exerciseId),
+          equipment: _resolveEquipment(se.exerciseId),
+          movementClassification: MovementClassification.compound,
+        );
+        entries.add(LiveExerciseEntry(
+          scheduleExercise: se,
+          exercise: exercise,
+        ));
       }
 
       _sessionStartTime = DateTime.now();
@@ -234,6 +270,64 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
         errorMessage: e.toString(),
       );
     }
+  }
+
+  static List<ScheduleExercise> _fallbackScheduleExercises(String schedId) {
+    return [
+      ScheduleExercise(
+        id: '${schedId}_ex1',
+        scheduleId: schedId,
+        exerciseId: 'ex_barbell_bench_press',
+        sortOrder: 1,
+        targetSets: 4,
+        targetReps: 8,
+        targetWeightKg: 80.0,
+        restDurationSeconds: 120,
+      ),
+      ScheduleExercise(
+        id: '${schedId}_ex2',
+        scheduleId: schedId,
+        exerciseId: 'ex_incline_dumbbell_press',
+        sortOrder: 2,
+        targetSets: 3,
+        targetReps: 10,
+        targetWeightKg: 28.0,
+        restDurationSeconds: 90,
+      ),
+      ScheduleExercise(
+        id: '${schedId}_ex3',
+        scheduleId: schedId,
+        exerciseId: 'ex_cable_flyes',
+        sortOrder: 3,
+        targetSets: 3,
+        targetReps: 12,
+        targetWeightKg: 15.0,
+        restDurationSeconds: 60,
+      ),
+    ];
+  }
+
+  static String _resolveExerciseName(String exerciseId) {
+    if (exerciseId.startsWith('ex_')) {
+      final raw = exerciseId.substring(3).replaceAll('_', ' ');
+      return raw.split(' ').map((w) {
+        if (w.isEmpty) return '';
+        return '${w[0].toUpperCase()}${w.substring(1)}';
+      }).join(' ');
+    }
+    return exerciseId;
+  }
+
+  static Equipment _resolveEquipment(String exerciseId) {
+    final lower = exerciseId.toLowerCase();
+    if (lower.contains('dumbbell') || lower.contains('db')) return Equipment.dumbbell;
+    if (lower.contains('barbell') || lower.contains('bb')) return Equipment.barbell;
+    if (lower.contains('cable')) return Equipment.cable;
+    if (lower.contains('bodyweight') || lower.contains('push_up') || lower.contains('pull_up')) {
+      return Equipment.bodyweight;
+    }
+    if (lower.contains('machine')) return Equipment.machine;
+    return Equipment.barbell;
   }
 
   // ── Stopwatch ──────────────────────────────────────────────────────────────
@@ -452,12 +546,23 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
 
   // ── Stop / Finish Session ──────────────────────────────────────────────────
 
+  /// Discards the current session, clearing progress without saving to history.
+  void discardWorkout() => discardSession();
+
   /// Cancels timers and terminates the session immediately without saving to history.
+  /// Only clears the progress of the current session.
   void discardSession() {
     _cancelTimers();
     _sessionStartTime = null;
     _skipReasons.clear();
-    state = state.copyWith(phase: WorkoutPhase.discarded);
+    state = state.copyWith(
+      phase: WorkoutPhase.loading,
+      elapsedSeconds: 0,
+      restRemainingSeconds: 0,
+      currentExerciseIndex: 0,
+      currentSetIndex: 0,
+      completedSets: const [],
+    );
   }
 
   Future<void> stopSession() async {
