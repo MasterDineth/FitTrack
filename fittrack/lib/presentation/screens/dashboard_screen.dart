@@ -716,126 +716,183 @@ class _CalendarSectionState extends State<_CalendarSection> {
           borderRadius: BorderRadius.circular(20),
           padding: const EdgeInsets.all(14),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               // Weekday labels: M T W T F S S
               Row(
-                children: ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((dayName) {
-                  return Expanded(
-                    child: Center(
-                      child: Text(
-                        dayName,
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: textMuted,
+                children: [
+                  for (int col = 0; col < 7; col++) ...[
+                    if (col > 0) const SizedBox(width: 6),
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          const ['M', 'T', 'W', 'T', 'F', 'S', 'S'][col],
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: textMuted,
+                          ),
                         ),
                       ),
                     ),
-                  );
-                }).toList(),
+                  ],
+                ],
               ),
 
               const SizedBox(height: 10),
 
-              // 7-Column Date Grid
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 7,
-                  mainAxisSpacing: 6,
-                  crossAxisSpacing: 6,
-                  childAspectRatio: 1.0,
-                ),
-                itemCount: startOffset + daysInMonth,
-                itemBuilder: (context, index) {
-                  if (index < startOffset) {
-                    return const SizedBox.shrink();
-                  }
-
-                  final day = index - startOffset + 1;
-                  final isToday = isCurrentMonth && (day == now.day);
-                  final isCompleted = effectiveActiveDays.contains(day);
-
-                  if (isCompleted) {
-                    // Completed workout day: solid primary accent fill with white text
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: primary,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: primary.withValues(alpha: 0.28),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          '$day',
-                          style: const TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-
-                  if (isToday) {
-                    // Today's date: Glass-2 fill, 2px primary accent perimeter stroke, bottom indicator dot
-                    return FrostedGlassBox(
-                      tier: GlassTier.elevated,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: primary, width: 2),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '$day',
-                            style: TextStyle(
-                              fontFamily: 'Plus Jakarta Sans',
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                              color: primary,
-                            ),
-                          ),
-                          const SizedBox(height: 1),
-                          Container(
-                            width: 4,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: primary,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  // Default uncompleted day
-                  return Center(
-                    child: Text(
-                      '$day',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: textDark,
-                      ),
-                    ),
-                  );
-                },
+              // 7-Column Date Grid Rows
+              ..._buildCalendarWeekRows(
+                startOffset: startOffset,
+                daysInMonth: daysInMonth,
+                isCurrentMonth: isCurrentMonth,
+                todayDay: now.day,
+                effectiveActiveDays: effectiveActiveDays,
+                primary: primary,
+                textDark: textDark,
               ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  List<Widget> _buildCalendarWeekRows({
+    required int startOffset,
+    required int daysInMonth,
+    required bool isCurrentMonth,
+    required int todayDay,
+    required Set<int> effectiveActiveDays,
+    required Color primary,
+    required Color textDark,
+  }) {
+    final totalCells = startOffset + daysInMonth;
+    final totalWeeks = (totalCells / 7).ceil();
+    final rows = <Widget>[];
+
+    for (int week = 0; week < totalWeeks; week++) {
+      if (week > 0) {
+        rows.add(const SizedBox(height: 6));
+      }
+      rows.add(
+        Row(
+          children: [
+            for (int col = 0; col < 7; col++) ...[
+              if (col > 0) const SizedBox(width: 6),
+              Expanded(
+                child: AspectRatio(
+                  aspectRatio: 1.0,
+                  child: _buildCalendarDayCell(
+                    cellIndex: week * 7 + col,
+                    startOffset: startOffset,
+                    totalCells: totalCells,
+                    isCurrentMonth: isCurrentMonth,
+                    todayDay: todayDay,
+                    effectiveActiveDays: effectiveActiveDays,
+                    primary: primary,
+                    textDark: textDark,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      );
+    }
+    return rows;
+  }
+
+  Widget _buildCalendarDayCell({
+    required int cellIndex,
+    required int startOffset,
+    required int totalCells,
+    required bool isCurrentMonth,
+    required int todayDay,
+    required Set<int> effectiveActiveDays,
+    required Color primary,
+    required Color textDark,
+  }) {
+    if (cellIndex < startOffset || cellIndex >= totalCells) {
+      return const SizedBox.shrink();
+    }
+
+    final day = cellIndex - startOffset + 1;
+    final isToday = isCurrentMonth && (day == todayDay);
+    final isCompleted = effectiveActiveDays.contains(day);
+
+    if (isCompleted) {
+      // Completed workout day: solid primary accent fill with white text
+      return Container(
+        decoration: BoxDecoration(
+          color: primary,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: primary.withValues(alpha: 0.28),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(
+            '$day',
+            style: const TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (isToday) {
+      // Today's date: Glass-2 fill, 2px primary accent perimeter stroke, bottom indicator dot
+      return FrostedGlassBox(
+        tier: GlassTier.elevated,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: primary, width: 2),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '$day',
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: primary,
+              ),
+            ),
+            const SizedBox(height: 1),
+            Container(
+              width: 4,
+              height: 4,
+              decoration: BoxDecoration(
+                color: primary,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Default uncompleted day
+    return Center(
+      child: Text(
+        '$day',
+        style: TextStyle(
+          fontFamily: 'Plus Jakarta Sans',
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: textDark,
+        ),
+      ),
     );
   }
 }

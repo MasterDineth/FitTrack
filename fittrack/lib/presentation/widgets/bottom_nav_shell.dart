@@ -81,7 +81,7 @@ class _BottomNavShellState extends State<BottomNavShell> {
         body: AmbientMeshBackground(
           child: widget.navigationShell,
         ),
-        bottomNavigationBar: _FloatingDock(
+        bottomNavigationBar: FloatingDock(
           currentIndex: widget.navigationShell.currentIndex,
           onTap: _goBranch,
         ),
@@ -90,8 +90,9 @@ class _BottomNavShellState extends State<BottomNavShell> {
   }
 }
 
-class _FloatingDock extends StatelessWidget {
-  const _FloatingDock({
+class FloatingDock extends StatelessWidget {
+  const FloatingDock({
+    super.key,
     required this.currentIndex,
     required this.onTap,
   });
@@ -133,16 +134,21 @@ class _FloatingDock extends StatelessWidget {
 
     return SafeArea(
       top: false,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 24.0, left: 20, right: 20),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 353),
-            child: FrostedGlassBox(
-              tier: GlassTier.floating,
-              height: 64,
-              borderRadius: BorderRadius.circular(9999),
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        heightFactor: 1.0,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 24.0, left: 20, right: 20),
+          child: SizedBox(
+            height: 64,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 353),
+                child: FrostedGlassBox(
+                  tier: GlassTier.floating,
+                  height: 64,
+                  borderRadius: BorderRadius.circular(9999),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: List.generate(_tabs.length, (index) {
@@ -207,7 +213,9 @@ class _FloatingDock extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 }
 

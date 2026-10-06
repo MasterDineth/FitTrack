@@ -8,6 +8,7 @@ import 'package:fittrack/presentation/theme/app_theme.dart';
 import 'package:fittrack/presentation/widgets/ambient_mesh_background.dart';
 import 'package:fittrack/presentation/widgets/glass/glass.dart';
 import 'package:fittrack/presentation/screens/dashboard_screen.dart';
+import 'package:fittrack/presentation/widgets/bottom_nav_shell.dart';
 
 void main() {
   group('Step 1 & 2: MeshPalette & Ambient Mesh Tests', () {
@@ -160,6 +161,18 @@ void main() {
 
       expect(tester.takeException(), isNull);
 
+      final thisMonthFinder = find.text('This Month');
+      expect(thisMonthFinder, findsOneWidget);
+      final calendarFinder = find.ancestor(
+        of: find.text('W'),
+        matching: find.byType(FrostedGlassBox),
+      );
+      if (calendarFinder.evaluate().isNotEmpty) {
+        final boxRender = tester.renderObject(calendarFinder.first) as RenderBox;
+        // ignore: avoid_print
+        print('CALENDAR CARD SIZE: ${boxRender.size}');
+      }
+
       // 1. Top Header
       expect(find.text('FitTrack'), findsOneWidget);
       expect(find.byType(GlassIconButton), findsAtLeastNWidgets(1));
@@ -239,6 +252,64 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.text('FitTrack'), findsOneWidget);
       expect(find.text("Today's Recommendation"), findsOneWidget);
+    });
+
+    testWidgets('FloatingDock anchors cleanly at the bottom of the screen (not in middle)', (tester) async {
+      tester.view.physicalSize = const Size(393, 852);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            extendBody: true,
+            body: const Center(child: Text('Screen Content')),
+            bottomNavigationBar: FloatingDock(
+              currentIndex: 0,
+              onTap: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final dockFinder = find.byType(FloatingDock);
+      expect(dockFinder, findsOneWidget);
+
+      final dockRect = tester.getRect(dockFinder);
+      // Screen height is 852. The dock rect should be anchored at the bottom (852 - 88 = 764)
+      expect(dockRect.bottom, equals(852.0));
+      expect(dockRect.top, greaterThanOrEqualTo(760.0));
+      // Ensure it is NOT floating anywhere near the middle (394..450)
+      expect(dockRect.top, greaterThan(600.0));
+    });
+
+    testWidgets('Calendar card has no large empty space below dates', (tester) async {
+      tester.view.physicalSize = const Size(393, 852);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: DashboardScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final calendarCardFinder = find.ancestor(
+        of: find.text('W'),
+        matching: find.byType(FrostedGlassBox),
+      );
+      expect(calendarCardFinder, findsOneWidget);
+
+      final cardRect = tester.getRect(calendarCardFinder);
+      // The 5-week calendar should be compact (approx 270-300px), NOT 500-600px
+      expect(cardRect.height, lessThan(330.0));
+      expect(cardRect.height, greaterThan(250.0));
     });
   });
 }
