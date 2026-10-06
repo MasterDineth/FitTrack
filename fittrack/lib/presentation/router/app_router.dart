@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../providers/auth_provider.dart';
+import '../providers/splash_provider.dart';
 import '../providers/user_profile_provider.dart';
 
 import '../screens/splash_screen.dart';
@@ -42,6 +43,7 @@ class GoRouterNotifier extends ChangeNotifier {
   GoRouterNotifier(this._ref) {
     _ref.listen(authProvider, (_, _) => notifyListeners());
     _ref.listen(userProfileProvider, (_, _) => notifyListeners());
+    _ref.listen(splashDoneProvider, (_, _) => notifyListeners());
   }
 }
 
@@ -66,6 +68,11 @@ GoRouter router(Ref ref) {
       final isWelcome = matchedLocation == '/welcome';
       final isAuth = matchedLocation == '/auth';
       final isReset = matchedLocation.startsWith('/reset');
+
+      // The splash decides when it is finished (intro + exit animation).
+      if (isSplash && !ref.read(splashDoneProvider)) {
+        return null;
+      }
 
       if (isAuthLoading) {
         return null;

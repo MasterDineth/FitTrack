@@ -1,0 +1,52 @@
+diff --git a/fittrack/lib/presentation/providers/splash_provider.dart b/fittrack/lib/presentation/providers/splash_provider.dart
+new file mode 100644
+index 0000000..091d5bd
+--- /dev/null
++++ b/fittrack/lib/presentation/providers/splash_provider.dart
+@@ -0,0 +1,14 @@
++import 'package:flutter_riverpod/flutter_riverpod.dart';
++
++/// Flipped to true by the splash screen once its intro AND exit animation
++/// have finished. The router keeps the user on /splash until then, so the
++/// splash controls its own hand-off.
++class SplashDoneNotifier extends Notifier<bool> {
++  @override
++  bool build() => false;
++
++  void finish() => state = true;
++}
++
++final splashDoneProvider =
++    NotifierProvider<SplashDoneNotifier, bool>(SplashDoneNotifier.new);
+diff --git a/fittrack/lib/presentation/router/app_router.dart b/fittrack/lib/presentation/router/app_router.dart
+index c11c483..2201634 100644
+--- a/fittrack/lib/presentation/router/app_router.dart
++++ b/fittrack/lib/presentation/router/app_router.dart
+@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
+ import 'package:riverpod_annotation/riverpod_annotation.dart';
+ 
+ import '../providers/auth_provider.dart';
++import '../providers/splash_provider.dart';
+ import '../providers/user_profile_provider.dart';
+ 
+ import '../screens/splash_screen.dart';
+@@ -42,6 +43,7 @@ class GoRouterNotifier extends ChangeNotifier {
+   GoRouterNotifier(this._ref) {
+     _ref.listen(authProvider, (_, _) => notifyListeners());
+     _ref.listen(userProfileProvider, (_, _) => notifyListeners());
++    _ref.listen(splashDoneProvider, (_, _) => notifyListeners());
+   }
+ }
+ 
+@@ -67,6 +69,11 @@ GoRouter router(Ref ref) {
+       final isAuth = matchedLocation == '/auth';
+       final isReset = matchedLocation.startsWith('/reset');
+ 
++      // The splash decides when it is finished (intro + exit animation).
++      if (isSplash && !ref.read(splashDoneProvider)) {
++        return null;
++      }
++
+       if (isAuthLoading) {
+         return null;
+       }
