@@ -1,0 +1,429 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>FitTrack - Search Workouts</title>
+<!-- Google Fonts: Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#7c5cfa",
+            "primary-hover": "#6c4cf0",
+          },
+          fontFamily: {
+            sans: ["'Plus Jakarta Sans'", "sans-serif"],
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
+      background-color: #f6f4fe;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .material-symbols-fill {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    /* Frosted Glass styling faithful to Workout Library screen */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.68);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.88);
+      box-shadow: 0 8px 32px 0 rgba(124, 92, 250, 0.07), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+    }
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.88);
+      box-shadow: 0 4px 16px -2px rgba(124, 92, 250, 0.06), inset 0 1px 1px 0 rgba(255, 255, 255, 0.9);
+    }
+    .glass-input {
+      background: rgba(255, 255, 255, 0.68);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1.5px solid rgba(124, 92, 250, 0.35);
+      box-shadow: 0 0 0 3px rgba(124, 92, 250, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.9);
+    }
+    .glass-chip {
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 2px 6px -1px rgba(124, 92, 250, 0.05);
+    }
+    .glass-nav {
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.88);
+      box-shadow: 0 12px 36px -6px rgba(124, 92, 250, 0.16), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    @keyframes pulse-ambient {
+      0%, 100% { opacity: 0.9; transform: scale(1); }
+      50% { opacity: 0.72; transform: scale(1.05); }
+    }
+    .ambient-orb {
+      animation: pulse-ambient 9s ease-in-out infinite;
+    }
+  </style>
+<style id="enhanced-glass-styles">.glass-card { background: rgba(255, 255, 255, 0.52) !important; backdrop-filter: blur(24px) !important; -webkit-backdrop-filter: blur(24px) !important; border: 1px solid rgba(255, 255, 255, 0.75) !important; box-shadow: 0 10px 32px 0 rgba(124, 92, 250, 0.1), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95) !important; } .glass-panel { background: rgba(255, 255, 255, 0.55) !important; backdrop-filter: blur(20px) !important; -webkit-backdrop-filter: blur(20px) !important; border: 1px solid rgba(255, 255, 255, 0.78) !important; box-shadow: 0 6px 20px -2px rgba(124, 92, 250, 0.08), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95) !important; } .glass-input { background: rgba(255, 255, 255, 0.55) !important; backdrop-filter: blur(20px) !important; -webkit-backdrop-filter: blur(20px) !important; border: 1.5px solid rgba(124, 92, 250, 0.45) !important; box-shadow: 0 0 0 3px rgba(124, 92, 250, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.9) !important; } .glass-chip { background: rgba(255, 255, 255, 0.52) !important; backdrop-filter: blur(16px) !important; -webkit-backdrop-filter: blur(16px) !important; border: 1px solid rgba(255, 255, 255, 0.75) !important; box-shadow: 0 2px 8px -1px rgba(124, 92, 250, 0.08) !important; } .glass-nav { background: rgba(255, 255, 255, 0.58) !important; backdrop-filter: blur(24px) !important; -webkit-backdrop-filter: blur(24px) !important; border: 1px solid rgba(255, 255, 255, 0.75) !important; box-shadow: 0 12px 36px -4px rgba(124, 92, 250, 0.18), 0 4px 12px -2px rgba(0, 0, 0, 0.04), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95) !important; }</style></head>
+<body class="text-slate-800 antialiased min-h-screen relative selection:bg-violet-100 selection:text-violet-900">
+<!-- Ambient Luminous Mesh Gradient Background Orbs (matches SCREEN_210) -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden z-0"><div class="absolute -top-24 -left-20 w-96 h-96 rounded-full bg-violet-500/40 blur-[105px] ambient-orb"></div><div class="absolute top-1/4 -right-24 w-88 h-88 rounded-full bg-indigo-400/35 blur-[100px] ambient-orb" style="animation-delay: 2.5s;"></div><div class="absolute top-1/2 -left-24 w-92 h-92 rounded-full bg-cyan-400/38 blur-[105px] ambient-orb" style="animation-delay: 4.5s;"></div><div class="absolute top-3/4 right-0 w-84 h-84 rounded-full bg-teal-400/35 blur-[100px] ambient-orb" style="animation-delay: 6s;"></div><div class="absolute -bottom-24 left-1/4 w-96 h-96 rounded-full bg-fuchsia-400/35 blur-[110px] ambient-orb" style="animation-delay: 7.5s;"></div></div>
+<!-- Main Viewport Container (Mobile 393px optimized) -->
+<main class="relative z-10 w-full max-w-[393px] mx-auto min-h-screen px-4 pt-3.5 pb-28 flex flex-col">
+<!-- 1. Top Bar: Back Action, Title, Notification & Profile Avatar -->
+<header class="flex items-center justify-between mb-3.5 pt-1">
+<div class="flex items-center gap-2.5">
+<a aria-label="Back to Library" class="size-9 rounded-full glass-panel flex items-center justify-center text-slate-700 hover:text-slate-900 transition active:scale-95 shadow-sm" href="#">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</a>
+<div>
+<h1 class="text-[20px] font-extrabold tracking-tight text-slate-900 leading-none">Search Workouts</h1>
+<p class="text-[11px] font-medium text-slate-500 mt-0.5">Explore splits, routines &amp; programs</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button aria-label="Notifications" class="relative size-9 rounded-full glass-panel flex items-center justify-center text-slate-600 hover:text-slate-900 shadow-sm transition active:scale-95" type="button">
+<span class="material-symbols-outlined text-[19px]">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
+</button>
+<div class="relative size-9 rounded-full ring-2 ring-white/95 shadow-sm overflow-hidden flex-shrink-0 cursor-pointer active:scale-95 transition">
+<img alt="Profile Avatar" class="size-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1W9c_cSGRaxLi-t5vPGFTu225pI2XHYehAPhNDeTzUPWOGMUVvzM6ILEODyzBbT5C041lwRfvjEWkVBYctGKRqh-4VhUDKm6bkd6NjoD1L_8tuQFz-rDZLpdVjrVdfvWegbPqBiSrJ8o66ohlP44WG-HiI4jUnRBWpIfAVTTSH9Y2-n9BuMkoPeZJPofOlMAY1dYbztI5JT_b-bluCAk1sM8hGx5h2PTwdC3ubH_famZTVVp8FYHtWdf38">
+</div>
+</div>
+</header>
+<!-- 2. Active Search Bar + Filter Toggle -->
+<div class="flex items-center gap-2 mb-3">
+<div class="relative flex-1 glass-input rounded-2xl flex items-center px-3.5 py-2.5 transition">
+<span class="material-symbols-outlined text-[#7c5cfa] text-[20px] mr-2.5">search</span>
+<input autofocus="" class="w-full bg-transparent border-none p-0 text-[14px] font-medium text-slate-900 placeholder:text-slate-400 focus:ring-0 focus:outline-none" placeholder="Search splits, goals, or equipment..." type="text" value="">
+<button aria-label="Clear search" class="text-slate-400 hover:text-slate-600 p-0.5 rounded-full transition" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<button aria-label="Filter options" class="size-11 rounded-2xl glass-panel flex items-center justify-center text-slate-700 hover:text-slate-900 shadow-sm active:scale-95 transition flex-shrink-0" type="button">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</button>
+</div>
+<!-- 3. Horizontal Scrollable Filter Chips -->
+<section class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 mb-3.5 select-none">
+<!-- Active Chip: All -->
+<button class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-[#7c5cfa] text-white text-[12px] font-bold shadow-sm shadow-violet-500/30 flex-shrink-0 transition active:scale-95" type="button">
+<span class="material-symbols-outlined text-[14px]">check</span>
+<span class="">All</span>
+</button>
+<!-- Filter Option: Hypertrophy -->
+<button class="px-3.5 py-1.5 rounded-full glass-chip text-slate-600 hover:text-slate-900 text-[12px] font-semibold flex-shrink-0 transition active:scale-95" type="button">
+        Hypertrophy
+      </button>
+<!-- Filter Option: Strength -->
+<button class="px-3.5 py-1.5 rounded-full glass-chip text-slate-600 hover:text-slate-900 text-[12px] font-semibold flex-shrink-0 transition active:scale-95" type="button">
+        Strength
+      </button>
+<!-- Filter Option: Beginner -->
+<button class="px-3.5 py-1.5 rounded-full glass-chip text-slate-600 hover:text-slate-900 text-[12px] font-semibold flex-shrink-0 transition active:scale-95" type="button">
+        Beginner
+      </button>
+<!-- Filter Option: Advanced -->
+<button class="px-3.5 py-1.5 rounded-full glass-chip text-slate-600 hover:text-slate-900 text-[12px] font-semibold flex-shrink-0 transition active:scale-95" type="button">
+        Advanced
+      </button>
+<!-- Filter Option: Full Gym -->
+<button class="px-3.5 py-1.5 rounded-full glass-chip text-slate-600 hover:text-slate-900 text-[12px] font-semibold flex-shrink-0 transition active:scale-95" type="button">
+        Full Gym
+      </button>
+<!-- Filter Option: Dumbbells -->
+<button class="px-3.5 py-1.5 rounded-full glass-chip text-slate-600 hover:text-slate-900 text-[12px] font-semibold flex-shrink-0 transition active:scale-95" type="button">
+        Dumbbells
+      </button>
+<!-- Filter Option: Bodyweight -->
+<button class="px-3.5 py-1.5 rounded-full glass-chip text-slate-600 hover:text-slate-900 text-[12px] font-semibold flex-shrink-0 transition active:scale-95" type="button">
+        Bodyweight
+      </button>
+</section>
+<!-- 4. Search Results Subheader & Sort -->
+<div class="flex items-center justify-between mb-3 px-0.5">
+<div class="flex items-center gap-1.5">
+<h2 class="text-[15px] font-bold text-slate-900 tracking-tight">Search Results</h2>
+<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-violet-100 text-violet-700">10</span>
+</div>
+<button class="inline-flex items-center gap-1 text-[12px] font-semibold text-slate-600 hover:text-slate-900 transition" type="button">
+<span class="">Most Relevant</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+</div>
+<!-- 5. Search Results Card Feed -->
+<div class="flex flex-col gap-3.5">
+<!-- Result Card 1: Push–Pull–Legs Split -->
+<article class="glass-card rounded-[20px] p-4 transition duration-200 hover:shadow-md flex flex-col justify-between">
+<div>
+<!-- Header Tags & Bookmark -->
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase bg-rose-50 text-rose-600 border border-rose-100">PROGRAM</span>
+<span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-violet-100/90 text-violet-700">Hypertrophy</span>
+</div>
+<button aria-label="Bookmark routine" class="text-[#7c5cfa] hover:opacity-80 transition active:scale-90" type="button">
+<span class="material-symbols-outlined material-symbols-fill text-[20px]">bookmark</span>
+</button>
+</div>
+<!-- Card Title & Description -->
+<h3 class="text-[16px] font-bold text-slate-900 tracking-tight leading-snug">Push–Pull–Legs Split</h3>
+<p class="text-[12px] text-slate-600 mt-1 leading-relaxed">High mechanical tension for progressive muscular overload across push and pull days.</p>
+<!-- Tags / Attributes -->
+<div class="flex items-center flex-wrap gap-1.5 mt-2.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/80">
+<span class="size-1.5 rounded-full bg-emerald-500"></span> 4d / wk
+            </span>
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/80">
+<span class="size-1.5 rounded-full bg-amber-500"></span> 8 Weeks
+            </span>
+<span class="text-[11px] font-medium text-slate-600 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/80">Full Gym</span>
+<span class="text-[11px] font-medium text-slate-500 bg-white/50 px-2 py-0.5 rounded-md">Chest, Back, Legs</span>
+</div>
+</div>
+<div class="border-t border-slate-200/60 mt-3 pt-3 flex items-center justify-between">
+<div class="flex items-center gap-1 text-[11px] font-semibold text-rose-600">
+<span class="material-symbols-outlined material-symbols-fill text-[14px]">stars</span>
+<span class="">Featured Routine</span>
+</div>
+<button class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-[#7c5cfa] hover:bg-[#6c4cf0] text-white text-[12px] font-semibold shadow-xs shadow-violet-500/20 active:scale-95 transition" type="button">
+<span class="">View</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</article>
+<!-- Result Card 2: Strength Plateau Breaker -->
+<article class="glass-card rounded-[20px] p-4 transition duration-200 hover:shadow-md flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase bg-rose-50 text-rose-600 border border-rose-100">PROGRAM</span>
+<span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-100/90 text-indigo-700">Strength</span>
+</div>
+<button aria-label="Bookmark routine" class="text-[#7c5cfa] hover:opacity-80 transition active:scale-90" type="button">
+<span class="material-symbols-outlined material-symbols-fill text-[20px]">bookmark</span>
+</button>
+</div>
+<h3 class="text-[16px] font-bold text-slate-900 tracking-tight leading-snug">Strength Plateau Breaker</h3>
+<p class="text-[12px] text-slate-600 mt-1 leading-relaxed">Periodized heavy triples and submaximal recovery designed to break squat and bench plateaus.</p>
+<div class="flex items-center flex-wrap gap-1.5 mt-2.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/80">
+<span class="size-1.5 rounded-full bg-emerald-500"></span> 3d / wk
+            </span>
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/80">
+<span class="size-1.5 rounded-full bg-amber-500"></span> 6 Weeks
+            </span>
+<span class="text-[11px] font-medium text-slate-600 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/80">Full Gym</span>
+<span class="text-[11px] font-medium text-slate-500 bg-white/50 px-2 py-0.5 rounded-md">Back, Core, Quads</span>
+</div>
+</div>
+<div class="border-t border-slate-200/60 mt-3 pt-3 flex items-center justify-between">
+<div class="flex items-center gap-1 text-[11px] font-semibold text-rose-600">
+<span class="material-symbols-outlined material-symbols-fill text-[14px]">stars</span>
+<span class="">Featured Routine</span>
+</div>
+<button class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-[#7c5cfa] hover:bg-[#6c4cf0] text-white text-[12px] font-semibold shadow-xs shadow-violet-500/20 active:scale-95 transition" type="button">
+<span class="">View</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</article>
+<!-- Result Card 3: Arnold Split Classic -->
+<article class="glass-card rounded-[20px] p-4 transition duration-200 hover:shadow-md flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase bg-rose-50 text-rose-600 border border-rose-100">PROGRAM</span>
+<span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-violet-100/90 text-violet-700">Hypertrophy</span>
+</div>
+<button aria-label="Bookmark routine" class="text-[#7c5cfa] hover:opacity-80 transition active:scale-90" type="button">
+<span class="material-symbols-outlined material-symbols-fill text-[20px]">bookmark</span>
+</button>
+</div>
+<h3 class="text-[16px] font-bold text-slate-900 tracking-tight leading-snug">Arnold Split Classic</h3>
+<p class="text-[12px] text-slate-600 mt-1 leading-relaxed">Antagonistic supersets pairing chest with back, shoulders with arms, and dedicated leg blast.</p>
+<div class="flex items-center flex-wrap gap-1.5 mt-2.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/80">
+<span class="size-1.5 rounded-full bg-emerald-500"></span> 6d / wk
+            </span>
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/80">
+<span class="size-1.5 rounded-full bg-amber-500"></span> 10 Weeks
+            </span>
+<span class="text-[11px] font-medium text-slate-600 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/80">Full Gym</span>
+<span class="text-[11px] font-medium text-slate-500 bg-white/50 px-2 py-0.5 rounded-md">Chest, Back, Arms</span>
+</div>
+</div>
+<div class="border-t border-slate-200/60 mt-3 pt-3 flex items-center justify-between">
+<div class="flex items-center gap-1 text-[11px] font-semibold text-rose-600">
+<span class="material-symbols-outlined material-symbols-fill text-[14px]">stars</span>
+<span class="">Featured Routine</span>
+</div>
+<button class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-[#7c5cfa] hover:bg-[#6c4cf0] text-white text-[12px] font-semibold shadow-xs shadow-violet-500/20 active:scale-95 transition" type="button">
+<span class="">View</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</article>
+<!-- Result Card 4: Upper / Lower Power -->
+<article class="glass-card rounded-[20px] p-4 transition duration-200 hover:shadow-md flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase bg-rose-50 text-rose-600 border border-rose-100">PROGRAM</span>
+<span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-100/90 text-indigo-700">Strength</span>
+</div>
+<button aria-label="Bookmark routine" class="text-[#7c5cfa] hover:opacity-80 transition active:scale-90" type="button">
+<span class="material-symbols-outlined material-symbols-fill text-[20px]">bookmark</span>
+</button>
+</div>
+<h3 class="text-[16px] font-bold text-slate-900 tracking-tight leading-snug">Upper / Lower Power</h3>
+<p class="text-[12px] text-slate-600 mt-1 leading-relaxed">Balanced 4-day cadence optimizing heavy mechanical tension with hypertrophy accessory work.</p>
+<div class="flex items-center flex-wrap gap-1.5 mt-2.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/80">
+<span class="size-1.5 rounded-full bg-emerald-500"></span> 4d / wk
+            </span>
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/80">
+<span class="size-1.5 rounded-full bg-amber-500"></span> 8 Weeks
+            </span>
+<span class="text-[11px] font-medium text-slate-600 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/80">Full Gym</span>
+<span class="text-[11px] font-medium text-slate-500 bg-white/50 px-2 py-0.5 rounded-md">Upper Body, Lower Body</span>
+</div>
+</div>
+<div class="border-t border-slate-200/60 mt-3 pt-3 flex items-center justify-between">
+<div class="flex items-center gap-1 text-[11px] font-semibold text-rose-600">
+<span class="material-symbols-outlined material-symbols-fill text-[14px]">stars</span>
+<span class="">Featured Routine</span>
+</div>
+<button class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-[#7c5cfa] hover:bg-[#6c4cf0] text-white text-[12px] font-semibold shadow-xs shadow-violet-500/20 active:scale-95 transition" type="button">
+<span class="">View</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</article>
+<!-- Result Card 5: Push Hypertrophy A (Custom Routine) -->
+<article class="glass-card rounded-[20px] p-4 transition duration-200 hover:shadow-md flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase bg-teal-50 text-teal-700 border border-teal-200/80">CUSTOM ROUTINE</span>
+<span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-violet-100/90 text-violet-700">Hypertrophy</span>
+</div>
+<button aria-label="Bookmark routine" class="text-slate-400 hover:text-slate-600 transition active:scale-90" type="button">
+<span class="material-symbols-outlined text-[20px]">bookmark</span>
+</button>
+</div>
+<h3 class="text-[16px] font-bold text-slate-900 tracking-tight leading-snug">Push Hypertrophy A</h3>
+<p class="text-[12px] text-slate-600 mt-1 leading-relaxed">Custom upper body push emphasis: incline bench, heavy weighted dips, and cable side laterals.</p>
+<div class="flex items-center flex-wrap gap-1.5 mt-2.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/80">
+<span class="size-1.5 rounded-full bg-emerald-500"></span> 3d / wk
+            </span>
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/80">
+<span class="size-1.5 rounded-full bg-amber-500"></span> 6 Weeks
+            </span>
+<span class="text-[11px] font-medium text-slate-600 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/80">Dumbbells</span>
+<span class="text-[11px] font-medium text-slate-500 bg-white/50 px-2 py-0.5 rounded-md">Delts, Triceps, Chest</span>
+</div>
+</div>
+<div class="border-t border-slate-200/60 mt-3 pt-3 flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
+<span class="material-symbols-outlined text-[15px]">schedule</span>
+<span class="">Active Routine</span>
+</div>
+<button class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-[#7c5cfa] hover:bg-[#6c4cf0] text-white text-[12px] font-semibold shadow-xs shadow-violet-500/20 active:scale-95 transition" type="button">
+<span class="">View</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</article>
+<!-- Result Card 6: Heavy Leg Day & Core (Custom Routine) -->
+<article class="glass-card rounded-[20px] p-4 transition duration-200 hover:shadow-md flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase bg-teal-50 text-teal-700 border border-teal-200/80">CUSTOM ROUTINE</span>
+<span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-100/90 text-indigo-700">Strength</span>
+</div>
+<button aria-label="Bookmark routine" class="text-slate-400 hover:text-slate-600 transition active:scale-90" type="button">
+<span class="material-symbols-outlined text-[20px]">bookmark</span>
+</button>
+</div>
+<h3 class="text-[16px] font-bold text-slate-900 tracking-tight leading-snug">Heavy Leg Day &amp; Core</h3>
+<p class="text-[12px] text-slate-600 mt-1 leading-relaxed">Squat specialization protocol paired with high-stability isometric core bracing.</p>
+<div class="flex items-center flex-wrap gap-1.5 mt-2.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/80">
+<span class="size-1.5 rounded-full bg-emerald-500"></span> 2d / wk
+            </span>
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/80">
+<span class="size-1.5 rounded-full bg-amber-500"></span> 4 Weeks
+            </span>
+<span class="text-[11px] font-medium text-slate-600 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/80">Full Gym</span>
+<span class="text-[11px] font-medium text-slate-500 bg-white/50 px-2 py-0.5 rounded-md">Quads, Hamstrings, Core</span>
+</div>
+</div>
+<div class="border-t border-slate-200/60 mt-3 pt-3 flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
+<span class="material-symbols-outlined text-[15px]">schedule</span>
+<span class="">Active Routine</span>
+</div>
+<button class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-[#7c5cfa] hover:bg-[#6c4cf0] text-white text-[12px] font-semibold shadow-xs shadow-violet-500/20 active:scale-95 transition" type="button">
+<span class="">View</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</article>
+</div>
+</main>
+<!-- 6. Floating Frosted Glass Bottom Navigation Dock -->
+<nav class="fixed bottom-4 inset-x-4 max-w-[361px] mx-auto z-50 glass-nav rounded-full px-3 py-2 flex items-center justify-between select-none">
+<!-- Tab 1: Dashboard -->
+<a class="flex items-center justify-center p-2 text-slate-400 hover:text-slate-700 transition rounded-full active:scale-95" href="#" title="Dashboard">
+<span class="material-symbols-outlined text-[24px]">home</span>
+</a>
+<!-- Tab 2: Workouts (ACTIVE - Pill styling) -->
+<a class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-violet-100/90 text-[#7c5cfa] font-bold text-[13px] transition shadow-xs active:scale-95" href="#" title="Workouts">
+<span class="material-symbols-outlined text-[20px] material-symbols-fill">fitness_center</span>
+<span class="">Workouts</span>
+</a>
+<!-- Tab 3: History -->
+<a class="flex items-center justify-center p-2 text-slate-400 hover:text-slate-700 transition rounded-full active:scale-95" href="#" title="History">
+<span class="material-symbols-outlined text-[24px]">history</span>
+</a>
+<!-- Tab 4: Settings -->
+<a class="flex items-center justify-center p-2 text-slate-400 hover:text-slate-700 transition rounded-full active:scale-95" href="#" title="Settings">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+</a>
+</nav>
+
+
+</body></html>

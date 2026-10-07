@@ -1,0 +1,600 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>FitTrack Workout Library</title>
+<!-- Tailwind CSS CDN with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<!-- Tailwind Configuration -->
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              purple: '#7C5CFA',
+              purpleLight: '#ECE7FE',
+              purpleDark: '#5E3FE0',
+              slate: '#18132B',
+              slateMuted: '#6B6882',
+              cyanAccent: '#00D1FF',
+              emerald: '#10B981',
+              emeraldLight: '#E6FBF4',
+              amber: '#F59E0B',
+              amberLight: '#FEF3C7',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- Base Custom Glass Styles -->
+<style data-purpose="glassmorphic-styles">
+    /* Custom scrollbar hiding for horizontal overflow areas */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Ambient background glows matching FitTrack Dashboard Mobile (SCREEN_7) */
+    .ambient-bg {
+      background-color: #F0EDFD;
+      background-image: 
+        radial-gradient(circle at 10% 8%, rgba(200, 185, 255, 0.7) 0%, transparent 45%),
+        radial-gradient(circle at 90% 20%, rgba(195, 238, 255, 0.75) 0%, transparent 40%),
+        radial-gradient(circle at 15% 45%, rgba(225, 215, 255, 0.6) 0%, transparent 45%),
+        radial-gradient(circle at 85% 70%, rgba(205, 245, 255, 0.65) 0%, transparent 50%),
+        radial-gradient(circle at 40% 95%, rgba(215, 200, 255, 0.8) 0%, transparent 45%);
+      min-height: 100vh;
+    }
+
+    /* Glass level 1: Cards */
+    .glass-1 {
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 8px 24px -4px rgba(112, 100, 180, 0.08), 0 2px 6px -1px rgba(112, 100, 180, 0.03);
+    }
+
+    /* Glass level 2: Controls & Inputs */
+    .glass-2 {
+      background: rgba(255, 255, 255, 0.58);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 4px 16px -2px rgba(120, 105, 175, 0.07);
+    }
+
+    /* Docked Bottom Bar Glass */
+    .glass-dock {
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(26px);
+      -webkit-backdrop-filter: blur(26px);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      box-shadow: 0 16px 36px -6px rgba(50, 35, 110, 0.16);
+    }
+  </style>
+<style data-purpose="updated-glass-styles">
+  .glass-1 {
+    background: rgba(255, 255, 255, 0.32) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  }
+  .glass-2 {
+    background: rgba(255, 255, 255, 0.40) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.70) !important;
+  }
+  .glass-dock {
+    background: rgba(255, 255, 255, 0.32) !important;
+    backdrop-filter: blur(28px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.75) !important;
+    box-shadow: 0 16px 40px rgba(124, 92, 250, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  }
+</style><style id="card-opacity-override">.glass-1 { background: rgba(255, 255, 255, 0.52) !important; border: 1px solid rgba(255, 255, 255, 0.80) !important; }</style></head>
+<body class="ambient-bg text-brand-slate font-sans antialiased overflow-x-hidden selection:bg-brand-purple selection:text-white">
+<!-- Device Container Mobile Viewport 393px width centered -->
+<div class="max-w-[393px] mx-auto min-h-screen relative flex flex-col pb-28 pt-3">
+<!-- BEGIN: TopHeader -->
+<header class="px-5 pt-3 pb-2 flex items-center justify-between" data-purpose="screen-header">
+<!-- Title & Subtitle Info -->
+<div>
+<h1 class="text-2xl font-extrabold tracking-tight text-[#18132B]">Workouts</h1>
+<p class="text-xs font-medium text-brand-slateMuted mt-0.5">Explore splits, routines &amp; programs</p>
+</div>
+<!-- Header Action Buttons: Notification & Profile -->
+<div class="flex items-center gap-2.5">
+<!-- 44px Notification Bell Button with Red Dot -->
+<button aria-label="Notifications" class="relative w-11 h-11 rounded-full glass-2 flex items-center justify-center text-[#18132B] hover:bg-white/80 active:scale-95 transition-all" type="button">
+<svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<!-- Notification Dot -->
+<span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white"></span>
+</button>
+<!-- 44px Circular Profile Avatar -->
+<div class="w-11 h-11 rounded-full overflow-hidden p-0.5 glass-2 ring-1 ring-white/80 shadow-sm flex-shrink-0">
+<img alt="Athlete Profile" class="w-full h-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida/AEtjO1Ugice-kIimJf-1sdIKr7CokkBdqJ2jr0upWay55PD1EXs6lI_T-CTpu8XBICyA9o-xQG_AnaAUaHtKB5VKY9A5Y-H6tGhvFTXGI8-FYVDwscarZArrjeQmIP0vI71Bz5EDU3TJ-7DG-iLgIy32N0sDI1ZrRMt2ZP_YQm7fuI95tyUCwv2sm28-rkFYlPYXXW2-asDD9Dj0qOueDm1c8P5zoXKTGmQaKJMzYX-mIFit9bSTk3vRz-36aX8">
+</div>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- BEGIN: SearchAndFilter -->
+<section class="px-5 mt-3.5 space-y-3" data-purpose="search-and-filters">
+<!-- Search Input + Filter Button -->
+<div class="flex items-center gap-2.5">
+<!-- Search Pill -->
+<div class="relative flex-1">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 z-10"><svg class="w-4 h-4 text-brand-purple" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+<input class="w-full h-[50px] pl-11 pr-4 rounded-2xl glass-2 text-xs font-medium text-brand-slate placeholder:text-slate-400/90 border border-white/70 focus:outline-none focus:ring-2 focus:ring-brand-purple/50 focus:border-white transition-all shadow-sm" placeholder="Search splits, goals or equipment..." type="search" value="">
+</div>
+<!-- 50px Filter Button -->
+<button aria-label="Filter workouts" class="w-[50px] h-[50px] rounded-2xl glass-2 flex-shrink-0 flex items-center justify-center text-brand-slate hover:bg-white/80 active:scale-95 transition-all shadow-sm" type="button">
+<svg class="w-5 h-5 text-[#18132B]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+<!-- Horizontally Scrolling Chips Container with subtle right gradient -->
+<div class="relative -mx-5 px-5">
+<div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 pr-8">
+<!-- Active Chip: All -->
+<button class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-purple text-white text-xs font-semibold shadow-sm shadow-brand-purple/30 whitespace-nowrap active:scale-95 transition-transform">
+<svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="">All</span>
+</button>
+<!-- Chip: Hypertrophy -->
+<button class="px-3.5 py-2 rounded-xl glass-2 text-brand-slate font-semibold text-xs whitespace-nowrap hover:bg-white/80 transition-all">
+            Hypertrophy
+          </button>
+<!-- Chip: Strength -->
+<button class="px-3.5 py-2 rounded-xl glass-2 text-brand-slate font-semibold text-xs whitespace-nowrap hover:bg-white/80 transition-all">
+            Strength
+          </button>
+<!-- Chip: Beginner -->
+<button class="px-3.5 py-2 rounded-xl glass-2 text-brand-slate font-semibold text-xs whitespace-nowrap hover:bg-white/80 transition-all">
+            Beginner
+          </button>
+<!-- Chip: Fat loss -->
+<button class="px-3.5 py-2 rounded-xl glass-2 text-brand-slate font-semibold text-xs whitespace-nowrap hover:bg-white/80 transition-all">
+            Fat loss
+          </button>
+</div>
+<!-- Right side fade hinting scroll -->
+<div class="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#EFF1FE] to-transparent"></div>
+</div>
+</section>
+<!-- END: SearchAndFilter -->
+<!-- BEGIN: RecommendedSection -->
+<section class="mt-6" data-purpose="recommended-workouts">
+<!-- Section Header -->
+<div class="px-5 flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<h2 class="text-base font-bold text-[#18132B] tracking-tight">Recommended for you</h2>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-brand-purple/10 text-brand-purple text-[10px] font-bold tracking-wide uppercase">
+<svg class="w-2.5 h-2.5 fill-current text-brand-purple" viewBox="0 0 24 24">
+<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+</svg>
+          Based on profile
+        </span>
+</div>
+<!-- Horizontal Carousel of Cards -->
+<div class="flex items-stretch gap-3.5 overflow-x-auto no-scrollbar px-5 pb-1">
+<!-- Recommended Card 1 -->
+<article class="w-[295px] flex-shrink-0 glass-1 rounded-2xl p-4 flex flex-col justify-between relative shadow-sm border border-white/90">
+<div>
+<!-- Card Top: Tag + Bookmark Ribbon -->
+<div class="flex items-center justify-between mb-2.5">
+<span class="text-[10px] font-bold uppercase tracking-wider text-brand-purple bg-brand-purple/10 px-2.5 py-1 rounded-md">
+                Hypertrophy
+              </span>
+<button aria-label="Bookmark split" class="text-brand-purple hover:scale-110 transition-transform" type="button">
+<!-- Ribbon Bookmark Icon -->
+<svg class="w-4 h-4 fill-brand-purple text-brand-purple" viewBox="0 0 24 24">
+<path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+</svg>
+</button>
+</div>
+<!-- Card Title -->
+<h3 class="text-base font-bold text-[#18132B] leading-snug">Push-Pull-Legs Split</h3>
+<!-- Card Description -->
+<p class="text-[11.5px] leading-relaxed text-brand-slateMuted mt-1.5 line-clamp-2">
+              High mechanical tension for progressive muscular overload across push and pull patterns.
+            </p>
+<!-- Metadata Badges -->
+<div class="flex flex-wrap items-center gap-1.5 mt-3 text-[11px] font-medium text-slate-600">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/70 border border-white/80">
+<svg class="w-3 h-3 text-brand-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                4 days/wk · 8 wks
+              </span>
+<span class="px-2 py-0.5 rounded-md bg-white/70 border border-white/80 text-[10.5px]">
+                Chest · Back · Legs
+              </span>
+</div>
+</div>
+<!-- Divider & Footer -->
+<div class="mt-4 pt-3 border-t border-slate-200/50 flex items-center justify-between">
+<span class="inline-flex items-center gap-1.5 text-xs font-medium text-brand-slateMuted">
+<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+              Full gym
+            </span>
+<button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-brand-purple text-white text-xs font-bold hover:bg-brand-purpleDark active:scale-95 shadow-sm shadow-brand-purple/30 transition-all">
+<span class="">View</span>
+<svg class="w-3 h-3 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+</article>
+<!-- Recommended Card 2 (Peeking) -->
+<article class="w-[295px] flex-shrink-0 glass-1 rounded-2xl p-4 flex flex-col justify-between relative shadow-sm border border-white/90">
+<div>
+<!-- Card Top: Tag + Bookmark Ribbon -->
+<div class="flex items-center justify-between mb-2.5">
+<span class="text-[10px] font-bold uppercase tracking-wider text-cyan-600 bg-cyan-50 px-2.5 py-1 rounded-md">
+                Strength
+              </span>
+<button aria-label="Bookmark split" class="text-brand-purple hover:scale-110 transition-transform" type="button">
+<svg class="w-4 h-4 fill-brand-purple text-brand-purple" viewBox="0 0 24 24">
+<path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+</svg>
+</button>
+</div>
+<!-- Card Title -->
+<h3 class="text-base font-bold text-[#18132B] leading-snug">Strength Plateau Breaker</h3>
+<!-- Card Description -->
+<p class="text-[11.5px] leading-relaxed text-brand-slateMuted mt-1.5 line-clamp-2">
+              Periodized heavy singles and dynamic effort waves designed to systematically shatter plateaus.
+            </p>
+<!-- Metadata Badges -->
+<div class="flex flex-wrap items-center gap-1.5 mt-3 text-[11px] font-medium text-slate-600">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/70 border border-white/80">
+<svg class="w-3 h-3 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                3 days/wk · 6 wks
+              </span>
+<span class="px-2 py-0.5 rounded-md bg-white/70 border border-white/80 text-[10.5px]">
+                Squat · Bench · Deadlift
+              </span>
+</div>
+</div>
+<!-- Divider & Footer -->
+<div class="mt-4 pt-3 border-t border-slate-200/50 flex items-center justify-between">
+<span class="inline-flex items-center gap-1.5 text-xs font-medium text-brand-slateMuted">
+<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+              Barbell &amp; Rack
+            </span>
+<button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-brand-purple text-white text-xs font-bold hover:bg-brand-purpleDark active:scale-95 shadow-sm shadow-brand-purple/30 transition-all">
+<span class="">View</span>
+<svg class="w-3 h-3 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+</article>
+</div>
+</section>
+<!-- END: RecommendedSection -->
+<!-- BEGIN: BookmarkedSection -->
+<section class="px-5 mt-6" data-purpose="bookmarked-schedules">
+<!-- Section Header -->
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<h2 class="text-base font-bold text-[#18132B] tracking-tight">Bookmarked</h2>
+<span class="w-5 h-5 rounded-full bg-brand-purple/15 text-brand-purple text-[11px] font-bold flex items-center justify-center">
+            4
+          </span>
+</div>
+<a class="text-xs font-bold text-brand-purple hover:underline inline-flex items-center gap-0.5" href="#">
+<span class="">See all</span>
+<svg class="w-3 h-3 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</a>
+</div>
+<!-- Bookmarked Carousel (200x140 size) -->
+<div class="flex items-center gap-3 overflow-x-auto no-scrollbar -mx-5 px-5 pb-1"><article class="w-[185px] flex-shrink-0 glass-1 rounded-2xl p-3.5 flex flex-col justify-between shadow-sm border border-white/80">
+<div class="flex items-center justify-between mb-2">
+<svg class="w-4 h-4 fill-brand-purple text-brand-purple" viewBox="0 0 24 24">
+<path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+</svg>
+<span class="text-[9px] font-bold uppercase tracking-wider text-slate-500 bg-white/70 px-2 py-0.5 rounded-full border border-white">
+Advanced
+</span>
+</div>
+<div class="mb-2.5">
+<h3 class="text-xs font-bold text-[#18132B] leading-snug line-clamp-2">Arnold Split Classic</h3>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-slate-200/50 text-[11px] font-medium text-brand-slateMuted">
+<span class="">4 d/wk · 6 ex</span>
+<svg class="w-3 h-3 text-slate-400 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</article>
+<article class="w-[185px] flex-shrink-0 glass-1 rounded-2xl p-3.5 flex flex-col justify-between shadow-sm border border-white/80">
+<div class="flex items-center justify-between mb-2">
+<svg class="w-4 h-4 fill-brand-purple text-brand-purple" viewBox="0 0 24 24">
+<path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+</svg>
+<span class="text-[9px] font-bold uppercase tracking-wider text-slate-500 bg-white/70 px-2 py-0.5 rounded-full border border-white">
+Intermediate
+</span>
+</div>
+<div class="mb-2.5">
+<h3 class="text-xs font-bold text-[#18132B] leading-snug line-clamp-2">Upper / Lower Power</h3>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-slate-200/50 text-[11px] font-medium text-brand-slateMuted">
+<span class="">4 d/wk · 5 ex</span>
+<svg class="w-3 h-3 text-slate-400 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</article>
+<article class="w-[185px] flex-shrink-0 glass-1 rounded-2xl p-3.5 flex flex-col justify-between shadow-sm border border-white/80">
+<div class="flex items-center justify-between mb-2">
+<svg class="w-4 h-4 fill-brand-purple text-brand-purple" viewBox="0 0 24 24">
+<path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+</svg>
+<span class="text-[9px] font-bold uppercase tracking-wider text-slate-500 bg-white/70 px-2 py-0.5 rounded-full border border-white">
+Advanced
+</span>
+</div>
+<div class="mb-2.5">
+<h3 class="text-xs font-bold text-[#18132B] leading-snug line-clamp-2">German Volume Training</h3>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-slate-200/50 text-[11px] font-medium text-brand-slateMuted">
+<span class="">5 d/wk · 6 ex</span>
+<svg class="w-3 h-3 text-slate-400 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</article></div>
+</section>
+<!-- END: BookmarkedSection -->
+<!-- BEGIN: MyRoutinesSection -->
+<section class="px-5 mt-6" data-purpose="custom-routines">
+<!-- Section Header -->
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<h2 class="text-base font-bold text-[#18132B] tracking-tight">My routines</h2>
+<span class="w-5 h-5 rounded-full bg-brand-purple/15 text-brand-purple text-[11px] font-bold flex items-center justify-center">
+            2
+          </span>
+</div>
+<!-- + New Routine Button -->
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl glass-2 text-brand-purple text-xs font-bold hover:bg-white transition-all shadow-sm" type="button">
+<svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="">New routine</span>
+</button>
+</div>
+<!-- Single Consolidated Glass Card for Custom Routines -->
+<div class="glass-1 rounded-2xl overflow-hidden divide-y divide-slate-200/60 shadow-sm border border-white/80">
+<!-- Routine Row 1 -->
+<div class="p-3.5 flex items-center gap-3">
+<!-- Green Dumbbell Tile -->
+<div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100/80 flex items-center justify-center flex-shrink-0">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+<path d="M4 6h16M4 12h16m-7 6h7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<!-- Routine Details -->
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2">
+<h4 class="text-xs font-bold text-[#18132B] truncate">Push Hypertrophy Custom</h4>
+<span class="px-1.5 py-0.5 rounded bg-brand-purple/10 text-brand-purple text-[9px] font-extrabold uppercase tracking-wide">
+                CUSTOM
+              </span>
+</div>
+<p class="text-[11px] text-brand-slateMuted mt-0.5 truncate">
+              4 exercises · 45 min · Chest &amp; Delts
+            </p>
+</div>
+<!-- Trailing Kebab Menu -->
+<button aria-label="Routine options" class="p-1.5 text-slate-400 hover:text-slate-700 active:scale-95 transition-transform" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+<path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path>
+</svg>
+</button>
+</div>
+<!-- Routine Row 2 -->
+<div class="p-3.5 flex items-center gap-3">
+<!-- Orange Runner/Exercise Tile -->
+<div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 border border-amber-100/80 flex items-center justify-center flex-shrink-0">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<!-- Routine Details -->
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2">
+<h4 class="text-xs font-bold text-[#18132B] truncate">Heavy Leg Day &amp; Core</h4>
+<span class="px-1.5 py-0.5 rounded bg-brand-purple/10 text-brand-purple text-[9px] font-extrabold uppercase tracking-wide">
+                CUSTOM
+              </span>
+</div>
+<p class="text-[11px] text-brand-slateMuted mt-0.5 truncate">
+              5 exercises · 50 min · Quads &amp; Glutes
+            </p>
+</div>
+<!-- Trailing Kebab Menu -->
+<button aria-label="Routine options" class="p-1.5 text-slate-400 hover:text-slate-700 active:scale-95 transition-transform" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+<path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path>
+</svg>
+</button>
+</div>
+</div>
+</section>
+<!-- END: MyRoutinesSection -->
+<!-- BEGIN: BrowseAllSection -->
+<section class="px-5 mt-6 mb-2" data-purpose="browse-all-schedules">
+<!-- Section Header -->
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<h2 class="text-base font-bold text-[#18132B] tracking-tight">Browse all</h2>
+<span class="text-xs font-semibold text-brand-slateMuted">10 programs</span>
+</div>
+<button class="inline-flex items-center gap-1 text-xs font-bold text-brand-purple hover:opacity-80" type="button">
+<span class="">Sort</span>
+<svg class="w-3.5 h-3.5 stroke-[2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M3 7h18M6 12h12m-9 5h6" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+<!-- Vertical Cards Stack -->
+<div class="space-y-3">
+<!-- Browse Card 1 (Saved) -->
+<article class="glass-1 rounded-2xl p-4 shadow-sm border border-white/80 transition-all hover:bg-white/80">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-sm font-bold text-[#18132B] leading-snug">German Volume Training (GVT)</h3>
+<!-- Filled Bookmark (Saved) -->
+<button aria-label="Toggle bookmark" class="text-brand-purple flex-shrink-0 mt-0.5" type="button">
+<svg class="w-4 h-4 fill-brand-purple" viewBox="0 0 24 24">
+<path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+</svg>
+</button>
+</div>
+<p class="text-xs text-brand-slateMuted mt-1 leading-relaxed">
+            10×10 volume protocol for high neuromuscular exhaustion and extreme hypertrophy adaptation.
+          </p>
+<div class="mt-3 pt-2.5 border-t border-slate-200/50 flex items-center justify-between text-xs text-slate-500 font-medium">
+<div class="flex items-center gap-2">
+<span class="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-white px-2 py-0.5 rounded border border-white">
+                Advanced
+              </span>
+<span class="">Full gym</span>
+</div>
+<span class="text-slate-400 font-normal">60 min</span>
+</div>
+</article>
+<!-- Browse Card 2 (Unsaved) -->
+<article class="glass-1 rounded-2xl p-4 shadow-sm border border-white/80 transition-all hover:bg-white/80">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-sm font-bold text-[#18132B] leading-snug">Torso &amp; Limb Split</h3>
+<!-- Outline Bookmark (Unsaved) -->
+<button aria-label="Toggle bookmark" class="text-slate-400 hover:text-brand-purple flex-shrink-0 mt-0.5" type="button">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+<p class="text-xs text-brand-slateMuted mt-1 leading-relaxed">
+            Separates chest/back days from arm and quad isolation for maximum recovery and tendon longevity.
+          </p>
+<div class="mt-3 pt-2.5 border-t border-slate-200/50 flex items-center justify-between text-xs text-slate-500 font-medium">
+<div class="flex items-center gap-2">
+<span class="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-white px-2 py-0.5 rounded border border-white">
+                Intermediate
+              </span>
+<span class="">Barbell &amp; Cable</span>
+</div>
+<span class="text-slate-400 font-normal">45 min</span>
+</div>
+</article>
+<!-- Browse Card 3 (Unsaved) -->
+<article class="glass-1 rounded-2xl p-4 shadow-sm border border-white/80 transition-all hover:bg-white/80">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-sm font-bold text-[#18132B] leading-snug">Texas Method 3-Day</h3>
+<!-- Outline Bookmark (Unsaved) -->
+<button aria-label="Toggle bookmark" class="text-slate-400 hover:text-brand-purple flex-shrink-0 mt-0.5" type="button">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+<p class="text-xs text-brand-slateMuted mt-1 leading-relaxed">
+            Volume, recovery, and intensity rotation crafted specifically for breaking squat and bench plateaus.
+          </p>
+<div class="mt-3 pt-2.5 border-t border-slate-200/50 flex items-center justify-between text-xs text-slate-500 font-medium">
+<div class="flex items-center gap-2">
+<span class="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-white px-2 py-0.5 rounded border border-white">
+                Intermediate
+              </span>
+<span class="">Free weights</span>
+</div>
+<span class="text-slate-400 font-normal">50 min</span>
+</div>
+</article>
+</div>
+</section>
+<!-- END: BrowseAllSection -->
+<!-- BEGIN: FloatingBottomNavigation -->
+<!-- Floating Action Button: Create Schedule -->
+<div class="fixed bottom-24 right-5 z-40 max-w-[393px]">
+  <button type="button" class="flex items-center gap-2 px-4 py-2.5 rounded-full glass-2 border border-white/80 text-[#7C5CFA] font-bold text-xs shadow-sm hover:bg-white active:scale-95 transition-all" style="backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 10px 25px -4px rgba(124, 92, 250, 0.25), 0 2px 6px -1px rgba(124, 92, 250, 0.1);">
+    <span class="w-5 h-5 rounded-full bg-brand-purple flex items-center justify-center text-white flex-shrink-0">
+      <svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </span>
+    <span class="">Create Schedule</span>
+  </button>
+</div><nav class="fixed bottom-4 left-5 right-5 max-w-[353px] mx-auto h-16 glass-dock rounded-full flex items-center justify-between px-3 z-50" data-purpose="floating-bottom-nav">
+<!-- Inactive Item: Dashboard -->
+<a aria-label="Dashboard" class="w-12 h-12 flex items-center justify-center text-[#6B6785] hover:text-[#18132B] transition-colors" href="#dashboard">
+<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+<path d="M4 13h6c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v8c0 .55.45 1 1 1zm0 8h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1zm10 0h6c.55 0 1-.45 1-1v-8c0-.55-.45-1-1-1h-6c-.55 0-1 .45-1 1v8c0 .55.45 1 1 1zm0-18v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1h-6c-.55 0-1 .45-1 1z"></path>
+</svg>
+</a>
+<!-- Active Item: Workouts Pill -->
+<a class="flex items-center space-x-2 py-2 px-4 rounded-full glass-2 text-[#7C5CFA] border border-[#7C5CFA]/25 font-bold text-xs transition-transform active:scale-95" href="#workouts">
+<svg class="w-5 h-5 stroke-current" fill="none" stroke-width="2" viewBox="0 0 24 24">
+<path d="M3 10h2v4H3zM19 10h2v4h-2zM5 12h14M7 8h2v8H7zM15 8h2v8h-2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="">Workouts</span>
+</a>
+<!-- Inactive Item: History -->
+<a aria-label="History" class="w-12 h-12 flex items-center justify-center text-[#6B6785] hover:text-[#18132B] transition-colors" href="#history">
+<svg class="w-5 h-5 stroke-current" fill="none" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</a>
+<!-- Inactive Item: Settings -->
+<a aria-label="Settings" class="w-12 h-12 flex items-center justify-center text-[#6B6785] hover:text-[#18132B] transition-colors" href="#settings">
+<svg class="w-5 h-5 stroke-current" fill="none" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</a>
+</nav>
+<!-- END: FloatingBottomNavigation -->
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+</body></html>

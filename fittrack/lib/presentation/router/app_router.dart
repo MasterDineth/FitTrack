@@ -16,6 +16,7 @@ import '../screens/telemetry_setup_screen.dart';
 import '../screens/fitness_profile_setup_screen.dart';
 import '../screens/dashboard_screen.dart';
 import '../screens/workouts_screen.dart';
+import '../screens/workout_search_screen.dart';
 import '../screens/workout_detail_screen.dart';
 import '../screens/create_schedule_screen.dart';
 import '../../domain/entities/workout_schedule.dart';
@@ -277,6 +278,12 @@ GoRouter router(Ref ref) {
               GoRoute(
                 path: '/workouts',
                 builder: (context, state) => const WorkoutsScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'search',
+                    builder: (context, state) => const WorkoutSearchScreen(),
+                  ),
+                ],
               ),
             ],
           ),
