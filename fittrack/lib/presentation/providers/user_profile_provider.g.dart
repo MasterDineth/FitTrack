@@ -53,3 +53,41 @@ abstract class _$UserProfileNotifier extends $AsyncNotifier<UserProfile> {
     return element.handleCreate(ref, build);
   }
 }
+
+/// Resolves user profile avatar file asynchronously to avoid synchronous I/O in build.
+
+@ProviderFor(userAvatarFile)
+final userAvatarFileProvider = UserAvatarFileProvider._();
+
+/// Resolves user profile avatar file asynchronously to avoid synchronous I/O in build.
+
+final class UserAvatarFileProvider
+    extends $FunctionalProvider<AsyncValue<File?>, File?, FutureOr<File?>>
+    with $FutureModifier<File?>, $FutureProvider<File?> {
+  /// Resolves user profile avatar file asynchronously to avoid synchronous I/O in build.
+  UserAvatarFileProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'userAvatarFileProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$userAvatarFileHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<File?> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<File?> create(Ref ref) {
+    return userAvatarFile(ref);
+  }
+}
+
+String _$userAvatarFileHash() => r'58f43d81d042428e420c034fc6fc0f712f2c3e36';

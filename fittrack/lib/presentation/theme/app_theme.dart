@@ -4,6 +4,7 @@ import 'app_colors.dart';
 
 export 'app_colors.dart';
 export 'glass_tokens.dart';
+export 'ft_glass.dart';
 
 /// Style configuration for muscle group pill badges.
 @immutable

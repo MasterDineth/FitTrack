@@ -22,7 +22,7 @@ class UserProfileNotifier extends _$UserProfileNotifier {
 
     const initialProfile = UserProfile(
       id: '1',
-      name: '',
+      name: 'Dineth',
       age: 24,
       weightKg: 0.0,
       heightCm: 0.0,
@@ -159,7 +159,13 @@ class UserProfileNotifier extends _$UserProfileNotifier {
 
   /// Compatibility helper for onboarding telemetry setup screen.
   Future<void> saveTelemetry(BodyTelemetry telemetry) async {
+    final currentName = state.value?.name;
+    final nameToSave = (currentName != null && currentName.trim().isNotEmpty)
+        ? currentName
+        : 'Dineth';
+
     await updateField(
+      name: nameToSave,
       age: telemetry.age,
       weightKg: telemetry.weight,
       heightCm: telemetry.height,
@@ -182,10 +188,30 @@ class UserProfileNotifier extends _$UserProfileNotifier {
       goal = 'Fat Loss & Conditioning';
     }
 
+    final currentName = state.value?.name;
+    final nameToSave = (currentName != null && currentName.trim().isNotEmpty)
+        ? currentName
+        : 'Dineth';
+
     await updateField(
+      name: nameToSave,
       experienceLevel: exp,
       primaryGoal: goal,
       weeklyTargetDays: profile.weeklyFrequency,
     );
   }
 }
+
+/// Resolves user profile avatar file asynchronously to avoid synchronous I/O in build.
+@riverpod
+Future<File?> userAvatarFile(Ref ref) async {
+  final profile = await ref.watch(userProfileProvider.future);
+  final imagePath = profile.profileImagePath;
+  if (imagePath == null || imagePath.isEmpty) return null;
+  final file = File(imagePath);
+  if (await file.exists()) {
+    return file;
+  }
+  return null;
+}
+

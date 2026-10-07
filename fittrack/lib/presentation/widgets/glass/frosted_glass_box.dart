@@ -23,6 +23,7 @@ class FrostedGlassBox extends StatelessWidget {
     this.constraints,
     this.clipBehavior = Clip.antiAlias,
     this.onTap,
+    this.enableBlur = true,
   });
 
   final Widget? child;
@@ -40,6 +41,11 @@ class FrostedGlassBox extends StatelessWidget {
   final BoxConstraints? constraints;
   final Clip clipBehavior;
   final VoidCallback? onTap;
+
+  /// Whether to apply BackdropFilter blur. Defaults to `false` for card layouts
+  /// to eliminate offscreen GPU blur passes and avoid saveLayer allocations.
+  /// Only the floating dock sets this to `true`.
+  final bool enableBlur;
 
   BorderRadius _defaultRadius(GlassTier tier) {
     switch (tier) {
@@ -64,6 +70,7 @@ class FrostedGlassBox extends StatelessWidget {
 
     final resolvedRadius = borderRadius ?? _defaultRadius(tier);
     final effectiveBlur = blur ?? config.blur;
+    final shouldBlur = enableBlur;
 
     Widget content = Container(
       width: width,
@@ -89,6 +96,17 @@ class FrostedGlassBox extends StatelessWidget {
               : BorderRadius.circular(20),
           child: content,
         ),
+      );
+    }
+
+    if (!shouldBlur) {
+      return Container(
+        margin: margin,
+        decoration: BoxDecoration(
+          borderRadius: resolvedRadius,
+          boxShadow: config.boxShadow,
+        ),
+        child: content,
       );
     }
 

@@ -4,13 +4,14 @@ import 'package:go_router/go_router.dart';
 
 import '../theme/glass_tokens.dart';
 import 'ambient_mesh_background.dart';
+import 'animated_glass_dock.dart';
 import 'ft_exit_confirmation.dart';
 import 'glass/frosted_glass_box.dart';
 
 /// Luminous Frosted Kinetic floating bottom navigation shell.
 ///
 /// Features a detached 64px floating glass dock centered 24px above the bottom screen
-/// edge with [GlassTier.floating] blur, an animated pill for the active route,
+/// edge with [FtGlassTier.glassFloating] blur, an animated pill for the active route,
 /// minimal 48×48px icon buttons for inactive routes, and persistent ambient mesh canvas.
 class BottomNavShell extends StatefulWidget {
   const BottomNavShell({
@@ -81,7 +82,7 @@ class _BottomNavShellState extends State<BottomNavShell> {
         body: AmbientMeshBackground(
           child: widget.navigationShell,
         ),
-        bottomNavigationBar: FloatingDock(
+        bottomNavigationBar: AnimatedGlassDock(
           currentIndex: widget.navigationShell.currentIndex,
           onTap: _goBranch,
         ),
@@ -144,25 +145,29 @@ class FloatingDock extends StatelessWidget {
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 353),
-                child: FrostedGlassBox(
-                  tier: GlassTier.floating,
-                  height: 64,
-                  borderRadius: BorderRadius.circular(9999),
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(_tabs.length, (index) {
-                  final tab = _tabs[index];
-                  final isActive = currentIndex == index;
+                child: RepaintBoundary(
+                  child: FrostedGlassBox(
+                    tier: GlassTier.floating,
+                    enableBlur: true,
+                    blur: 28.0,
+                    height: 64,
+                    borderRadius: BorderRadius.circular(9999),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: List.generate(_tabs.length, (index) {
+                        final tab = _tabs[index];
+                        final isActive = currentIndex == index;
 
-                  if (isActive) {
-                    return FrostedGlassBox(
-                      tier: GlassTier.elevated,
-                      borderRadius: BorderRadius.circular(9999),
-                      border: Border.all(
-                        color: primary.withValues(alpha: 0.25),
-                        width: 1,
-                      ),
+                        if (isActive) {
+                          return FrostedGlassBox(
+                            tier: GlassTier.elevated,
+                            enableBlur: false,
+                            borderRadius: BorderRadius.circular(9999),
+                            border: Border.all(
+                              color: primary.withValues(alpha: 0.25),
+                              width: 1,
+                            ),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 10,
@@ -214,6 +219,7 @@ class FloatingDock extends StatelessWidget {
         ),
       ),
     ),
+  ),
   ),
 );
   }

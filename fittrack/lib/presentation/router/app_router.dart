@@ -14,7 +14,7 @@ import '../screens/reset_verification_screen.dart';
 import '../screens/set_new_password_screen.dart';
 import '../screens/telemetry_setup_screen.dart';
 import '../screens/fitness_profile_setup_screen.dart';
-import '../screens/dashboard_screen.dart';
+import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/workouts_screen.dart';
 import '../screens/workout_search_screen.dart';
 import '../screens/workout_detail_screen.dart';
@@ -29,6 +29,7 @@ import '../screens/workout_history_detail_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/settings/settings_subscreens.dart';
 import '../widgets/bottom_nav_shell.dart';
+import '../widgets/branch_transition_container.dart';
 
 part 'app_router.g.dart';
 
@@ -258,9 +259,15 @@ GoRouter router(Ref ref) {
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const AboutScreen(),
       ),
-      StatefulShellRoute.indexedStack(
+      StatefulShellRoute(
         builder: (context, state, navigationShell) {
           return BottomNavShell(navigationShell: navigationShell);
+        },
+        navigatorContainerBuilder: (context, navigationShell, children) {
+          return BranchTransitionContainer(
+            currentIndex: navigationShell.currentIndex,
+            children: children,
+          );
         },
         branches: [
           StatefulShellBranch(

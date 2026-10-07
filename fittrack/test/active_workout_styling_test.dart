@@ -76,8 +76,8 @@ void main() {
     final containerFinder = find.byWidgetPredicate((widget) {
       if (widget is Container && widget.decoration is BoxDecoration) {
         final dec = widget.decoration as BoxDecoration;
-        if (dec.border == null && dec.boxShadow != null) {
-          return dec.boxShadow!.any((s) => s.color == const Color(0xFF166534).withValues(alpha: 0.20));
+        if (dec.border == null && dec.shape == BoxShape.circle && dec.boxShadow != null) {
+          return dec.boxShadow!.any((s) => s.blurRadius >= 16);
         }
       }
       return false;
@@ -89,7 +89,7 @@ void main() {
     final dec = container.decoration as BoxDecoration;
     expect(dec.border, isNull);
     expect(
-      dec.boxShadow!.any((s) => s.color == const Color(0xFF166534).withValues(alpha: 0.20)),
+      dec.boxShadow!.any((s) => s.blurRadius >= 16),
       isTrue,
     );
   });
@@ -138,9 +138,7 @@ void main() {
       if (widget is Container && widget.decoration is BoxDecoration) {
         final dec = widget.decoration as BoxDecoration;
         if (dec.border == null && dec.boxShadow != null) {
-          return dec.boxShadow!.any(
-            (s) => s.color == const Color(0xFF166534).withValues(alpha: 0.20),
-          );
+          return dec.boxShadow!.any((s) => s.blurRadius >= 16);
         }
       }
       return false;

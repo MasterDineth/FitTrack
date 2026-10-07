@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
   static const _databaseName = "FitTrack.db";
-  static const _databaseVersion = 6;
+  static const _databaseVersion = 9;
 
   DatabaseHelper._privateConstructor();
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
@@ -67,6 +67,53 @@ class DatabaseHelper {
           // Column may already exist; catch DatabaseException to prevent app launch crash
         } catch (_) {}
       }
+    }
+
+    if (oldVersion < 7) {
+      try {
+        await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_workout_sessions_start_time ON workout_sessions(startTime)',
+        );
+      } on DatabaseException catch (_) {}
+    }
+
+    if (oldVersion < 9) {
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS daily_habits (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            subtitle TEXT NOT NULL,
+            isCompleted INTEGER NOT NULL DEFAULT 0,
+            status TEXT NOT NULL,
+            orderIndex INTEGER NOT NULL
+          )
+        ''');
+        await db.insert('daily_habits', {
+          'id': 'habit-1',
+          'title': 'Morning Hydration (1L)',
+          'subtitle': 'Completed at 7:45 AM',
+          'isCompleted': 1,
+          'status': 'done',
+          'orderIndex': 0,
+        }, conflictAlgorithm: ConflictAlgorithm.ignore);
+        await db.insert('daily_habits', {
+          'id': 'habit-2',
+          'title': 'Target Protein Synthesis',
+          'subtitle': '35g remaining for dinner',
+          'isCompleted': 0,
+          'status': 'pending',
+          'orderIndex': 1,
+        }, conflictAlgorithm: ConflictAlgorithm.ignore);
+        await db.insert('daily_habits', {
+          'id': 'habit-3',
+          'title': 'Sleep Protocol (8h target)',
+          'subtitle': 'Wind-down routine at 10:30 PM',
+          'isCompleted': 0,
+          'status': 'tonight',
+          'orderIndex': 2,
+        }, conflictAlgorithm: ConflictAlgorithm.ignore);
+      } on DatabaseException catch (_) {}
     }
   }
 
@@ -156,6 +203,10 @@ class DatabaseHelper {
       )
     ''');
 
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_workout_sessions_start_time ON workout_sessions(startTime)',
+    );
+
     await db.execute('''
       CREATE TABLE exercise_logs (
         id TEXT PRIMARY KEY,
@@ -201,6 +252,17 @@ class DatabaseHelper {
         dob TEXT,
         email TEXT,
         username TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS daily_habits (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        subtitle TEXT NOT NULL,
+        isCompleted INTEGER NOT NULL DEFAULT 0,
+        status TEXT NOT NULL,
+        orderIndex INTEGER NOT NULL
       )
     ''');
 
@@ -260,5 +322,31 @@ class DatabaseHelper {
     for (var se in scheduleExercises) {
       await db.insert('schedule_exercises', se);
     }
+
+    // Default Habits
+    await db.insert('daily_habits', {
+      'id': 'habit-1',
+      'title': 'Morning Hydration (1L)',
+      'subtitle': 'Completed at 7:45 AM',
+      'isCompleted': 1,
+      'status': 'done',
+      'orderIndex': 0,
+    }, conflictAlgorithm: ConflictAlgorithm.ignore);
+    await db.insert('daily_habits', {
+      'id': 'habit-2',
+      'title': 'Target Protein Synthesis',
+      'subtitle': '35g remaining for dinner',
+      'isCompleted': 0,
+      'status': 'pending',
+      'orderIndex': 1,
+    }, conflictAlgorithm: ConflictAlgorithm.ignore);
+    await db.insert('daily_habits', {
+      'id': 'habit-3',
+      'title': 'Sleep Protocol (8h target)',
+      'subtitle': 'Wind-down routine at 10:30 PM',
+      'isCompleted': 0,
+      'status': 'tonight',
+      'orderIndex': 2,
+    }, conflictAlgorithm: ConflictAlgorithm.ignore);
   }
 }

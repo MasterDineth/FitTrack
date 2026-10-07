@@ -8,8 +8,13 @@ import 'presentation/providers/theme_provider.dart';
 import 'presentation/router/app_router.dart';
 import 'presentation/theme/app_theme.dart';
 
+import 'core/debug/ft_provider_observer.dart';
+
+final ftProviderObserver = FtProviderObserver();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  debugPrintRebuildDirtyWidgets = true;
   // Lock to portrait for now; remove when tablet layout is added.
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -21,6 +26,9 @@ void main() async {
 
   runApp(
     ProviderScope(
+      observers: [
+        ftProviderObserver,
+      ],
       overrides: [
         sharedPreferencesProvider.overrideWithValue(sharedPreferences),
       ],

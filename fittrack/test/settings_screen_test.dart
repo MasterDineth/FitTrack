@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fittrack/presentation/screens/settings_screen.dart';
 import 'package:fittrack/presentation/screens/settings/settings_subscreens.dart';
 
@@ -123,14 +124,16 @@ void main() {
   testWidgets('Settings placeholder sub-screens render title and content',
       (WidgetTester tester) async {
     await tester.pumpWidget(
-      const MaterialApp(
-        home: ProfileScreen(),
+      const ProviderScope(
+        child: MaterialApp(
+          home: ProfileScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
 
     expect(find.text('Profile'), findsOneWidget);
-    expect(find.text('Profile & Account Management'), findsOneWidget);
+    expect(find.text('Dineth'), findsAtLeastNWidgets(1));
   });
 }
 

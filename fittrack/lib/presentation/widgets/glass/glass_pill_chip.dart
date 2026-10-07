@@ -8,7 +8,8 @@ import 'frosted_glass_box.dart';
 class GlassPillChip extends StatelessWidget {
   const GlassPillChip({
     super.key,
-    required this.label,
+    this.label = '',
+    this.labelWidget,
     this.dotColor,
     this.textColor,
     this.borderColor,
@@ -24,6 +25,7 @@ class GlassPillChip extends StatelessWidget {
   });
 
   final String label;
+  final Widget? labelWidget;
   final Color? dotColor;
   final Color? textColor;
   final Color? borderColor;
@@ -78,16 +80,17 @@ class GlassPillChip extends StatelessWidget {
             ),
             const SizedBox(width: 6),
           ],
-          Text(
-            label,
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontSize: fontSize,
-              fontWeight: fontWeight,
-              color: effectiveColor,
-              letterSpacing: letterSpacing,
-            ),
-          ),
+          labelWidget ??
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: fontSize,
+                  fontWeight: fontWeight,
+                  color: effectiveColor,
+                  letterSpacing: letterSpacing,
+                ),
+              ),
           if (trailing != null) ...[
             const SizedBox(width: 5),
             trailing!,

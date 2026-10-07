@@ -9,6 +9,7 @@ import '../../domain/entities/set_log.dart';
 import '../../domain/entities/workout_session.dart';
 import 'repository_providers.dart';
 import 'schedules_provider.dart';
+import 'workout_logic_providers.dart';
 
 part 'active_workout_provider.g.dart';
 
@@ -563,6 +564,7 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
       currentSetIndex: 0,
       completedSets: const [],
     );
+    ref.read(sessionsRevisionProvider.notifier).bump();
   }
 
   Future<void> stopSession() async {
@@ -677,6 +679,7 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
         ));
       }
       await repo.saveSetLogs(setLogs);
+      ref.read(sessionsRevisionProvider.notifier).bump();
     } catch (_) {
       // Silently swallow — data is already in memory if needed
     }

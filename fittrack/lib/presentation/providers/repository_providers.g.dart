@@ -22,7 +22,7 @@ final class AuthRepositoryProvider
         argument: null,
         retry: null,
         name: r'authRepositoryProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -49,7 +49,7 @@ final class AuthRepositoryProvider
   }
 }
 
-String _$authRepositoryHash() => r'7db7ee78ec52038fe814fbf89049e9f9f1c4469e';
+String _$authRepositoryHash() => r'689ace7afe1f2597501603b90aef33633738201d';
 
 @ProviderFor(userRepository)
 final userRepositoryProvider = UserRepositoryProvider._();
@@ -64,7 +64,7 @@ final class UserRepositoryProvider
         argument: null,
         retry: null,
         name: r'userRepositoryProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -91,7 +91,7 @@ final class UserRepositoryProvider
   }
 }
 
-String _$userRepositoryHash() => r'52341a8219e1f9f697e0111873cd3bca44d342cf';
+String _$userRepositoryHash() => r'27109422de23c0fc83a4102ca2af0faa5d5210a9';
 
 @ProviderFor(scheduleRepository)
 final scheduleRepositoryProvider = ScheduleRepositoryProvider._();
@@ -110,7 +110,7 @@ final class ScheduleRepositoryProvider
         argument: null,
         retry: null,
         name: r'scheduleRepositoryProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -139,7 +139,7 @@ final class ScheduleRepositoryProvider
 }
 
 String _$scheduleRepositoryHash() =>
-    r'52bef6fbb736d77a29103b550f485b79709c0363';
+    r'fe504d18251334ed62c95bf3af154d4fda215ba5';
 
 @ProviderFor(workoutSessionRepository)
 final workoutSessionRepositoryProvider = WorkoutSessionRepositoryProvider._();
@@ -158,7 +158,7 @@ final class WorkoutSessionRepositoryProvider
         argument: null,
         retry: null,
         name: r'workoutSessionRepositoryProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -187,7 +187,7 @@ final class WorkoutSessionRepositoryProvider
 }
 
 String _$workoutSessionRepositoryHash() =>
-    r'9bd2e78bdc7f5efa09b43ff26e6a52b73ec74a1d';
+    r'2d3c56d46d72371b5150999f5cd8d17d518093f7';
 
 @ProviderFor(exerciseRepository)
 final exerciseRepositoryProvider = ExerciseRepositoryProvider._();
@@ -206,7 +206,7 @@ final class ExerciseRepositoryProvider
         argument: null,
         retry: null,
         name: r'exerciseRepositoryProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -235,7 +235,7 @@ final class ExerciseRepositoryProvider
 }
 
 String _$exerciseRepositoryHash() =>
-    r'a484562bb533b2e343472675ab332a13a7426327';
+    r'dea9ee2ad1fa02f9a97149440cb04eb2f5b6c3b8';
 
 @ProviderFor(securityRepository)
 final securityRepositoryProvider = SecurityRepositoryProvider._();
@@ -254,7 +254,7 @@ final class SecurityRepositoryProvider
         argument: null,
         retry: null,
         name: r'securityRepositoryProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -283,7 +283,7 @@ final class SecurityRepositoryProvider
 }
 
 String _$securityRepositoryHash() =>
-    r'fbdc023a9206056afc2ce6860944fe3485bbaf28';
+    r'32f37d2d05f7c523e741e127b707985168004479';
 
 @ProviderFor(themeRepository)
 final themeRepositoryProvider = ThemeRepositoryProvider._();
@@ -302,7 +302,7 @@ final class ThemeRepositoryProvider
         argument: null,
         retry: null,
         name: r'themeRepositoryProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -329,4 +329,148 @@ final class ThemeRepositoryProvider
   }
 }
 
-String _$themeRepositoryHash() => r'0f31e09dc6e3b2f206f29f959ddb67ead342b2e5';
+String _$themeRepositoryHash() => r'aa306808d39cfec2ef6dfaefad3f853b25bee4db';
+
+@ProviderFor(bioMetricsRepository)
+final bioMetricsRepositoryProvider = BioMetricsRepositoryProvider._();
+
+final class BioMetricsRepositoryProvider
+    extends
+        $FunctionalProvider<
+          IBioMetricsRepository,
+          IBioMetricsRepository,
+          IBioMetricsRepository
+        >
+    with $Provider<IBioMetricsRepository> {
+  BioMetricsRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'bioMetricsRepositoryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$bioMetricsRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<IBioMetricsRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  IBioMetricsRepository create(Ref ref) {
+    return bioMetricsRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(IBioMetricsRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<IBioMetricsRepository>(value),
+    );
+  }
+}
+
+String _$bioMetricsRepositoryHash() =>
+    r'18188760089a923fa95bc230710d5b6828b8ad08';
+
+@ProviderFor(habitsRepository)
+final habitsRepositoryProvider = HabitsRepositoryProvider._();
+
+final class HabitsRepositoryProvider
+    extends
+        $FunctionalProvider<
+          IHabitsRepository,
+          IHabitsRepository,
+          IHabitsRepository
+        >
+    with $Provider<IHabitsRepository> {
+  HabitsRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'habitsRepositoryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$habitsRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<IHabitsRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  IHabitsRepository create(Ref ref) {
+    return habitsRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(IHabitsRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<IHabitsRepository>(value),
+    );
+  }
+}
+
+String _$habitsRepositoryHash() => r'8efabd598623a22bc6057c305a874134b87e95bc';
+
+@ProviderFor(lifestyleContentRepository)
+final lifestyleContentRepositoryProvider =
+    LifestyleContentRepositoryProvider._();
+
+final class LifestyleContentRepositoryProvider
+    extends
+        $FunctionalProvider<
+          ILifestyleContentRepository,
+          ILifestyleContentRepository,
+          ILifestyleContentRepository
+        >
+    with $Provider<ILifestyleContentRepository> {
+  LifestyleContentRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'lifestyleContentRepositoryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$lifestyleContentRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<ILifestyleContentRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  ILifestyleContentRepository create(Ref ref) {
+    return lifestyleContentRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ILifestyleContentRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ILifestyleContentRepository>(value),
+    );
+  }
+}
+
+String _$lifestyleContentRepositoryHash() =>
+    r'08f9cb8fe77e20236b2bce30c2ac9c73dd709902';
