@@ -67,7 +67,9 @@ class WorkoutHistoryHeader extends ConsumerWidget {
             children: [
               // 40x40 circle glass2 bell
               FtPressable(
-                onTap: () => context.push('/settings/notifications'),
+                onTap: () {
+                  // TODO(notifications): Leave empty for dedicated notifications screen
+                },
                 pressedScale: 0.95,
                 child: SizedBox(
                   width: 40,

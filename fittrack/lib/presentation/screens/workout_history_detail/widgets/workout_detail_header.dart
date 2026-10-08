@@ -98,7 +98,9 @@ class WorkoutDetailHeader extends ConsumerWidget {
             children: [
               // Notification bell with unread badge
               FtPressable(
-                onTap: () => _showNotificationsSheet(context),
+                onTap: () {
+                  // TODO(notifications): Leave empty for dedicated notifications screen
+                },
                 pressedScale: 0.92,
                 child: GlassSurface(
                   tier: FtGlassTier.glass2,
@@ -185,52 +187,6 @@ class WorkoutDetailHeader extends ConsumerWidget {
           fontSize: 14,
           fontWeight: FontWeight.w700,
           color: context.ftPrimary,
-        ),
-      ),
-    );
-  }
-
-  void _showNotificationsSheet(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => GlassSurface(
-        tier: FtGlassTier.glass1,
-        radius: FtGlassTheme.radiusCards,
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Notifications',
-                  style: TextStyle(
-                    fontFamily: FtText.fontFamily,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: ctx.ftInk,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Close'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'No new unread alerts or notifications.',
-              style: TextStyle(
-                fontFamily: FtText.fontFamily,
-                fontSize: 14,
-                color: ctx.ftMuted,
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
         ),
       ),
     );

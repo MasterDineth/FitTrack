@@ -168,12 +168,15 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
                           ),
                         ),
                         const SizedBox(width: 4),
-                        Icon(
-                          _isExpanded
-                              ? Icons.keyboard_arrow_up_rounded
-                              : Icons.keyboard_arrow_down_rounded,
-                          size: 18,
-                          color: context.ftMuted,
+                        AnimatedRotation(
+                          turns: _isExpanded ? 0.5 : 0.0,
+                          duration: const Duration(milliseconds: 260),
+                          curve: Curves.easeInOutCubic,
+                          child: Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            size: 18,
+                            color: context.ftMuted,
+                          ),
                         ),
                       ],
                     ),
@@ -203,179 +206,191 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
               ],
             ),
 
-            // ── Expanded Body ────────────────────────────────────────
-            if (_isExpanded) ...[
-              const SizedBox(height: 12),
+            // ── Expanded Body with Smooth Animation ──────────────────
+            ClipRect(
+              child: AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOutCubic,
+                alignment: Alignment.topCenter,
+                child: _isExpanded
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 12),
 
-              // 3 Metric Tiles Row
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.04)
-                      : const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.08)
-                        : const Color(0xFFF1F5F9),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _buildMetricTile(
-                        label: 'TOP LIFT',
-                        value: '135 kg',
-                        subtext: '+5kg PR',
-                        subtextColor: const Color(0xFF10B981),
-                      ),
-                    ),
-                    Container(
-                      width: 1,
-                      height: 32,
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.08)
-                          : const Color(0xFFE2E8F0),
-                    ),
-                    Expanded(
-                      child: _buildMetricTile(
-                        label: 'REST AVG',
-                        value: '78 sec',
-                        subtext: 'Target 90s',
-                        subtextColor: context.ftMuted,
-                      ),
-                    ),
-                    Container(
-                      width: 1,
-                      height: 32,
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.08)
-                          : const Color(0xFFE2E8F0),
-                    ),
-                    Expanded(
-                      child: _buildMetricTile(
-                        label: 'INTENSITY',
-                        value: s.intensity ?? 'RPE 8.8',
-                        subtext: 'Optimal',
-                        subtextColor: context.ftPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              // Exercise Highlights in rounded card with internal dividers
-              _buildExerciseHighlights(s.scheduleId, isDark),
-
-              const SizedBox(height: 12),
-
-              // Action Buttons Row: "Repeat Workout" & "View Details"
-              Row(
-                children: [
-                  // Repeat Workout Button
-                  Expanded(
-                    child: FtPressable(
-                      onTap: () {
-                        context.push('/workouts/active/${s.scheduleId}');
-                      },
-                      pressedScale: 0.96,
-                      child: Container(
-                        height: 40,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: context.ftPrimary,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: context.ftPrimary.withValues(alpha: 0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
+                          // 3 Metric Tiles Row
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.04)
+                                  : const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isDark
+                                    ? Colors.white.withValues(alpha: 0.08)
+                                    : const Color(0xFFF1F5F9),
+                              ),
                             ),
-                          ],
-                        ),
-                        alignment: Alignment.center,
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(
-                                Icons.replay_rounded,
-                                size: 15,
-                                color: Colors.white,
-                              ),
-                              SizedBox(width: 6),
-                              Text(
-                                'Repeat Workout',
-                                style: TextStyle(
-                                  fontFamily: FtText.fontFamily,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _buildMetricTile(
+                                    label: 'TOP LIFT',
+                                    value: '135 kg',
+                                    subtext: '+5kg PR',
+                                    subtextColor: const Color(0xFF10B981),
+                                  ),
                                 ),
-                              ),
-                            ],
+                                Container(
+                                  width: 1,
+                                  height: 32,
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.08)
+                                      : const Color(0xFFE2E8F0),
+                                ),
+                                Expanded(
+                                  child: _buildMetricTile(
+                                    label: 'REST AVG',
+                                    value: '78 sec',
+                                    subtext: 'Target 90s',
+                                    subtextColor: context.ftMuted,
+                                  ),
+                                ),
+                                Container(
+                                  width: 1,
+                                  height: 32,
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.08)
+                                      : const Color(0xFFE2E8F0),
+                                ),
+                                Expanded(
+                                  child: _buildMetricTile(
+                                    label: 'INTENSITY',
+                                    value: s.intensity ?? 'RPE 8.8',
+                                    subtext: 'Optimal',
+                                    subtextColor: context.ftPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
 
-                  // View Details Button
-                  Expanded(
-                    child: FtPressable(
-                      onTap: () {
-                        context.push('/history/detail/${s.id}');
-                      },
-                      pressedScale: 0.96,
-                      child: Container(
-                        height: 40,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.08)
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.15)
-                                : const Color(0xFFE2E8F0),
-                          ),
-                        ),
-                        alignment: Alignment.center,
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          const SizedBox(height: 10),
+
+                          // Exercise Highlights in rounded card with internal dividers
+                          _buildExerciseHighlights(s.scheduleId, isDark),
+
+                          const SizedBox(height: 12),
+
+                          // Action Buttons Row: "Repeat Workout" & "View Details"
+                          Row(
                             children: [
-                              Icon(
-                                Icons.visibility_outlined,
-                                size: 15,
-                                color: context.ftInk,
+                              // Repeat Workout Button
+                              Expanded(
+                                child: FtPressable(
+                                  onTap: () {
+                                    context.push('/workouts/active/${s.scheduleId}');
+                                  },
+                                  pressedScale: 0.96,
+                                  child: Container(
+                                    height: 40,
+                                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                                    decoration: BoxDecoration(
+                                      color: context.ftPrimary,
+                                      borderRadius: BorderRadius.circular(12),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: context.ftPrimary.withValues(alpha: 0.3),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: const [
+                                          Icon(
+                                            Icons.replay_rounded,
+                                            size: 15,
+                                            color: Colors.white,
+                                          ),
+                                          SizedBox(width: 6),
+                                          Text(
+                                            'Repeat Workout',
+                                            style: TextStyle(
+                                              fontFamily: FtText.fontFamily,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
-                              SizedBox(width: 6),
-                              Text(
-                                'View Details',
-                                style: TextStyle(
-                                  fontFamily: FtText.fontFamily,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: context.ftInk,
+                              const SizedBox(width: 8),
+
+                              // View Details Button
+                              Expanded(
+                                child: FtPressable(
+                                  onTap: () {
+                                    context.push('/history/detail/${s.id}');
+                                  },
+                                  pressedScale: 0.96,
+                                  child: Container(
+                                    height: 40,
+                                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? Colors.white.withValues(alpha: 0.08)
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: isDark
+                                            ? Colors.white.withValues(alpha: 0.15)
+                                            : const Color(0xFFE2E8F0),
+                                      ),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.visibility_outlined,
+                                            size: 15,
+                                            color: context.ftInk,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            'View Details',
+                                            style: TextStyle(
+                                              fontFamily: FtText.fontFamily,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                              color: context.ftInk,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                        ],
+                      )
+                    : const SizedBox.shrink(),
               ),
-            ],
+            ),
           ],
         ),
       ),

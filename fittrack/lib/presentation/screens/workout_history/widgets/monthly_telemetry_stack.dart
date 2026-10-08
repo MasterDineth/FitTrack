@@ -341,25 +341,23 @@ class _MonthlyTelemetryStackState extends ConsumerState<MonthlyTelemetryStack> {
               child: Builder(
                 builder: (context) {
                   final isDark = context.isDark;
-
-                  // Solid opaque background so stacked cards behind are NOT transparent wireframes
-                  final cardBgColor = isDark
-                      ? const Color(0xFF1D1735)
-                      : Colors.white;
-
                   final cardBorder = isDark
                       ? Colors.white.withValues(alpha: 0.12 * borderAlpha)
                       : Colors.white.withValues(alpha: borderAlpha);
 
                   return Container(
                     decoration: BoxDecoration(
-                      color: cardBgColor,
                       borderRadius: BorderRadius.circular(FtGlassTheme.radiusStackCards),
-                      border: Border.all(color: cardBorder, width: 1.5),
                       boxShadow: shadows,
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    child: contentWidget,
+                    child: GlassSurface(
+                      tier: FtGlassTier.glass1,
+                      radius: FtGlassTheme.radiusStackCards,
+                      borderTint: cardBorder,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      shadow: false,
+                      child: contentWidget,
+                    ),
                   );
                 },
               ),

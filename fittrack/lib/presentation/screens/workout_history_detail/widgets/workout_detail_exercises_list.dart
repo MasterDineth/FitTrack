@@ -332,22 +332,34 @@ class _ExerciseRowItem extends StatelessWidget {
                       color: context.ftMuted,
                     )
                   else
-                    Icon(
-                      isExpanded
-                          ? Icons.keyboard_arrow_up_rounded
-                          : Icons.keyboard_arrow_down_rounded,
-                      size: 20,
-                      color: isExpanded ? context.ftPrimary : context.ftMuted,
+                    AnimatedRotation(
+                      turns: isExpanded ? 0.5 : 0.0,
+                      duration: const Duration(milliseconds: 260),
+                      curve: Curves.easeInOutCubic,
+                      child: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 20,
+                        color: isExpanded ? context.ftPrimary : context.ftMuted,
+                      ),
                     ),
                 ],
               ),
             ),
 
-            // Expanded Sets Breakdown Table
-            if (isExpanded && item.sets.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              _SetsTable(sets: item.sets),
-            ],
+            // Expanded Sets Breakdown Table with Smooth Animation
+            ClipRect(
+              child: AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOutCubic,
+                alignment: Alignment.topCenter,
+                child: (isExpanded && item.sets.isNotEmpty)
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: _SetsTable(sets: item.sets),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ),
           ],
         ),
       ),

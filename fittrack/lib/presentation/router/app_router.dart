@@ -195,9 +195,38 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/history/detail/:sessionId',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => WorkoutHistoryDetailScreen(
-          sessionId: state.pathParameters['sessionId']!,
-        ),
+        pageBuilder: (context, state) {
+          final disableAnimations = MediaQuery.disableAnimationsOf(context);
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: WorkoutHistoryDetailScreen(
+              sessionId: state.pathParameters['sessionId']!,
+            ),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              if (disableAnimations) return child;
+              const begin = Offset(0.08, 0.0);
+              const end = Offset.zero;
+              final curve = CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+                reverseCurve: Curves.easeInCubic,
+              );
+              return SlideTransition(
+                position: Tween<Offset>(begin: begin, end: end).animate(curve),
+                child: FadeTransition(
+                  opacity: curve,
+                  child: child,
+                ),
+              );
+            },
+            transitionDuration: disableAnimations
+                ? Duration.zero
+                : const Duration(milliseconds: 320),
+            reverseTransitionDuration: disableAnimations
+                ? Duration.zero
+                : const Duration(milliseconds: 280),
+          );
+        },
       ),
       GoRoute(
         path: '/settings/account',
