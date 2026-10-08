@@ -44,7 +44,7 @@ final class SchedulesNotifierProvider
   }
 }
 
-String _$schedulesNotifierHash() => r'219d3a82beecb8ff67895cdfe4f32b12fae0952a';
+String _$schedulesNotifierHash() => r'dd61957c4670de8894b78ce6b575cb3c45b93d15';
 
 /// Riverpod Notifier managing Workout Schedules, Filters, Search, and Bookmarks.
 

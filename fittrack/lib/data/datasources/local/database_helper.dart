@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
   static const _databaseName = "FitTrack.db";
-  static const _databaseVersion = 11;
+  static const _databaseVersion = 12;
 
   DatabaseHelper._privateConstructor();
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
@@ -275,6 +275,34 @@ class DatabaseHelper {
         }, conflictAlgorithm: ConflictAlgorithm.ignore);
       } catch (_) {}
     }
+
+    if (oldVersion < 12) {
+      final sessionCols = [
+        'ALTER TABLE workout_sessions ADD COLUMN intensity TEXT',
+        'ALTER TABLE workout_sessions ADD COLUMN totalSets INTEGER NOT NULL DEFAULT 0',
+        'ALTER TABLE workout_sessions ADD COLUMN totalReps INTEGER NOT NULL DEFAULT 0',
+        'ALTER TABLE workout_sessions ADD COLUMN totalVolumeKg REAL NOT NULL DEFAULT 0',
+      ];
+
+      for (final sql in sessionCols) {
+        try {
+          await db.execute(sql);
+        } on DatabaseException catch (_) {} catch (_) {}
+      }
+
+      try {
+        await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_exercise_logs_session_id ON exercise_logs(sessionId)',
+        );
+        await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_set_logs_exercise_log_id ON set_logs(exerciseLogId)',
+        );
+      } on DatabaseException catch (_) {} catch (_) {}
+
+      try {
+        await _seedVersion12Data(db);
+      } catch (_) {}
+    }
   }
 
   Future _onCreate(Database db, int version) async {
@@ -374,12 +402,22 @@ class DatabaseHelper {
         durationSeconds INTEGER,
         totalCalories INTEGER,
         notes TEXT,
+        intensity TEXT,
+        totalSets INTEGER NOT NULL DEFAULT 0,
+        totalReps INTEGER NOT NULL DEFAULT 0,
+        totalVolumeKg REAL NOT NULL DEFAULT 0,
         FOREIGN KEY (scheduleId) REFERENCES schedules (id) ON DELETE SET NULL
       )
     ''');
 
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_workout_sessions_start_time ON workout_sessions(startTime)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_exercise_logs_session_id ON exercise_logs(sessionId)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_set_logs_exercise_log_id ON set_logs(exerciseLogId)',
     );
 
     await db.execute('''
@@ -620,40 +658,158 @@ class DatabaseHelper {
       'orderIndex': 2,
     }, conflictAlgorithm: ConflictAlgorithm.ignore);
 
-    // Default Recent Sessions
-    final now = DateTime.now();
-    final s1Time = now.subtract(const Duration(days: 1, hours: 2));
-    final s2Time = now.subtract(const Duration(days: 3, hours: 4));
-    final s3Time = now.subtract(const Duration(days: 5, hours: 1));
+    await _seedVersion12Data(db);
+  }
 
-    await db.insert('workout_sessions', {
-      'id': 'sess-1',
-      'scheduleId': 'sch1',
-      'startTime': s1Time.toIso8601String(),
-      'endTime': s1Time.add(const Duration(minutes: 52)).toIso8601String(),
-      'durationSeconds': 3120,
-      'totalCalories': 420,
-      'notes': 'Push Hypertrophy',
-    }, conflictAlgorithm: ConflictAlgorithm.ignore);
+  Future<void> _seedVersion12Data(Database db) async {
+    // 7 Workout Sessions from September 2026 matching Stitch design system
+    final sessions = [
+      {
+        'id': 'sess-1',
+        'scheduleId': 'sch1',
+        'startTime': '2026-09-29T10:00:00.000Z',
+        'endTime': '2026-09-29T10:50:00.000Z',
+        'durationSeconds': 3000,
+        'totalCalories': 380,
+        'notes': 'Felt great — hit a new bench PR today!',
+        'intensity': 'RPE 8.8 (Optimal)',
+        'totalSets': 21,
+        'totalReps': 173,
+        'totalVolumeKg': 8450.0,
+      },
+      {
+        'id': 'sess-2',
+        'scheduleId': 'sch2',
+        'startTime': '2026-09-27T09:30:00.000Z',
+        'endTime': '2026-09-27T10:12:00.000Z',
+        'durationSeconds': 2520,
+        'totalCalories': 330,
+        'notes': 'Solid back volume, good grip strength.',
+        'intensity': 'RPE 8.2',
+        'totalSets': 18,
+        'totalReps': 162,
+        'totalVolumeKg': 7120.0,
+      },
+      {
+        'id': 'sess-3',
+        'scheduleId': 'sch3',
+        'startTime': '2026-09-25T14:00:00.000Z',
+        'endTime': '2026-09-25T14:53:00.000Z',
+        'durationSeconds': 3180,
+        'totalCalories': 490,
+        'notes': 'High fatigue, crushed the heavy squats.',
+        'intensity': 'RPE 9.1',
+        'totalSets': 22,
+        'totalReps': 180,
+        'totalVolumeKg': 11200.0,
+      },
+      {
+        'id': 'sess-4',
+        'scheduleId': 'sch1',
+        'startTime': '2026-09-22T10:15:00.000Z',
+        'endTime': '2026-09-22T11:05:00.000Z',
+        'durationSeconds': 3000,
+        'totalCalories': 380,
+        'notes': 'Chest focus, progressive overload maintained.',
+        'intensity': 'RPE 8.5',
+        'totalSets': 20,
+        'totalReps': 165,
+        'totalVolumeKg': 8200.0,
+      },
+      {
+        'id': 'sess-5',
+        'scheduleId': 'sch2',
+        'startTime': '2026-09-20T09:00:00.000Z',
+        'endTime': '2026-09-20T09:45:00.000Z',
+        'durationSeconds': 2700,
+        'totalCalories': 340,
+        'notes': 'Back & Biceps volume day.',
+        'intensity': 'RPE 8.0',
+        'totalSets': 18,
+        'totalReps': 160,
+        'totalVolumeKg': 7050.0,
+      },
+      {
+        'id': 'sess-6',
+        'scheduleId': 'sch3',
+        'startTime': '2026-09-18T16:30:00.000Z',
+        'endTime': '2026-09-18T17:22:00.000Z',
+        'durationSeconds': 3120,
+        'totalCalories': 485,
+        'notes': 'Leg day, posterior chain specialization.',
+        'intensity': 'RPE 8.8',
+        'totalSets': 21,
+        'totalReps': 175,
+        'totalVolumeKg': 10800.0,
+      },
+      {
+        'id': 'sess-7',
+        'scheduleId': 'sch1',
+        'startTime': '2026-09-15T11:00:00.000Z',
+        'endTime': '2026-09-15T11:48:00.000Z',
+        'durationSeconds': 2880,
+        'totalCalories': 375,
+        'notes': 'Shoulders and triceps pump.',
+        'intensity': 'RPE 8.4',
+        'totalSets': 20,
+        'totalReps': 165,
+        'totalVolumeKg': 8100.0,
+      },
+    ];
 
-    await db.insert('workout_sessions', {
-      'id': 'sess-2',
-      'scheduleId': 'sch2',
-      'startTime': s2Time.toIso8601String(),
-      'endTime': s2Time.add(const Duration(minutes: 44)).toIso8601String(),
-      'durationSeconds': 2640,
-      'totalCalories': 365,
-      'notes': 'Pull & Dynamic Core',
-    }, conflictAlgorithm: ConflictAlgorithm.ignore);
+    for (final s in sessions) {
+      await db.insert('workout_sessions', s, conflictAlgorithm: ConflictAlgorithm.replace);
+    }
 
-    await db.insert('workout_sessions', {
-      'id': 'sess-3',
-      'scheduleId': 'sch3',
-      'startTime': s3Time.toIso8601String(),
-      'endTime': s3Time.add(const Duration(minutes: 55)).toIso8601String(),
-      'durationSeconds': 3300,
-      'totalCalories': 480,
-      'notes': 'Legs & Posterior Chain',
-    }, conflictAlgorithm: ConflictAlgorithm.ignore);
+    // Detailed exercise logs for sess-1 (Chest, Shoulders & Triceps) matching Stitch
+    final exLogs = [
+      {'id': 'log_1_1', 'sessionId': 'sess-1', 'exerciseId': 'ex1', 'orderIndex': 0, 'isSkipped': 0},
+      {'id': 'log_1_2', 'sessionId': 'sess-1', 'exerciseId': 'ex2', 'orderIndex': 1, 'isSkipped': 0},
+      {'id': 'log_1_3', 'sessionId': 'sess-1', 'exerciseId': 'ex3', 'orderIndex': 2, 'isSkipped': 0},
+      {'id': 'log_1_4', 'sessionId': 'sess-1', 'exerciseId': 'ex4', 'orderIndex': 3, 'isSkipped': 0},
+      {'id': 'log_1_5', 'sessionId': 'sess-1', 'exerciseId': 'ex5', 'orderIndex': 4, 'isSkipped': 1, 'skip_reason': 'Time constraint'},
+      {'id': 'log_1_6', 'sessionId': 'sess-1', 'exerciseId': 'ex6', 'orderIndex': 5, 'isSkipped': 0},
+      {'id': 'log_1_7', 'sessionId': 'sess-1', 'exerciseId': 'ex7', 'orderIndex': 6, 'isSkipped': 0},
+    ];
+
+    for (final l in exLogs) {
+      await db.insert('exercise_logs', l, conflictAlgorithm: ConflictAlgorithm.replace);
+    }
+
+    final setLogs = [
+      // ex1: Barbell Bench Press (3 sets · 2,338 kg)
+      {'id': 's1_1', 'exerciseLogId': 'log_1_1', 'setNumber': 1, 'actualReps': 8, 'targetReps': 8, 'actualWeightKg': 100.0, 'targetWeightKg': 100.0, 'isCompleted': 1, 'restDurationSeconds': 90},
+      {'id': 's1_2', 'exerciseLogId': 'log_1_1', 'setNumber': 2, 'actualReps': 8, 'targetReps': 8, 'actualWeightKg': 102.5, 'targetWeightKg': 102.5, 'isCompleted': 1, 'restDurationSeconds': 90},
+      {'id': 's1_3', 'exerciseLogId': 'log_1_1', 'setNumber': 3, 'actualReps': 7, 'targetReps': 8, 'actualWeightKg': 102.5, 'targetWeightKg': 102.5, 'isCompleted': 1, 'restDurationSeconds': 90},
+
+      // ex2: Incline DB Press (3 sets · 928 kg)
+      {'id': 's2_1', 'exerciseLogId': 'log_1_2', 'setNumber': 1, 'actualReps': 10, 'targetReps': 10, 'actualWeightKg': 32.0, 'targetWeightKg': 32.0, 'isCompleted': 1, 'restDurationSeconds': 90},
+      {'id': 's2_2', 'exerciseLogId': 'log_1_2', 'setNumber': 2, 'actualReps': 10, 'targetReps': 10, 'actualWeightKg': 32.0, 'targetWeightKg': 32.0, 'isCompleted': 1, 'restDurationSeconds': 90},
+      {'id': 's2_3', 'exerciseLogId': 'log_1_2', 'setNumber': 3, 'actualReps': 9, 'targetReps': 10, 'actualWeightKg': 32.0, 'targetWeightKg': 32.0, 'isCompleted': 1, 'restDurationSeconds': 90},
+
+      // ex3: Cable Incline Flyes (3 sets · 680 kg)
+      {'id': 's3_1', 'exerciseLogId': 'log_1_3', 'setNumber': 1, 'actualReps': 12, 'targetReps': 12, 'actualWeightKg': 20.0, 'targetWeightKg': 20.0, 'isCompleted': 1, 'restDurationSeconds': 60},
+      {'id': 's3_2', 'exerciseLogId': 'log_1_3', 'setNumber': 2, 'actualReps': 11, 'targetReps': 12, 'actualWeightKg': 20.0, 'targetWeightKg': 20.0, 'isCompleted': 1, 'restDurationSeconds': 60},
+      {'id': 's3_3', 'exerciseLogId': 'log_1_3', 'setNumber': 3, 'actualReps': 11, 'targetReps': 12, 'actualWeightKg': 20.0, 'targetWeightKg': 20.0, 'isCompleted': 1, 'restDurationSeconds': 60},
+
+      // ex4: Overhead Press (3 sets · 1,420 kg)
+      {'id': 's4_1', 'exerciseLogId': 'log_1_4', 'setNumber': 1, 'actualReps': 8, 'targetReps': 8, 'actualWeightKg': 60.0, 'targetWeightKg': 60.0, 'isCompleted': 1, 'restDurationSeconds': 90},
+      {'id': 's4_2', 'exerciseLogId': 'log_1_4', 'setNumber': 2, 'actualReps': 8, 'targetReps': 8, 'actualWeightKg': 60.0, 'targetWeightKg': 60.0, 'isCompleted': 1, 'restDurationSeconds': 90},
+      {'id': 's4_3', 'exerciseLogId': 'log_1_4', 'setNumber': 3, 'actualReps': 8, 'targetReps': 8, 'actualWeightKg': 57.5, 'targetWeightKg': 57.5, 'isCompleted': 1, 'restDurationSeconds': 90},
+
+      // ex6: Triceps Pushdowns (3 sets · 1,360 kg)
+      {'id': 's6_1', 'exerciseLogId': 'log_1_6', 'setNumber': 1, 'actualReps': 13, 'targetReps': 12, 'actualWeightKg': 35.0, 'targetWeightKg': 35.0, 'isCompleted': 1, 'restDurationSeconds': 60},
+      {'id': 's6_2', 'exerciseLogId': 'log_1_6', 'setNumber': 2, 'actualReps': 13, 'targetReps': 12, 'actualWeightKg': 35.0, 'targetWeightKg': 35.0, 'isCompleted': 1, 'restDurationSeconds': 60},
+      {'id': 's6_3', 'exerciseLogId': 'log_1_6', 'setNumber': 3, 'actualReps': 13, 'targetReps': 12, 'actualWeightKg': 35.0, 'targetWeightKg': 35.0, 'isCompleted': 1, 'restDurationSeconds': 60},
+
+      // ex7: Skull Crushers (3 sets · 875 kg)
+      {'id': 's7_1', 'exerciseLogId': 'log_1_7', 'setNumber': 1, 'actualReps': 12, 'targetReps': 12, 'actualWeightKg': 25.0, 'targetWeightKg': 25.0, 'isCompleted': 1, 'restDurationSeconds': 60},
+      {'id': 's7_2', 'exerciseLogId': 'log_1_7', 'setNumber': 2, 'actualReps': 12, 'targetReps': 12, 'actualWeightKg': 25.0, 'targetWeightKg': 25.0, 'isCompleted': 1, 'restDurationSeconds': 60},
+      {'id': 's7_3', 'exerciseLogId': 'log_1_7', 'setNumber': 3, 'actualReps': 11, 'targetReps': 12, 'actualWeightKg': 25.0, 'targetWeightKg': 25.0, 'isCompleted': 1, 'restDurationSeconds': 60},
+    ];
+
+    for (final s in setLogs) {
+      await db.insert('set_logs', s, conflictAlgorithm: ConflictAlgorithm.replace);
+    }
   }
 }

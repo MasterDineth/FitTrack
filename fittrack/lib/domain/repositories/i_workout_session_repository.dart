@@ -4,9 +4,14 @@ import '../entities/set_log.dart';
 
 abstract class IWorkoutSessionRepository {
   Future<List<WorkoutSession>> getAllSessions();
+  Future<WorkoutSession?> getSessionById(String id);
   Future<void> saveSession(WorkoutSession session);
   Future<void> saveExerciseLogs(List<ExerciseLog> logs);
   Future<void> saveSetLogs(List<SetLog> logs);
+  Future<List<ExerciseLog>> getExerciseLogsForSession(String sessionId);
+  Future<List<SetLog>> getSetLogsForSession(String sessionId);
+  Future<List<SetLog>> getSetLogsForExerciseLog(String exerciseLogId);
+  Future<List<WorkoutSession>> getSessionsForMonth(DateTime month);
 
   /// Returns aggregate weekly and all-time metrics using optimized SQL aggregates:
   /// - `daysTrainedThisWeek`: Distinct days trained between [startOfWeek] and [endOfWeek].

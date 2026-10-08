@@ -155,4 +155,84 @@ class SqliteWorkoutSessionRepository implements IWorkoutSessionRepository {
     }
     await batch.commit(noResult: true);
   }
+
+  @override
+  Future<WorkoutSession?> getSessionById(String id) async {
+    final db = await _dbHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'workout_sessions',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return WorkoutSession.fromJson(maps.first);
+  }
+
+  @override
+  Future<List<ExerciseLog>> getExerciseLogsForSession(String sessionId) async {
+    final db = await _dbHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'exercise_logs',
+      where: 'sessionId = ?',
+      whereArgs: [sessionId],
+      orderBy: 'orderIndex ASC',
+    );
+    return maps.map((map) {
+      final copy = Map<String, dynamic>.from(map);
+      copy['isSkipped'] = (copy['isSkipped'] == 1 || copy['isSkipped'] == true);
+      if (copy.containsKey('skip_reason')) {
+        copy['skipReason'] = copy['skip_reason'];
+      }
+      return ExerciseLog.fromJson(copy);
+    }).toList();
+  }
+
+  @override
+  Future<List<SetLog>> getSetLogsForSession(String sessionId) async {
+    final db = await _dbHelper.database;
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT sl.* 
+      FROM set_logs sl
+      INNER JOIN exercise_logs el ON sl.exerciseLogId = el.id
+      WHERE el.sessionId = ?
+      ORDER BY el.orderIndex ASC, sl.setNumber ASC
+    ''', [sessionId]);
+    return maps.map((map) {
+      final copy = Map<String, dynamic>.from(map);
+      copy['isCompleted'] = (copy['isCompleted'] == 1 || copy['isCompleted'] == true);
+      return SetLog.fromJson(copy);
+    }).toList();
+  }
+
+  @override
+  Future<List<SetLog>> getSetLogsForExerciseLog(String exerciseLogId) async {
+    final db = await _dbHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'set_logs',
+      where: 'exerciseLogId = ?',
+      whereArgs: [exerciseLogId],
+      orderBy: 'setNumber ASC',
+    );
+    return maps.map((map) {
+      final copy = Map<String, dynamic>.from(map);
+      copy['isCompleted'] = (copy['isCompleted'] == 1 || copy['isCompleted'] == true);
+      return SetLog.fromJson(copy);
+    }).toList();
+  }
+
+  @override
+  Future<List<WorkoutSession>> getSessionsForMonth(DateTime month) async {
+    final db = await _dbHelper.database;
+    final startOfMonth = DateTime(month.year, month.month, 1);
+    final endOfMonth = DateTime(month.year, month.month + 1, 1);
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      'workout_sessions',
+      where: 'startTime >= ? AND startTime < ?',
+      whereArgs: [startOfMonth.toIso8601String(), endOfMonth.toIso8601String()],
+      orderBy: 'startTime DESC',
+    );
+    return maps.map((map) => WorkoutSession.fromJson(map)).toList();
+  }
 }
