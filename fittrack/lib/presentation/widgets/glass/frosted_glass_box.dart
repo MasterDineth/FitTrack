@@ -1,11 +1,13 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../providers/theme_provider.dart';
 import '../../theme/glass_tokens.dart';
 
 /// A reusable frosted glass container applying calibrated blur, semi-translucent
 /// fill, specular border highlights, and ambient drop shadows based on [GlassTier].
-class FrostedGlassBox extends StatelessWidget {
+class FrostedGlassBox extends ConsumerWidget {
   const FrostedGlassBox({
     super.key,
     this.child,
@@ -59,7 +61,15 @@ class FrostedGlassBox extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    bool enableTransparency = true;
+    double blurIntensity = 16.0;
+    try {
+      final themeSettings = ref.watch(themeNotifierProvider);
+      enableTransparency = themeSettings.enableGlassTransparency;
+      blurIntensity = themeSettings.blurIntensity;
+    } catch (_) {}
+
     final config = GlassTokens.resolve(
       context,
       tier: tier,
@@ -69,8 +79,37 @@ class FrostedGlassBox extends StatelessWidget {
     );
 
     final resolvedRadius = borderRadius ?? _defaultRadius(tier);
-    final effectiveBlur = blur ?? config.blur;
-    final shouldBlur = enableBlur;
+    final baseBlur = blur ?? config.blur;
+
+    final double t = ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0);
+    final double effectiveBlur;
+    if (!enableTransparency || !enableBlur) {
+      effectiveBlur = 0.0;
+    } else if (t <= 0.42857) {
+      final progress = t / 0.42857;
+      effectiveBlur = 3.0 + (baseBlur - 3.0) * progress;
+    } else {
+      final progress = (t - 0.42857) / (1.0 - 0.42857);
+      final double maxBlur = (baseBlur * 2.0).clamp(32.0, 48.0);
+      effectiveBlur = baseBlur + (maxBlur - baseBlur) * progress;
+    }
+
+    final double baseAlpha = config.fillColor.a;
+    final double effectiveAlpha;
+    if (!enableTransparency) {
+      effectiveAlpha = baseAlpha;
+    } else if (t <= 0.42857) {
+      final progress = t / 0.42857;
+      final double minAlpha = (baseAlpha * 0.45).clamp(0.18, 0.32);
+      effectiveAlpha = minAlpha + (baseAlpha - minAlpha) * progress;
+    } else {
+      final progress = (t - 0.42857) / (1.0 - 0.42857);
+      final double maxAlpha = (baseAlpha * 1.35).clamp(0.76, 0.88);
+      effectiveAlpha = baseAlpha + (maxAlpha - baseAlpha) * progress;
+    }
+    final Color effectiveFill = config.fillColor.withValues(alpha: effectiveAlpha);
+
+    final shouldBlur = enableBlur && enableTransparency && effectiveBlur > 0;
 
     Widget content = Container(
       width: width,
@@ -79,7 +118,7 @@ class FrostedGlassBox extends StatelessWidget {
       alignment: alignment,
       constraints: constraints,
       decoration: BoxDecoration(
-        color: config.fillColor,
+        color: effectiveFill,
         borderRadius: resolvedRadius,
         border: border ?? config.border,
       ),

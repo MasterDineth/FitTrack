@@ -77,26 +77,51 @@ class _AnimatedGlassDockState extends ConsumerState<AnimatedGlassDock> {
     final primary = theme.colorScheme.primary;
 
     bool enableTransparency = true;
-    double blurScale = 1.0;
+    double blurIntensity = 16.0;
     try {
       final themeSettings = ref.watch(themeNotifierProvider);
       enableTransparency = themeSettings.enableGlassTransparency;
-      blurScale = (themeSettings.blurIntensity / 16.0).clamp(0.2, 2.5);
+      blurIntensity = themeSettings.blurIntensity;
     } catch (_) {}
 
+    final double t = ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0);
+
     // Resolved floating dock glass spec matching Stitch showcase
-    final double blurSigma = !enableTransparency
-        ? 0.0
-        : ((isOled ? 28.0 : (isDark ? 26.0 : 24.0)) * blurScale);
+    final double baseDockSigma = isOled ? 28.0 : (isDark ? 26.0 : 24.0);
+    final double blurSigma;
+    if (!enableTransparency) {
+      blurSigma = 0.0;
+    } else if (t <= 0.42857) {
+      final double progress = t / 0.42857;
+      blurSigma = 4.0 + (baseDockSigma - 4.0) * progress;
+    } else {
+      final double progress = (t - 0.42857) / (1.0 - 0.42857);
+      blurSigma = baseDockSigma + (42.0 - baseDockSigma) * progress;
+    }
+
+    final Color baseFill = isOled
+        ? const Color(0xD10C0C12) // rgba(12, 12, 18, 0.82)
+        : (isDark
+            ? const Color(0xC2120E22) // rgba(18, 14, 34, 0.76)
+            : const Color(0xC7FFFFFF)); // rgba(255, 255, 255, 0.78)
+
+    final double baseDockAlpha = baseFill.a;
+    final double dockAlpha;
+    if (t <= 0.42857) {
+      final double progress = t / 0.42857;
+      final double minAlpha = (baseDockAlpha * 0.45).clamp(0.28, 0.40);
+      dockAlpha = minAlpha + (baseDockAlpha - minAlpha) * progress;
+    } else {
+      final double progress = (t - 0.42857) / (1.0 - 0.42857);
+      final double maxAlpha = (baseDockAlpha * 1.15).clamp(0.85, 0.92);
+      dockAlpha = baseDockAlpha + (maxAlpha - baseDockAlpha) * progress;
+    }
+
     final Color dockFill = !enableTransparency
         ? (isOled
             ? const Color(0xFF0C0C12)
             : (isDark ? const Color(0xFF161226) : Colors.white))
-        : (isOled
-            ? const Color(0xD10C0C12) // rgba(12, 12, 18, 0.82)
-            : (isDark
-                ? const Color(0xC2120E22) // rgba(18, 14, 34, 0.76)
-                : const Color(0xC7FFFFFF))); // rgba(255, 255, 255, 0.78)
+        : baseFill.withValues(alpha: dockAlpha);
     final Color dockBorder = isOled
         ? const Color(0x1FFFFFFF) // 1px solid rgba(255, 255, 255, 0.12)
         : (isDark

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/theme_provider.dart';
+import '../../theme/ft_glass.dart';
+import '../../widgets/glass_surface.dart';
 
 class _AccentSwatch {
   final Color color;
@@ -349,57 +351,63 @@ class AppearanceSettingsScreen extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 28,
-                                height: 28,
-                                decoration: BoxDecoration(
-                                  color: accent,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  Icons.fitness_center,
-                                  size: 16,
-                                  color: onAccentColor,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Chest & Triceps',
-                                    style: TextStyle(
-                                      fontFamily: 'Plus Jakarta Sans',
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      color: textPrimary,
-                                    ),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    color: accent,
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                  Text(
-                                    'Hypertrophy Split · Push Day',
-                                    style: TextStyle(
-                                      fontFamily: 'Plus Jakarta Sans',
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w500,
-                                      color: textMuted,
-                                    ),
+                                  child: Icon(
+                                    Icons.fitness_center,
+                                    size: 16,
+                                    color: onAccentColor,
                                   ),
-                                ],
-                              ),
-                            ],
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Chest & Triceps',
+                                        style: TextStyle(
+                                          fontFamily: 'Plus Jakarta Sans',
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                          color: textPrimary,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        'Hypertrophy Split · Push Day',
+                                        style: TextStyle(
+                                          fontFamily: 'Plus Jakarta Sans',
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w500,
+                                          color: textMuted,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          // "In Progress" Badge (Dynamically colored)
-                          Container(
+                          const SizedBox(width: 8),
+                          // "In Progress" Badge (Dynamically colored frosted glass)
+                          GlassSurface(
+                            tier: FtGlassTier.glass2,
+                            radius: 999,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
                               vertical: 4,
                             ),
-                            decoration: BoxDecoration(
-                              color: accent.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
+                            borderTint: accent.withValues(alpha: 0.35),
                             child: Text(
                               'In Progress',
                               style: TextStyle(
@@ -816,14 +824,18 @@ class AppearanceSettingsScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'Dynamic Accent',
-                      style: TextStyle(
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: textPrimary,
+                    Flexible(
+                      child: Text(
+                        'Dynamic Accent',
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: textPrimary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -1286,7 +1298,7 @@ class AppearanceSettingsScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Fine-tune frosted backdrop blur radius for glass cards and dock.',
+                      'Fine-tune frosted backdrop diffusion & translucency across surfaces.',
                       style: TextStyle(
                         fontFamily: 'Plus Jakarta Sans',
                         fontSize: 11,
@@ -1316,7 +1328,19 @@ class AppearanceSettingsScreen extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+
+          // ── Real-time Frosted Glass Swatch ──────────────────────────────
+          _buildLiveGlassSwatch(
+            intensity: intensity,
+            intensityLabel: intensityLabel,
+            accentColor: accentColor,
+            textPrimary: textPrimary,
+            textMuted: textMuted,
+          ),
+          const SizedBox(height: 12),
+
+          // Slider
           SliderTheme(
             data: SliderThemeData(
               activeTrackColor: accentColor,
@@ -1334,42 +1358,330 @@ class AppearanceSettingsScreen extends ConsumerWidget {
               onChanged: (val) => themeNotifier.setBlurIntensity(val),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '4px (Subtle)',
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    color: textMuted,
-                  ),
+          const SizedBox(height: 4),
+
+          // ── Interactive One-Tap Preset Buttons ──────────────────────────
+          Row(
+            children: [
+              Expanded(
+                child: _buildBlurPresetButton(
+                  label: 'Subtle',
+                  pixels: '4px',
+                  isSelected: intensity <= 8.0,
+                  accentColor: accentColor,
+                  textMuted: textMuted,
+                  onTap: () => themeNotifier.setBlurIntensity(4.0),
                 ),
-                Text(
-                  '16px (Default)',
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    color: textMuted,
-                  ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildBlurPresetButton(
+                  label: 'Standard',
+                  pixels: '16px',
+                  isSelected: intensity > 8.0 && intensity <= 20.0,
+                  accentColor: accentColor,
+                  textMuted: textMuted,
+                  onTap: () => themeNotifier.setBlurIntensity(16.0),
                 ),
-                Text(
-                  '32px (Intense)',
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    color: textMuted,
-                  ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildBlurPresetButton(
+                  label: 'Intense',
+                  pixels: '32px',
+                  isSelected: intensity > 20.0,
+                  accentColor: accentColor,
+                  textMuted: textMuted,
+                  onTap: () => themeNotifier.setBlurIntensity(32.0),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  /// High-contrast live frosted glass test swatch demonstrating the backdrop blur in real time.
+  Widget _buildLiveGlassSwatch({
+    required double intensity,
+    required String intensityLabel,
+    required Color accentColor,
+    required Color textPrimary,
+    required Color textMuted,
+  }) {
+    return Container(
+      width: double.infinity,
+      height: 110,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: accentColor.withValues(alpha: 0.25),
+          width: 1,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          children: [
+            // ── Background Layer with Rich High-Frequency Graphics & Shapes ──
+            Positioned.fill(
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF1E1B4B), // Deep indigo
+                      Color(0xFF0F172A), // Slate 900
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Colorful background glowing orbs / shapes
+            Positioned(
+              left: 16,
+              top: 10,
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      accentColor,
+                      accentColor.withValues(alpha: 0.40),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              right: 32,
+              bottom: 6,
+              child: Container(
+                width: 60,
+                height: 60,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      Color(0xFFF97316), // Vivid orange
+                      Color(0x66F97316),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              right: 110,
+              top: 14,
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF06B6D4), // Cyan
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+
+            // Sharp high-contrast background typography & geometric patterns
+            Positioned(
+              left: 16,
+              top: 16,
+              right: 16,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'FITTRACK ACTIVE TELEMETRY 8,420 STEPS',
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.5,
+                      color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    '● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ●',
+                    style: TextStyle(
+                      fontSize: 8,
+                      letterSpacing: 3.0,
+                      color: accentColor.withValues(alpha: 0.90),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    'PULSE: 142 BPM  •  ACTIVE CALORIES: 520 KCAL',
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.0,
+                      color: Colors.white.withValues(alpha: 0.70),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // ── Foreground Frosted Glass Surface ──
+            Positioned.fill(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                child: GlassSurface(
+                  tier: FtGlassTier.glass1,
+                  radius: 12,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: accentColor.withValues(alpha: 0.20),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: accentColor.withValues(alpha: 0.50),
+                            width: 1,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.blur_on_rounded,
+                          size: 20,
+                          color: accentColor,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Frosted Glass Preview',
+                              style: TextStyle(
+                                fontFamily: 'Plus Jakarta Sans',
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              intensity <= 8.0
+                                  ? 'Subtle (4px): High transparency & sharp pass-through'
+                                  : intensity <= 20.0
+                                      ? 'Standard (16px): Balanced Stitch frosted diffusion'
+                                      : 'Intense (32px): Dense milky frosted acrylic glow',
+                              style: TextStyle(
+                                fontFamily: 'Plus Jakarta Sans',
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w500,
+                                color: textMuted,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: accentColor.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: accentColor.withValues(alpha: 0.40),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          '${intensity.round()}px',
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            color: accentColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBlurPresetButton({
+    required String label,
+    required String pixels,
+    required bool isSelected,
+    required Color accentColor,
+    required Color textMuted,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: isSelected
+              ? accentColor.withValues(alpha: 0.14)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected
+                ? accentColor
+                : textMuted.withValues(alpha: 0.25),
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? accentColor : textMuted,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '($pixels)',
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: 10,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  color: isSelected ? accentColor : textMuted.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

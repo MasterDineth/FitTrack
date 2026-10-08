@@ -40,11 +40,11 @@ class GlassSurface extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     bool enableTransparency = true;
-    double blurScale = 1.0;
+    double blurIntensity = 16.0;
     try {
       final themeSettings = ref.watch(themeNotifierProvider);
       enableTransparency = themeSettings.enableGlassTransparency;
-      blurScale = (themeSettings.blurIntensity / 16.0).clamp(0.2, 2.5);
+      blurIntensity = themeSettings.blurIntensity;
     } catch (_) {
       // Smooth fallback in isolated unit/widget tests without ProviderScope
     }
@@ -59,14 +59,57 @@ class GlassSurface extends ConsumerWidget {
       content = Padding(padding: padding!, child: content);
     }
 
-    final double effectiveBlur = (enableTransparency && enableBlur)
-        ? ((customBlurSigma ?? spec.blurSigma) * blurScale)
-        : 0.0;
+    // Normalized intensity factor t: 0.0 (4px Subtle) -> 0.42857 (16px Default) -> 1.0 (32px Intense)
+    final double t = ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0);
+
+    // Dynamic blur sigma scaling:
+    // At Subtle (4px): crisp 3.0px sigma (objects behind remain sharp)
+    // At Default (16px): natural spec.blurSigma
+    // At Intense (32px): heavy milky diffusion up to 36-48px sigma
+    final double baseSigma = customBlurSigma ?? spec.blurSigma;
+    final double effectiveBlur;
+    if (!enableTransparency || !enableBlur) {
+      effectiveBlur = 0.0;
+    } else if (t <= 0.42857) {
+      final double progress = t / 0.42857;
+      const double minSigma = 3.0;
+      effectiveBlur = minSigma + (baseSigma - minSigma) * progress;
+    } else {
+      final double progress = (t - 0.42857) / (1.0 - 0.42857);
+      final double maxSigma = (baseSigma * 2.25).clamp(32.0, 48.0);
+      effectiveBlur = baseSigma + (maxSigma - baseSigma) * progress;
+    }
+
+    // Dynamic fill opacity scaling:
+    // At Subtle (4px): ultra-translucent (drops to ~20%-30%), revealing background mesh and graphics
+    // At Default (16px): exact Stitch spec.fill alpha (~50%-60%)
+    // At Intense (32px): dense, milky frosted acrylic (~76%-88%), diffusing background into a cloud
+    final double baseAlpha = spec.fill.a;
+    final double effectiveAlpha;
+    if (!enableTransparency) {
+      effectiveAlpha = baseAlpha;
+    } else if (t <= 0.42857) {
+      final double progress = t / 0.42857;
+      final double minAlpha = (baseAlpha * 0.45).clamp(0.18, 0.32);
+      effectiveAlpha = minAlpha + (baseAlpha - minAlpha) * progress;
+    } else {
+      final double progress = (t - 0.42857) / (1.0 - 0.42857);
+      final double maxAlpha = (baseAlpha * 1.35).clamp(0.76, 0.88);
+      effectiveAlpha = baseAlpha + (maxAlpha - baseAlpha) * progress;
+    }
+    final Color effectiveFill = spec.fill.withValues(alpha: effectiveAlpha);
+
+    // Specular highlight line sheen: Subtle is delicate, Intense is brilliant
+    final Color effectiveHighlight = !enableTransparency
+        ? spec.highlight
+        : spec.highlight.withValues(
+            alpha: (spec.highlight.a * (0.65 + 0.65 * t)).clamp(0.0, 1.0),
+          );
 
     // Inner surface container with border, fill, and top specular highlight
     Widget innerBox = CustomPaint(
       foregroundPainter: _TopHighlightPainter(
-        highlightColor: spec.highlight,
+        highlightColor: effectiveHighlight,
         radius: effectiveRadius,
       ),
       child: Container(
@@ -74,7 +117,7 @@ class GlassSurface extends ConsumerWidget {
         height: height,
         alignment: alignment,
         decoration: BoxDecoration(
-          color: spec.fill,
+          color: effectiveFill,
           borderRadius: borderRadius,
           border: Border.all(
             color: borderTint ?? spec.border,
