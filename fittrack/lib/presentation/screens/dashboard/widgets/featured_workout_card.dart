@@ -39,7 +39,7 @@ class _FeaturedWorkoutCardState extends ConsumerState<FeaturedWorkoutCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Featured Workout',
                     maxLines: 1,
@@ -49,7 +49,7 @@ class _FeaturedWorkoutCardState extends ConsumerState<FeaturedWorkoutCard> {
                       fontSize: 18.5,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.3,
-                      color: FtGlassTheme.ink,
+                      color: context.ftInk,
                     ),
                   ),
                 ),
@@ -89,20 +89,22 @@ class _FeaturedWorkoutCardState extends ConsumerState<FeaturedWorkoutCard> {
             ),
           ),
 
-          // Main Workout Card (Radius 26, clipped, white@60% border, shadow-lg)
+          // Main Workout Card (Radius 26, clipped, adaptive border & shadow)
           RepaintBoundary(
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(FtGlassTheme.radiusHero),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.60),
+                  color: context.isDark
+                      ? Colors.white.withValues(alpha: 0.10)
+                      : Colors.white.withValues(alpha: 0.60),
                   width: 1.0,
                 ),
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
-                    color: Color(0x1F1D1735),
+                    color: context.isDark ? const Color(0x66000000) : const Color(0x1F1D1735),
                     blurRadius: 28,
-                    offset: Offset(0, 12),
+                    offset: const Offset(0, 12),
                   ),
                 ],
               ),
@@ -281,14 +283,18 @@ class _FeaturedWorkoutCardState extends ConsumerState<FeaturedWorkoutCard> {
           ),
         ),
 
-        // Footer Bar (glass1, white@75%, padding 14, top border white@60%)
+        // Footer Bar (adaptive glass background and border)
         Container(
           padding: const EdgeInsets.all(14.0),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.75),
+            color: context.isDark
+                ? (context.isOled ? const Color(0xD90E0E14) : const Color(0xD9161226))
+                : Colors.white.withValues(alpha: 0.75),
             border: Border(
               top: BorderSide(
-                color: Colors.white.withValues(alpha: 0.60),
+                color: context.isDark
+                    ? Colors.white.withValues(alpha: 0.10)
+                    : Colors.white.withValues(alpha: 0.60),
                 width: 1.0,
               ),
             ),
@@ -308,23 +314,23 @@ class _FeaturedWorkoutCardState extends ConsumerState<FeaturedWorkoutCard> {
                       color: FtGlassTheme.primary,
                     ),
                     const SizedBox(width: 4),
-                    const Text(
+                    Text(
                       '45 min',
                       style: TextStyle(
                         fontFamily: FtText.fontFamily,
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: FtGlassTheme.ink,
+                        color: context.ftInk,
                       ),
                     ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 6.0),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6.0),
                       child: Text(
                         '·',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: FtGlassTheme.muted,
+                          color: context.ftMuted,
                         ),
                       ),
                     ),
@@ -488,10 +494,14 @@ class _FeaturedWorkoutCardState extends ConsumerState<FeaturedWorkoutCard> {
         Container(
           padding: const EdgeInsets.all(14.0),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.75),
+            color: context.isDark
+                ? (context.isOled ? const Color(0xD90E0E14) : const Color(0xD9161226))
+                : Colors.white.withValues(alpha: 0.75),
             border: Border(
               top: BorderSide(
-                color: Colors.white.withValues(alpha: 0.60),
+                color: context.isDark
+                    ? Colors.white.withValues(alpha: 0.10)
+                    : Colors.white.withValues(alpha: 0.60),
                 width: 1.0,
               ),
             ),
@@ -500,7 +510,7 @@ class _FeaturedWorkoutCardState extends ConsumerState<FeaturedWorkoutCard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Ready for your next cycle',
                   maxLines: 1,
@@ -509,7 +519,7 @@ class _FeaturedWorkoutCardState extends ConsumerState<FeaturedWorkoutCard> {
                     fontFamily: FtText.fontFamily,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: FtGlassTheme.ink,
+                    color: context.ftInk,
                   ),
                 ),
               ),

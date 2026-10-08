@@ -30,7 +30,6 @@ class _BottomNavShellState extends State<BottomNavShell> {
 
   void _goBranch(int index) {
     if (index == widget.navigationShell.currentIndex) return;
-    HapticFeedback.lightImpact();
     widget.navigationShell.goBranch(
       index,
       initialLocation: index == widget.navigationShell.currentIndex,

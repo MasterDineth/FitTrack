@@ -65,14 +65,14 @@ class DashboardGreeting extends ConsumerWidget {
                 // H1 Greeting
                 Text(
                   'Good $capitalizedGreeting,\n$firstName',
-                  style: FtText.h1,
+                  style: FtText.h1.copyWith(color: context.ftInk),
                 ),
                 const SizedBox(height: 4),
 
                 // Subtitle
                 Text(
                   'Ready for your $pushWord push?',
-                  style: FtText.sub14Muted,
+                  style: FtText.sub14Muted.copyWith(color: context.ftMuted),
                 ),
               ],
             ),
@@ -103,15 +103,15 @@ class DashboardGreeting extends ConsumerWidget {
               // Synced text (only if real sync timestamp exists)
               if (syncedAt != null) ...[
                 const SizedBox(height: 4),
-                const Padding(
-                  padding: EdgeInsets.only(right: 4.0),
+                Padding(
+                  padding: const EdgeInsets.only(right: 4.0),
                   child: Text(
                     'Synced just now',
                     style: TextStyle(
                       fontFamily: FtText.fontFamily,
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
-                      color: FtGlassTheme.muted,
+                      color: context.ftMuted,
                     ),
                   ),
                 ),

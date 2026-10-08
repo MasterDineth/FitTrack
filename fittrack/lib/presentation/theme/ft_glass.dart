@@ -45,12 +45,12 @@ class FtGlassTheme extends ThemeExtension<FtGlassTheme> {
   static const Color amberFill = Color(0xFFFEF3C7);
   static const Color amberBorder = Color(0xFFFCD34D);
 
-  // Glass Tiers
-  // glass1: white 55% / white 75% / 0 8 32 rgba(95,59,220,.08) / white 85%
+  // ── Light Mode Glass Tiers ────────────────────────────────────────────────
+  // glass1: white 72% / white 85% / 0 8 32 rgba(95,59,220,.08) / white 90%
   static const FtGlassSpec glass1 = FtGlassSpec(
-    fill: Color(0x8CFFFFFF), // 55%
-    border: Color(0xBFFFFFFF), // 75%
-    highlight: Color(0xD9FFFFFF), // 85%
+    fill: Color(0xB8FFFFFF), // 72%
+    border: Color(0xD9FFFFFF), // 85%
+    highlight: Color(0xE6FFFFFF), // 90%
     shadows: [
       BoxShadow(
         color: Color(0x145F3BDC), // rgba(95,59,220, 0.08)
@@ -60,23 +60,99 @@ class FtGlassTheme extends ThemeExtension<FtGlassTheme> {
     ],
   );
 
-  // glass2: white 65% / white 80% / none / white 85%
+  // glass2: white 80% / white 85% / none / white 90%
   static const FtGlassSpec glass2 = FtGlassSpec(
-    fill: Color(0xA6FFFFFF), // 65%
-    border: Color(0xCCFFFFFF), // 80%
-    highlight: Color(0xD9FFFFFF), // 85%
+    fill: Color(0xCCFFFFFF), // 80%
+    border: Color(0xD9FFFFFF), // 85%
+    highlight: Color(0xE6FFFFFF), // 90%
     shadows: [],
   );
 
-  // glassFloating: white 68% / white 85% / 0 16 36 rgba(95,59,220,.15) / white 90%, blur sigma 28
+  // glassFloating: white 78% / white 90% / 0 16 36 rgba(124,92,250,.12) / white 95%, blur sigma 24
   static const FtGlassSpec glassFloating = FtGlassSpec(
-    fill: Color(0xADFFFFFF), // 68%
-    border: Color(0xD9FFFFFF), // 85%
-    highlight: Color(0xE6FFFFFF), // 90%
+    fill: Color(0xC7FFFFFF), // 78%
+    border: Color(0xE6FFFFFF), // 90%
+    highlight: Color(0xF2FFFFFF), // 95%
     shadows: [
       BoxShadow(
-        color: Color(0x265F3BDC), // rgba(95,59,220, 0.15)
+        color: Color(0x1F7C5CFA), // rgba(124,92,250, 0.12)
         blurRadius: 36,
+        offset: Offset(0, 16),
+      ),
+    ],
+    blurSigma: 24.0,
+  );
+
+  // ── Slate Dark Mode Glass Tiers (#0C0A18 / #0B131F) ────────────────────────
+  // glass1Dark: rgba(22, 18, 38, 0.65) / border rgba(255,255,255,0.12) / shadow 0 12 36 rgba(0,0,0,0.5)
+  static const FtGlassSpec glass1Dark = FtGlassSpec(
+    fill: Color(0xA6161226), // rgba(22, 18, 38, 0.65)
+    border: Color(0x1FFFFFFF), // rgba(255, 255, 255, 0.12)
+    highlight: Color(0x24FFFFFF), // rgba(255, 255, 255, 0.14)
+    shadows: [
+      BoxShadow(
+        color: Color(0x80000000), // rgba(0, 0, 0, 0.50)
+        blurRadius: 36,
+        offset: Offset(0, 12),
+      ),
+    ],
+  );
+
+  // glass2Dark: rgba(28, 22, 48, 0.75) / border rgba(255,255,255,0.10)
+  static const FtGlassSpec glass2Dark = FtGlassSpec(
+    fill: Color(0xBF1C1630), // rgba(28, 22, 48, 0.75)
+    border: Color(0x1AFFFFFF), // rgba(255, 255, 255, 0.10)
+    highlight: Color(0x24FFFFFF),
+    shadows: [],
+  );
+
+  // glassFloatingDark: rgba(18, 14, 34, 0.76) / border rgba(255,255,255,0.14) / blur sigma 26
+  static const FtGlassSpec glassFloatingDark = FtGlassSpec(
+    fill: Color(0xC2120E22), // rgba(18, 14, 34, 0.76)
+    border: Color(0x24FFFFFF), // rgba(255, 255, 255, 0.14)
+    highlight: Color(0x29FFFFFF), // rgba(255, 255, 255, 0.16)
+    shadows: [
+      BoxShadow(
+        color: Color(0x99000000), // rgba(0, 0, 0, 0.60)
+        blurRadius: 40,
+        offset: Offset(0, 16),
+      ),
+    ],
+    blurSigma: 26.0,
+  );
+
+  // ── Pure AMOLED OLED Dark Mode Glass Tiers (#000000) ────────────────────────
+  // glass1Oled: rgba(14, 14, 20, 0.72) / border rgba(255,255,255,0.09) / shadow 0 8 32 rgba(0,0,0,0.55)
+  static const FtGlassSpec glass1Oled = FtGlassSpec(
+    fill: Color(0xB80E0E14), // rgba(14, 14, 20, 0.72)
+    border: Color(0x17FFFFFF), // rgba(255, 255, 255, 0.09)
+    highlight: Color(0x1AFFFFFF),
+    shadows: [
+      BoxShadow(
+        color: Color(0x8C000000), // rgba(0, 0, 0, 0.55)
+        blurRadius: 32,
+        offset: Offset(0, 8),
+      ),
+    ],
+  );
+
+  // glass2Oled: rgba(22, 22, 32, 0.65) / border rgba(255,255,255,0.07)
+  static const FtGlassSpec glass2Oled = FtGlassSpec(
+    fill: Color(0xA6161620), // rgba(22, 22, 32, 0.65)
+    border: Color(0x12FFFFFF), // rgba(255, 255, 255, 0.07)
+    highlight: Color(0x14FFFFFF),
+    shadows: [],
+  );
+
+  // glassFloatingOled: rgba(12, 12, 18, 0.82) / border rgba(255,255,255,0.12) / blur sigma 28
+  static const FtGlassSpec glassFloatingOled = FtGlassSpec(
+    fill: Color(0xD10C0C12), // rgba(12, 12, 18, 0.82)
+    border: Color(0x1FFFFFFF), // rgba(255, 255, 255, 0.12)
+    highlight: Color(0x26FFFFFF),
+    shadows: [
+      BoxShadow(
+        color: Color(0xCC000000), // rgba(0, 0, 0, 0.80)
+        blurRadius: 40,
         offset: Offset(0, 16),
       ),
     ],
@@ -93,15 +169,74 @@ class FtGlassTheme extends ThemeExtension<FtGlassTheme> {
 
   const FtGlassTheme();
 
-  static FtGlassSpec specFor(FtGlassTier tier) {
+  /// Resolves the glass specification for a given [tier] and optional [context].
+  /// When [context] is provided, dynamically adapts between Light, Slate Dark,
+  /// and Pure OLED Dark based on theme brightness and scaffold background.
+  static FtGlassSpec specFor(FtGlassTier tier, [BuildContext? context]) {
+    if (context == null) {
+      switch (tier) {
+        case FtGlassTier.glass1:
+          return glass1;
+        case FtGlassTier.glass2:
+          return glass2;
+        case FtGlassTier.glassFloating:
+          return glassFloating;
+      }
+    }
+
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final isOled = isDark &&
+        (theme.scaffoldBackgroundColor == Colors.black ||
+            theme.scaffoldBackgroundColor == const Color(0xFF000000));
+
+    if (!isDark) {
+      switch (tier) {
+        case FtGlassTier.glass1:
+          return glass1;
+        case FtGlassTier.glass2:
+          return glass2;
+        case FtGlassTier.glassFloating:
+          return glassFloating;
+      }
+    }
+
+    if (isOled) {
+      switch (tier) {
+        case FtGlassTier.glass1:
+          return glass1Oled;
+        case FtGlassTier.glass2:
+          return glass2Oled;
+        case FtGlassTier.glassFloating:
+          return glassFloatingOled;
+      }
+    }
+
+    // Default Dark: Slate Dark
     switch (tier) {
       case FtGlassTier.glass1:
-        return glass1;
+        return glass1Dark;
       case FtGlassTier.glass2:
-        return glass2;
+        return glass2Dark;
       case FtGlassTier.glassFloating:
-        return glassFloating;
+        return glassFloatingDark;
     }
+  }
+
+  /// Theme-adaptive primary ink color for titles and strong text.
+  static Color inkColor([BuildContext? context]) {
+    if (context != null && Theme.of(context).brightness == Brightness.dark) {
+      return Colors.white;
+    }
+    return ink;
+  }
+
+  /// Theme-adaptive muted text color for subtitles and captions.
+  static Color mutedColor([BuildContext? context]) {
+    if (context != null && Theme.of(context).brightness == Brightness.dark) {
+      return const Color(0xFF94A3B8);
+    }
+    return muted;
   }
 
   @override
@@ -109,6 +244,24 @@ class FtGlassTheme extends ThemeExtension<FtGlassTheme> {
 
   @override
   ThemeExtension<FtGlassTheme> lerp(ThemeExtension<FtGlassTheme>? other, double t) => this;
+}
+
+/// Convenience extension on [BuildContext] to access theme-adaptive tokens.
+extension FtThemeContext on BuildContext {
+  bool get isDark => Theme.of(this).brightness == Brightness.dark;
+
+  bool get isOled =>
+      isDark &&
+      (Theme.of(this).scaffoldBackgroundColor == Colors.black ||
+          Theme.of(this).scaffoldBackgroundColor == const Color(0xFF000000));
+
+  Color get ftInk => isDark ? Colors.white : FtGlassTheme.ink;
+
+  Color get ftMuted => isDark ? const Color(0xFF94A3B8) : FtGlassTheme.muted;
+
+  Color get ftSubtext => isDark ? const Color(0xFFCBD5E1) : FtGlassTheme.muted;
+
+  FtGlassSpec glassSpec(FtGlassTier tier) => FtGlassTheme.specFor(tier, this);
 }
 
 /// Scalable Typography Hierarchy for FitTrack (Plus Jakarta Sans).

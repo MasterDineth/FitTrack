@@ -48,7 +48,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = 128.0 + MediaQuery.of(context).padding.bottom;
+    // Dock height 58 + bottom margin 16 = 74.0; with WeeklyStreakLogSection bottom 16,
+    // a padding of 64.0 + bottom inset allows the last card to rest cleanly right above the floating dock.
+    final bottomPadding = 64.0 + MediaQuery.paddingOf(context).bottom;
 
     final sections = [
       const DashboardHeader(),

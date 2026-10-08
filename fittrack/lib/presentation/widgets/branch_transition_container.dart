@@ -31,7 +31,7 @@ class _BranchTransitionContainerState extends State<BranchTransitionContainer>
     _activeBranchIndex = widget.currentIndex;
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 220),
+      duration: const Duration(milliseconds: 180),
     );
   }
 
@@ -110,9 +110,9 @@ class _BranchTransitionContainerState extends State<BranchTransitionContainer>
           animation: _controller,
           builder: (context, child) {
             if (isCurrent) {
-              // Incoming: 220ms fade in + 12px slide in direction of travel
+              // Incoming: 180ms fade in + 10px slide in direction of travel
               final fadeValue = _controller.value.clamp(0.0, 1.0);
-              final slideValue = (1.0 - _controller.value) * 12.0 * _direction;
+              final slideValue = (1.0 - _controller.value) * 10.0 * _direction;
               return Transform.translate(
                 offset: Offset(slideValue, 0),
                 child: Opacity(
@@ -121,13 +121,13 @@ class _BranchTransitionContainerState extends State<BranchTransitionContainer>
                 ),
               );
             } else {
-              // Outgoing: fades out in first 120ms (0 to 120/220 = 0.545)
-              final progress = (_controller.value / (120.0 / 220.0)).clamp(0.0, 1.0);
+              // Outgoing: fades out in first 100ms
+              final progress = (_controller.value / (100.0 / 180.0)).clamp(0.0, 1.0);
               if (progress >= 1.0) {
                 return const SizedBox.shrink();
               }
               final fadeValue = 1.0 - progress;
-              final slideValue = progress * -12.0 * _direction;
+              final slideValue = progress * -10.0 * _direction;
               return Transform.translate(
                 offset: Offset(slideValue, 0),
                 child: Opacity(
@@ -137,7 +137,9 @@ class _BranchTransitionContainerState extends State<BranchTransitionContainer>
               );
             }
           },
-          child: widget.children[index],
+          child: RepaintBoundary(
+            child: widget.children[index],
+          ),
         );
       }),
     );

@@ -38,14 +38,14 @@ class DashboardHeader extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              const Text(
+              Text(
                 'FitTrack',
                 style: TextStyle(
                   fontFamily: FtText.fontFamily,
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.55, // 22 * -0.025em
-                  color: FtGlassTheme.ink,
+                  color: context.ftInk,
                 ),
               ),
             ],
@@ -67,7 +67,7 @@ class DashboardHeader extends ConsumerWidget {
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      const GlassSurface(
+                      GlassSurface(
                         tier: FtGlassTier.glass2,
                         radius: 20,
                         width: 40,
@@ -77,7 +77,7 @@ class DashboardHeader extends ConsumerWidget {
                         child: Icon(
                           Icons.notifications_outlined,
                           size: 20,
-                          color: FtGlassTheme.ink,
+                          color: context.ftInk,
                         ),
                       ),
                       if (unreadCount > 0)

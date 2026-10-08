@@ -31,7 +31,7 @@ class GlassSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final spec = FtGlassTheme.specFor(tier);
+    final spec = FtGlassTheme.specFor(tier, context);
     final effectiveRadius = radius ?? FtGlassTheme.radiusCards;
     final borderRadius = BorderRadius.circular(effectiveRadius);
 

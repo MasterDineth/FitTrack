@@ -29,7 +29,7 @@ class HabitsRecoverySection extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Habits & Recovery',
                     maxLines: 1,
@@ -38,7 +38,7 @@ class HabitsRecoverySection extends ConsumerWidget {
                       fontFamily: FtText.fontFamily,
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: FtGlassTheme.ink,
+                      color: context.ftInk,
                     ),
                   ),
                 ),
@@ -112,26 +112,38 @@ class _HabitItemRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDone = habit.isCompleted;
     final isPending = !isDone && habit.status == HabitChipStatus.pending;
+    final isDark = context.isDark;
 
-    // Emphasised pending row: white 75% fill, primary@25% border, small shadow
-    // Regular row: glass2 (white 65% fill, white 80% border)
+    // Emphasised pending row vs regular row (adaptive light/dark/OLED)
+    final Color rowBg;
+    final Color rowBorder;
+    if (isPending) {
+      rowBg = isDark
+          ? const Color(0xB31A1A28)
+          : Colors.white.withValues(alpha: 0.75);
+      rowBorder = FtGlassTheme.primary.withValues(alpha: isDark ? 0.35 : 0.25);
+    } else {
+      rowBg = isDark
+          ? (context.isOled ? const Color(0xA6161620) : const Color(0xA6181426))
+          : Colors.white.withValues(alpha: 0.65);
+      rowBorder = isDark
+          ? Colors.white.withValues(alpha: 0.10)
+          : Colors.white.withValues(alpha: 0.80);
+    }
+
     final decoration = BoxDecoration(
-      color: isPending
-          ? Colors.white.withValues(alpha: 0.75)
-          : Colors.white.withValues(alpha: 0.65),
+      color: rowBg,
       borderRadius: BorderRadius.circular(FtGlassTheme.radiusTiles),
       border: Border.all(
-        color: isPending
-            ? FtGlassTheme.primary.withValues(alpha: 0.25)
-            : Colors.white.withValues(alpha: 0.80),
+        color: rowBorder,
         width: 1.0,
       ),
       boxShadow: isPending
-          ? const [
+          ? [
               BoxShadow(
-                color: Color(0x0F5F3BDC),
+                color: isDark ? const Color(0x335F3BDC) : const Color(0x0F5F3BDC),
                 blurRadius: 10,
-                offset: Offset(0, 4),
+                offset: const Offset(0, 4),
               ),
             ]
           : null,
@@ -165,11 +177,11 @@ class _HabitItemRow extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     habit.subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: FtText.fontFamily,
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
-                      color: FtGlassTheme.muted,
+                      color: context.ftMuted,
                     ),
                   ),
                 ],
@@ -208,7 +220,9 @@ class _AnimatedHabitCheckbox extends StatelessWidget {
               : Border.all(
                   color: isPending
                       ? FtGlassTheme.primary
-                      : FtGlassTheme.outlineVariant,
+                      : (context.isDark
+                          ? Colors.white.withValues(alpha: 0.25)
+                          : FtGlassTheme.outlineVariant),
                   width: 2.0,
                 ),
         ),
@@ -251,6 +265,7 @@ class _StrikethroughText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ink = context.ftInk;
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(
         begin: isStrikethrough ? 1.0 : 0.0,
@@ -261,17 +276,17 @@ class _StrikethroughText extends StatelessWidget {
       builder: (context, progress, child) {
         return CustomPaint(
           foregroundPainter: progress > 0
-              ? _StrikethroughPainter(progress: progress, color: FtGlassTheme.ink)
+              ? _StrikethroughPainter(progress: progress, color: ink)
               : null,
           child: Opacity(
             opacity: 1.0 - (progress * 0.3), // Opacity .7 when done
             child: Text(
               text,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: FtText.fontFamily,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: FtGlassTheme.ink,
+                color: ink,
               ),
             ),
           ),
@@ -336,9 +351,13 @@ class _AnimatedTrailingChip extends StatelessWidget {
         ),
       HabitChipStatus.tonight => (
           'Tonight',
-          FtGlassTheme.muted,
-          Colors.white.withValues(alpha: 0.60),
-          Colors.white.withValues(alpha: 0.80),
+          context.ftMuted,
+          context.isDark
+              ? Colors.white.withValues(alpha: 0.06)
+              : Colors.white.withValues(alpha: 0.60),
+          context.isDark
+              ? Colors.white.withValues(alpha: 0.10)
+              : Colors.white.withValues(alpha: 0.80),
         ),
     };
 

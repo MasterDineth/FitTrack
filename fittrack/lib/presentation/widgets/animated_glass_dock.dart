@@ -4,6 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/ft_glass.dart';
 
+/// Floating Bottom Navigation Bar rebuilt exactly according to the Google Stitch
+/// "FitTrack Bottom Navigation Showcase - Light & Dark" design specification.
+///
+/// Features:
+/// - Single [BackdropFilter] wrapped in [RepaintBoundary] (sigma 24 in light, 26 in dark, 28 in OLED).
+/// - Exact Stitch dock geometry: 58px height, 353px max-width, floating 16px above navigation bar.
+/// - Borderless luminous active tab pill (light: bg-violet-100/90, dark/OLED: bg-violet-500/20).
+/// - Inactive tabs in minimal icon-only outlined style with 48x48 tap targets.
+/// - Crisp modern haptic tap feedback ([HapticFeedback.lightImpact]).
+/// - Smooth 200ms kinetic spring expansion/collapse transitions without jank or layout lag.
 class AnimatedGlassDock extends StatefulWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -18,14 +28,7 @@ class AnimatedGlassDock extends StatefulWidget {
   State<AnimatedGlassDock> createState() => _AnimatedGlassDockState();
 }
 
-class _AnimatedGlassDockState extends State<AnimatedGlassDock>
-    with SingleTickerProviderStateMixin {
-  late int _activeTabIndex;
-  int _previousTabIndex = 0;
-  late final AnimationController _moveController;
-  late final Animation<double> _moveCurve;
-
-  // Press down state per tab
+class _AnimatedGlassDockState extends State<AnimatedGlassDock> {
   int? _pressedTabIndex;
 
   static const List<_DockTabItem> _tabs = [
@@ -51,78 +54,9 @@ class _AnimatedGlassDockState extends State<AnimatedGlassDock>
     ),
   ];
 
-  late final List<double> _measuredLabelWidths;
-  late final List<double> _activeTabWidths;
-
-  @override
-  void initState() {
-    super.initState();
-    _activeTabIndex = widget.currentIndex;
-    _previousTabIndex = widget.currentIndex;
-
-    _moveController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 320),
-    );
-    _moveCurve = CurvedAnimation(
-      parent: _moveController,
-      curve: Curves.easeOutCubic,
-    );
-
-    _measuredLabelWidths = _measureLabelWidths();
-    // active tab = px 16 py 8 -> left padding 16 + icon 20 + gap 8 + label + right padding 16 = 60 + label
-    _activeTabWidths = _measuredLabelWidths.map((w) => 60.0 + w).toList();
-  }
-
-  List<double> _measureLabelWidths() {
-    return _tabs.map((tab) {
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: tab.label,
-          style: const TextStyle(
-            fontFamily: FtText.fontFamily,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-        maxLines: 1,
-      )..layout();
-      return textPainter.width;
-    }).toList();
-  }
-
-  @override
-  void didUpdateWidget(covariant AnimatedGlassDock oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.currentIndex != oldWidget.currentIndex) {
-      final disableMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-      _previousTabIndex = oldWidget.currentIndex;
-      _activeTabIndex = widget.currentIndex;
-
-      if (disableMotion) {
-        _previousTabIndex = _activeTabIndex;
-      } else {
-        _moveController.forward(from: 0.0).then((_) {
-          if (mounted) {
-            setState(() {
-              _previousTabIndex = _activeTabIndex;
-            });
-          }
-        });
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _moveController.dispose();
-    super.dispose();
-  }
-
   void _handleTap(int index) {
     if (index == widget.currentIndex) return;
-    HapticFeedback.selectionClick();
+    HapticFeedback.lightImpact();
     widget.onTap(index);
   }
 
@@ -130,38 +64,85 @@ class _AnimatedGlassDockState extends State<AnimatedGlassDock>
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final dockWidth = math.min(screenWidth - 40, 353.0);
+    final dockWidth = math.min(screenWidth - 32, 353.0);
+
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final isOled = isDark &&
+        (theme.scaffoldBackgroundColor == Colors.black ||
+            theme.scaffoldBackgroundColor == const Color(0xFF000000));
+
+    // Resolved floating dock glass spec matching Stitch showcase
+    final double blurSigma = isOled ? 28.0 : (isDark ? 26.0 : 24.0);
+    final Color dockFill = isOled
+        ? const Color(0xD10C0C12) // rgba(12, 12, 18, 0.82)
+        : (isDark
+            ? const Color(0xC2120E22) // rgba(18, 14, 34, 0.76)
+            : const Color(0xC7FFFFFF)); // rgba(255, 255, 255, 0.78)
+    final Color dockBorder = isOled
+        ? const Color(0x1FFFFFFF) // 1px solid rgba(255, 255, 255, 0.12)
+        : (isDark
+            ? const Color(0x24FFFFFF) // 1px solid rgba(255, 255, 255, 0.14)
+            : const Color(0xE6FFFFFF)); // 1px solid rgba(255, 255, 255, 0.90)
+    final List<BoxShadow> dockShadow = isOled
+        ? const [
+            BoxShadow(
+              color: Color(0xCC000000), // 0 16px 40px rgba(0, 0, 0, 0.80)
+              blurRadius: 40,
+              offset: Offset(0, 16),
+            ),
+          ]
+        : (isDark
+            ? const [
+                BoxShadow(
+                  color: Color(0x99000000), // 0 16px 40px rgba(0, 0, 0, 0.60)
+                  blurRadius: 40,
+                  offset: Offset(0, 16),
+                ),
+              ]
+            : const [
+                BoxShadow(
+                  color: Color(0x1F7C5CFA), // 0 16px 36px rgba(124, 92, 250, 0.12)
+                  blurRadius: 36,
+                  offset: Offset(0, 16),
+                ),
+              ]);
+
+    final Color rimHighlight = isOled
+        ? const Color(0x26FFFFFF)
+        : (isDark ? const Color(0x29FFFFFF) : const Color(0xF2FFFFFF));
 
     return Align(
       alignment: Alignment.bottomCenter,
       child: Padding(
-        padding: EdgeInsets.only(bottom: 24.0 + bottomInset),
+        padding: EdgeInsets.only(bottom: 16.0 + bottomInset),
         child: RepaintBoundary(
           child: SizedBox(
             width: dockWidth,
-            height: 64,
+            height: 58.0,
             child: Stack(
+              clipBehavior: Clip.none,
               children: [
-                // 1. Floating Glass Pill (The ONLY BackdropFilter on this screen, sigma 28)
+                // 1. Frosted Glass Floating Dock Shell (The ONLY BackdropFilter on this screen)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
                   child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 28.0, sigmaY: 28.0),
+                    filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: FtGlassTheme.glassFloating.fill, // white 68%
+                        color: dockFill,
                         borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
                         border: Border.all(
-                          color: FtGlassTheme.glassFloating.border, // white 85%
+                          color: dockBorder,
                           width: 1.0,
                         ),
-                        boxShadow: FtGlassTheme.glassFloating.shadows,
+                        boxShadow: dockShadow,
                       ),
                     ),
                   ),
                 ),
 
-                // Inset top highlight line
+                // Inset specular rim highlight at the top edge
                 Positioned(
                   top: 0,
                   left: 20,
@@ -171,23 +152,36 @@ class _AnimatedGlassDockState extends State<AnimatedGlassDock>
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          FtGlassTheme.glassFloating.highlight.withValues(alpha: 0.15),
-                          FtGlassTheme.glassFloating.highlight,
-                          FtGlassTheme.glassFloating.highlight.withValues(alpha: 0.15),
+                          rimHighlight.withValues(alpha: 0.15),
+                          rimHighlight,
+                          rimHighlight.withValues(alpha: 0.15),
                         ],
                       ),
                     ),
                   ),
                 ),
 
-                // 2. Sliding Highlight Pill & Tab Items
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final availableWidth = constraints.maxWidth;
-                      return _buildInteractiveTabRow(availableWidth);
-                    },
+                // 2. Interactive Navigation Tabs Row
+                Positioned.fill(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: List.generate(_tabs.length, (index) {
+                        final tab = _tabs[index];
+                        final isActive = index == widget.currentIndex;
+                        final isPressed = _pressedTabIndex == index;
+
+                        return _buildDockTab(
+                          index: index,
+                          tab: tab,
+                          isActive: isActive,
+                          isPressed: isPressed,
+                          isDark: isDark,
+                        );
+                      }),
+                    ),
                   ),
                 ),
               ],
@@ -198,134 +192,59 @@ class _AnimatedGlassDockState extends State<AnimatedGlassDock>
     );
   }
 
-  Widget _buildInteractiveTabRow(double availableWidth) {
-    // Calculate layout positions for each tab
-    // When tab i is active, tabs are arranged:
-    // Tab widths: active is _activeTabWidths[i], others are 48.
-    // Remaining space is distributed equally among gaps.
-
-    return AnimatedBuilder(
-      animation: _moveCurve,
-      builder: (context, _) {
-        final progress = _moveController.value;
-
-        // Interpolate active positions between _previousTabIndex and _activeTabIndex
-        final oldPositions = _calculateTabPositions(
-          activeIdx: _previousTabIndex,
-          availableWidth: availableWidth,
-        );
-        final newPositions = _calculateTabPositions(
-          activeIdx: _activeTabIndex,
-          availableWidth: availableWidth,
-        );
-
-        // Highlight pill geometry
-        final startLeft = oldPositions[_previousTabIndex].left;
-        final startWidth = oldPositions[_previousTabIndex].width;
-        final targetLeft = newPositions[_activeTabIndex].left;
-        final targetWidth = newPositions[_activeTabIndex].width;
-
-        final currentLeft = uiLerp(startLeft, targetLeft, progress);
-        final currentWidth = uiLerp(startWidth, targetWidth, progress);
-
-        // Liquid stretch: scaleX peaks at 1.06 mid-move
-        final liquidScaleX = 1.0 + 0.06 * math.sin(progress * math.pi);
-
-        return Stack(
-          alignment: Alignment.centerLeft,
-          children: [
-            // Sliding Highlight Pill
-            Positioned(
-              left: currentLeft,
-              width: currentWidth,
-              top: 12,
-              bottom: 12,
-              child: Transform.scale(
-                scaleX: liquidScaleX,
-                alignment: Alignment.center,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: FtGlassTheme.glass2.fill, // white 65%
-                    borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
-                    border: Border.all(
-                      color: FtGlassTheme.primary.withValues(alpha: 0.25),
-                      width: 1.0,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            // Tab Items Row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(_tabs.length, (index) {
-                final isCurrent = index == _activeTabIndex;
-                final isPrev = index == _previousTabIndex;
-
-                // Tab width interpolation
-                final oldW = oldPositions[index].width;
-                final newW = newPositions[index].width;
-                final width = uiLerp(oldW, newW, progress);
-
-                // Reveal progress: active fades in over last 60% (0.4 to 1.0)
-                // outgoing fades out over first 40% (0.0 to 0.4)
-                double labelProgress;
-                if (_previousTabIndex == _activeTabIndex) {
-                  labelProgress = isCurrent ? 1.0 : 0.0;
-                } else if (isCurrent) {
-                  labelProgress = ((progress - 0.4) / 0.6).clamp(0.0, 1.0);
-                } else if (isPrev) {
-                  labelProgress = (1.0 - (progress / 0.4)).clamp(0.0, 1.0);
-                } else {
-                  labelProgress = 0.0;
-                }
-
-                return _buildTabItem(
-                  index: index,
-                  width: width,
-                  labelProgress: labelProgress,
-                  isActive: isCurrent,
-                );
-              }),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  List<_TabSlot> _calculateTabPositions({
-    required int activeIdx,
-    required double availableWidth,
-  }) {
-    final widths = List.generate(_tabs.length, (i) {
-      return i == activeIdx ? _activeTabWidths[i] : 48.0;
-    });
-
-    final totalContentWidth = widths.reduce((a, b) => a + b);
-    final remainingSpace = availableWidth - totalContentWidth;
-    final gap = remainingSpace / (_tabs.length - 1);
-
-    final positions = <_TabSlot>[];
-    double currentX = 0;
-
-    for (int i = 0; i < _tabs.length; i++) {
-      positions.add(_TabSlot(left: currentX, width: widths[i]));
-      currentX += widths[i] + gap;
-    }
-
-    return positions;
-  }
-
-  Widget _buildTabItem({
+  Widget _buildDockTab({
     required int index,
-    required double width,
-    required double labelProgress,
+    required _DockTabItem tab,
     required bool isActive,
+    required bool isPressed,
+    required bool isDark,
   }) {
-    final tab = _tabs[index];
-    final isPressed = _pressedTabIndex == index;
+    // Colors matching Stitch Showcase:
+    // Light Active: bg-violet-100/90 (#EDE9FE with 90% opacity), text #7C5CFA, icon #7C5CFA
+    // Dark Active: bg-violet-500/20 (rgba(139, 92, 246, 0.20)), text #C4B5FD, icon #8B6CFD
+    // Inactive: slate-400 (#94A3B8 in dark, #64748B in light)
+    final Color activePillBg = isDark
+        ? const Color(0x338B5CF6) // bg-violet-500/20
+        : const Color(0xE6EDE9FE); // bg-violet-100/90
+    final Color activeTextColor = isDark
+        ? const Color(0xFFC4B5FD)
+        : const Color(0xFF7C5CFA);
+    final Color activeIconColor = isDark
+        ? const Color(0xFF8B6CFD)
+        : const Color(0xFF7C5CFA);
+    final Color inactiveColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
+
+    final activeShadow = isDark
+        ? const [
+            BoxShadow(
+              color: Color(0x268B5CF6),
+              blurRadius: 10,
+              offset: Offset(0, 2),
+            ),
+          ]
+        : const [
+            BoxShadow(
+              color: Color(0x147C5CFA),
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ];
+
+    Widget iconWidget = Icon(
+      isActive ? tab.filledIcon : tab.outlineIcon,
+      size: isActive ? 20.0 : 22.0,
+      color: isActive ? activeIconColor : inactiveColor,
+    );
+
+    // Workouts (index 1) uses subtle angle matching barbell Stitch icon
+    if (index == 1) {
+      iconWidget = Transform.rotate(
+        angle: -math.pi / 4,
+        child: iconWidget,
+      );
+    }
 
     return Semantics(
       label: tab.label,
@@ -338,71 +257,47 @@ class _AnimatedGlassDockState extends State<AnimatedGlassDock>
         onTap: () => _handleTap(index),
         behavior: HitTestBehavior.opaque,
         child: AnimatedScale(
-          scale: isPressed ? 0.92 : 1.0,
-          duration: const Duration(milliseconds: 90),
-          curve: Curves.easeIn,
-          child: SizedBox(
-            width: width,
-            height: 48,
+          scale: isPressed ? 0.95 : 1.0,
+          duration: const Duration(milliseconds: 100),
+          curve: Curves.easeOut,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.fastOutSlowIn,
+            padding: isActive
+                ? const EdgeInsets.symmetric(horizontal: 14.0, vertical: 7.0)
+                : const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: isActive ? activePillBg : Colors.transparent,
+              borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
+              boxShadow: isActive ? activeShadow : null,
+            ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Icon crossfade outline -> filled (180ms), color muted -> primary
-              AnimatedCrossFade(
-                duration: const Duration(milliseconds: 180),
-                crossFadeState: isActive
-                    ? CrossFadeState.showSecond
-                    : CrossFadeState.showFirst,
-                firstChild: Icon(
-                  tab.outlineIcon,
-                  size: 20,
-                  color: FtGlassTheme.muted,
-                ),
-                secondChild: Icon(
-                  tab.filledIcon,
-                  size: 20,
-                  color: FtGlassTheme.primary,
-                ),
-              ),
-
-              // Expanding & revealing label
-              if (labelProgress > 0) ...[
-                ClipRect(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: labelProgress,
-                    child: Opacity(
-                      opacity: labelProgress,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const SizedBox(width: 8),
-                          Text(
-                            tab.label,
-                            maxLines: 1,
-                            style: const TextStyle(
-                              fontFamily: FtText.fontFamily,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: FtGlassTheme.primary,
-                            ),
-                          ),
-                        ],
-                      ),
+              children: [
+                iconWidget,
+                if (isActive) ...[
+                  const SizedBox(width: 6.0),
+                  Text(
+                    tab.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.clip,
+                    style: TextStyle(
+                      fontFamily: FtText.fontFamily,
+                      fontSize: 13.0,
+                      fontWeight: FontWeight.w700,
+                      color: activeTextColor,
+                      letterSpacing: -0.2,
                     ),
                   ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
-
-  double uiLerp(double a, double b, double t) => a + (b - a) * t;
+    );
+  }
 }
 
 class _DockTabItem {
@@ -415,11 +310,4 @@ class _DockTabItem {
     required this.outlineIcon,
     required this.filledIcon,
   });
-}
-
-class _TabSlot {
-  final double left;
-  final double width;
-
-  const _TabSlot({required this.left, required this.width});
 }

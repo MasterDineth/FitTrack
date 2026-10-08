@@ -30,7 +30,7 @@ class WeeklyStreakLogSection extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Weekly Streak & Log',
                     maxLines: 1,
@@ -39,7 +39,7 @@ class WeeklyStreakLogSection extends ConsumerWidget {
                       fontFamily: FtText.fontFamily,
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: FtGlassTheme.ink,
+                      color: context.ftInk,
                     ),
                   ),
                 ),
@@ -60,14 +60,14 @@ class WeeklyStreakLogSection extends ConsumerWidget {
             ),
           ),
 
-          // Container: glass1, radius 20, with primary@10% dividers
+          // Container: glass1, radius 20, with adaptive dividers
           GlassSurface(
             tier: FtGlassTier.glass1,
             radius: FtGlassTheme.radiusCards,
             shadow: true,
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: _buildSessionRows(sessions),
+              children: _buildSessionRows(sessions, context),
             ),
           ),
         ],
@@ -75,7 +75,7 @@ class WeeklyStreakLogSection extends ConsumerWidget {
     );
   }
 
-  List<Widget> _buildSessionRows(List<WorkoutSession> sessions) {
+  List<Widget> _buildSessionRows(List<WorkoutSession> sessions, BuildContext context) {
     // If sessions in database exist, map up to 3; otherwise show template sessions
     final rowsData = sessions.isNotEmpty
         ? sessions.take(3).map((s) {
@@ -122,14 +122,18 @@ class WeeklyStreakLogSection extends ConsumerWidget {
           ];
 
     final List<Widget> widgets = [];
+    final dividerColor = context.isDark
+        ? Colors.white.withValues(alpha: 0.10)
+        : FtGlassTheme.primary.withValues(alpha: 0.10);
+
     for (int i = 0; i < rowsData.length; i++) {
-      widgets.add(_buildRowWidget(rowsData[i]));
+      widgets.add(_buildRowWidget(rowsData[i], context));
       if (i < rowsData.length - 1) {
         widgets.add(
           Divider(
             height: 1,
             thickness: 1,
-            color: FtGlassTheme.primary.withValues(alpha: 0.10),
+            color: dividerColor,
           ),
         );
       }
@@ -138,7 +142,7 @@ class WeeklyStreakLogSection extends ConsumerWidget {
     return widgets;
   }
 
-  Widget _buildRowWidget(_SessionRowModel model) {
+  Widget _buildRowWidget(_SessionRowModel model, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(14.0),
       child: Row(
@@ -173,11 +177,11 @@ class WeeklyStreakLogSection extends ConsumerWidget {
                       child: Text(
                         model.title,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: FtText.fontFamily,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          color: FtGlassTheme.ink,
+                          color: context.ftInk,
                         ),
                       ),
                     ),
@@ -209,11 +213,11 @@ class WeeklyStreakLogSection extends ConsumerWidget {
                 const SizedBox(height: 2),
                 Text(
                   model.subtitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: FtText.fontFamily,
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    color: FtGlassTheme.muted,
+                    color: context.ftMuted,
                   ),
                 ),
               ],
@@ -227,11 +231,11 @@ class WeeklyStreakLogSection extends ConsumerWidget {
             children: [
               Text(
                 model.kcalText,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: FtText.fontFamily,
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: FtGlassTheme.ink,
+                  color: context.ftInk,
                 ),
               ),
               const SizedBox(height: 2),

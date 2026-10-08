@@ -279,5 +279,93 @@ void main() {
 
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('DashboardScreen adapts cleanly to Slate Dark Mode and Pure OLED Dark Mode', (tester) async {
+      tester.view.physicalSize = const Size(393, 852);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      // 1. Slate Dark Mode
+      await tester.pumpWidget(
+        MediaQuery(
+          data: const MediaQueryData(disableAnimations: true),
+          child: ProviderScope(
+            overrides: [
+              habitsRepositoryProvider.overrideWithValue(_TestHabitsRepository()),
+            ],
+            child: MaterialApp(
+              theme: ThemeData(
+                brightness: Brightness.dark,
+                scaffoldBackgroundColor: const Color(0xFF0C0A18),
+              ),
+              home: const DashboardScreen(),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('FitTrack'), findsOneWidget);
+      expect(find.text('Bio-Metrics Balance'), findsOneWidget);
+
+      // 2. Pure OLED Dark Mode
+      await tester.pumpWidget(
+        MediaQuery(
+          data: const MediaQueryData(disableAnimations: true),
+          child: ProviderScope(
+            overrides: [
+              habitsRepositoryProvider.overrideWithValue(_TestHabitsRepository()),
+            ],
+            child: MaterialApp(
+              theme: ThemeData(
+                brightness: Brightness.dark,
+                scaffoldBackgroundColor: const Color(0xFF000000),
+              ),
+              home: const DashboardScreen(),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('FitTrack'), findsOneWidget);
+      expect(find.text('Bio-Metrics Balance'), findsOneWidget);
+    });
+
+    testWidgets('AnimatedGlassDock renders luminous pill and handles dark theme styling', (tester) async {
+      int activeIndex = 0;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.dark(),
+          home: Scaffold(
+            bottomNavigationBar: StatefulBuilder(
+              builder: (context, setState) {
+                return AnimatedGlassDock(
+                  currentIndex: activeIndex,
+                  onTap: (index) {
+                    setState(() => activeIndex = index);
+                  },
+                );
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+
+      // Active tab Dashboard is rendered
+      expect(find.text('Dashboard'), findsOneWidget);
+
+      // Switch to Workouts (1)
+      await tester.tap(find.byIcon(Icons.fitness_center_outlined));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(activeIndex, 1);
+    });
   });
 }

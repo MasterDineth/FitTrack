@@ -71,10 +71,10 @@ class _HydrationBannerState extends State<HydrationBanner> with SingleTickerProv
                 Expanded(
                   child: RichText(
                     text: TextSpan(
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: FtText.fontFamily,
                         fontSize: 12,
-                        color: FtGlassTheme.ink,
+                        color: context.ftInk,
                       ),
                       children: [
                         const TextSpan(text: 'Hydration check: 1.8L / 2.5L logged · '),
@@ -100,12 +100,12 @@ class _HydrationBannerState extends State<HydrationBanner> with SingleTickerProv
                 ),
                 GestureDetector(
                   onTap: dismiss,
-                  child: const Padding(
-                    padding: EdgeInsets.only(left: 8.0),
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
                     child: Icon(
                       Icons.close,
                       size: 14,
-                      color: FtGlassTheme.muted,
+                      color: context.ftMuted,
                     ),
                   ),
                 ),

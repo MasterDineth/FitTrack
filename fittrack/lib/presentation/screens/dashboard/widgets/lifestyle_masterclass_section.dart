@@ -26,7 +26,7 @@ class LifestyleMasterclassSection extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Lifestyle & Masterclass',
                     maxLines: 1,
@@ -35,7 +35,7 @@ class LifestyleMasterclassSection extends ConsumerWidget {
                       fontFamily: FtText.fontFamily,
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: FtGlassTheme.ink,
+                      color: context.ftInk,
                     ),
                   ),
                 ),
@@ -97,12 +97,14 @@ class _LifestyleCardState extends State<_LifestyleCard> {
   Widget build(BuildContext context) {
     final article = widget.article;
     final isPrimaryCategory = article.category.toLowerCase() == 'coaching';
-    final tagTextColor = isPrimaryCategory ? FtGlassTheme.primary : FtGlassTheme.ink;
+    final tagTextColor = isPrimaryCategory ? FtGlassTheme.primary : context.ftInk;
 
     return GlassSurface(
       tier: FtGlassTier.glass1,
       radius: FtGlassTheme.radiusCards,
-      borderTint: Colors.white.withValues(alpha: 0.80),
+      borderTint: context.isDark
+          ? Colors.white.withValues(alpha: 0.10)
+          : Colors.white.withValues(alpha: 0.80),
       shadow: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -142,10 +144,14 @@ class _LifestyleCardState extends State<_LifestyleCard> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.70),
+                        color: context.isDark
+                            ? Colors.black.withValues(alpha: 0.60)
+                            : Colors.white.withValues(alpha: 0.70),
                         borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.60),
+                          color: context.isDark
+                              ? Colors.white.withValues(alpha: 0.20)
+                              : Colors.white.withValues(alpha: 0.60),
                           width: 1.0,
                         ),
                       ),
@@ -204,12 +210,12 @@ class _LifestyleCardState extends State<_LifestyleCard> {
                   article.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: FtText.fontFamily,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     height: 1.25,
-                    color: FtGlassTheme.ink,
+                    color: context.ftInk,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -219,12 +225,12 @@ class _LifestyleCardState extends State<_LifestyleCard> {
                   article.description,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: FtText.fontFamily,
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
                     height: 1.3,
-                    color: FtGlassTheme.muted,
+                    color: context.ftMuted,
                   ),
                 ),
 
