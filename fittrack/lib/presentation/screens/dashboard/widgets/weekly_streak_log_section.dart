@@ -6,6 +6,7 @@ import '../../../theme/ft_glass.dart';
 import '../../../widgets/glass_surface.dart';
 import '../../../providers/repository_providers.dart';
 import '../../../providers/schedules_provider.dart';
+import '../../../providers/workout_history_provider.dart';
 import '../../../providers/workout_logic_providers.dart';
 
 class WeeklyStreakLogSection extends ConsumerWidget {
@@ -13,11 +14,23 @@ class WeeklyStreakLogSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final historyState = ref.watch(workoutHistoryProvider);
     final sessionRepo = ref.watch(workoutSessionRepositoryProvider);
     final sessionsAsync = ref.watch(recentWorkoutSessionsProvider(sessionRepo));
     final schedulesState = ref.watch(schedulesNotifierProvider);
     final schedulesMap = {for (final s in schedulesState.allSchedules) s.id: s.title};
-    final sessions = sessionsAsync.value ?? const [];
+
+    // Combine workout history data from both historyState and recent database sessions
+    final recentSessions = sessionsAsync.value ?? const [];
+    final allSessionsMap = <String, WorkoutSession>{};
+    for (final s in recentSessions) {
+      allSessionsMap[s.id] = s;
+    }
+    for (final s in historyState.allSessions) {
+      allSessionsMap[s.id] = s;
+    }
+    final sessions = allSessionsMap.values.toList()
+      ..sort((a, b) => b.startTime.compareTo(a.startTime));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -79,7 +92,7 @@ class WeeklyStreakLogSection extends ConsumerWidget {
     Map<String, String> schedulesMap,
     BuildContext context,
   ) {
-    // If sessions in database exist, map up to 3; otherwise show 3 template sessions
+    // If sessions exist, map up to 3; otherwise show 3 template sessions
     final rowsData = sessions.isNotEmpty
         ? sessions.take(3).map((s) {
             final durationMins = ((s.durationSeconds ?? 2880) / 60).round();
@@ -115,6 +128,7 @@ class WeeklyStreakLogSection extends ConsumerWidget {
             }
 
             return _SessionRowModel(
+              sessionId: s.id,
               icon: icon,
               iconColor: iconColor,
               title: resolvedTitle,
@@ -128,6 +142,7 @@ class WeeklyStreakLogSection extends ConsumerWidget {
           }).toList()
         : [
             _SessionRowModel(
+              sessionId: 'mock_1_sch1',
               icon: Icons.fitness_center_rounded,
               iconColor: context.ftPrimary,
               title: 'Day 1: Chest, Shoulders & Triceps',
@@ -139,6 +154,7 @@ class WeeklyStreakLogSection extends ConsumerWidget {
               statusLabelColor: FtGlassTheme.teal,
             ),
             _SessionRowModel(
+              sessionId: 'mock_3_sch2',
               icon: Icons.bolt_rounded,
               iconColor: FtGlassTheme.teal,
               title: 'Day 2: Back & Biceps',
@@ -150,6 +166,7 @@ class WeeklyStreakLogSection extends ConsumerWidget {
               statusLabelColor: context.ftPrimary,
             ),
             _SessionRowModel(
+              sessionId: 'mock_5_sch3',
               icon: Icons.directions_run_rounded,
               iconColor: FtGlassTheme.orange,
               title: 'Day 3: Legs & Posterior Chain',
@@ -168,7 +185,12 @@ class WeeklyStreakLogSection extends ConsumerWidget {
         : context.ftPrimary.withValues(alpha: 0.10);
 
     for (int i = 0; i < rowsData.length; i++) {
-      widgets.add(_buildRowWidget(rowsData[i], context));
+      widgets.add(_buildRowWidget(
+        rowsData[i],
+        context,
+        isFirst: i == 0,
+        isLast: i == rowsData.length - 1,
+      ));
       if (i < rowsData.length - 1) {
         widgets.add(
           Divider(
@@ -183,121 +205,139 @@ class WeeklyStreakLogSection extends ConsumerWidget {
     return widgets;
   }
 
-  Widget _buildRowWidget(_SessionRowModel model, BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(14.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // 40x40 Icon Tile (radius 12, glass2)
-          GlassSurface(
-            tier: FtGlassTier.glass2,
-            radius: FtGlassTheme.radiusIconTiles,
-            width: 40,
-            height: 40,
-            shadow: false,
-            alignment: Alignment.center,
-            child: Icon(
-              model.icon,
-              size: 20,
-              color: model.iconColor,
-            ),
-          ),
-          const SizedBox(width: 12),
-
-          // Title + optional PR Chip + Subtitle
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        model.title,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontFamily: FtText.fontFamily,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: context.ftInk,
-                        ),
-                      ),
-                    ),
-                    if (model.hasPr) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: FtGlassTheme.amberFill,
-                          borderRadius: BorderRadius.circular(4.0),
-                          border: Border.all(
-                            color: FtGlassTheme.amberBorder,
-                            width: 1.0,
-                          ),
-                        ),
-                        child: Text(
-                          model.prText,
-                          style: const TextStyle(
-                            fontFamily: FtText.fontFamily,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800,
-                            color: FtGlassTheme.amberText,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  model.subtitle,
-                  style: TextStyle(
-                    fontFamily: FtText.fontFamily,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: context.ftMuted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Right: kcal and label
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisSize: MainAxisSize.min,
+  Widget _buildRowWidget(
+    _SessionRowModel model,
+    BuildContext context, {
+    required bool isFirst,
+    required bool isLast,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => context.push('/history/detail/${model.sessionId}'),
+        borderRadius: BorderRadius.vertical(
+          top: isFirst ? const Radius.circular(FtGlassTheme.radiusCards) : Radius.zero,
+          bottom: isLast ? const Radius.circular(FtGlassTheme.radiusCards) : Radius.zero,
+        ),
+        splashColor: context.ftPrimary.withValues(alpha: 0.12),
+        highlightColor: context.ftPrimary.withValues(alpha: 0.06),
+        child: Padding(
+          padding: const EdgeInsets.all(14.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                model.kcalText,
-                style: TextStyle(
-                  fontFamily: FtText.fontFamily,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: context.ftInk,
+              // 40x40 Icon Tile (radius 12, glass2)
+              GlassSurface(
+                tier: FtGlassTier.glass2,
+                radius: FtGlassTheme.radiusIconTiles,
+                width: 40,
+                height: 40,
+                shadow: false,
+                alignment: Alignment.center,
+                child: Icon(
+                  model.icon,
+                  size: 20,
+                  color: model.iconColor,
                 ),
               ),
-              const SizedBox(height: 2),
-              Text(
-                model.statusLabel,
-                style: TextStyle(
-                  fontFamily: FtText.fontFamily,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: model.statusLabelColor,
+              const SizedBox(width: 12),
+
+              // Title + optional PR Chip + Subtitle
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            model.title,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: FtText.fontFamily,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: context.ftInk,
+                            ),
+                          ),
+                        ),
+                        if (model.hasPr) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: FtGlassTheme.amberFill,
+                              borderRadius: BorderRadius.circular(4.0),
+                              border: Border.all(
+                                color: FtGlassTheme.amberBorder,
+                                width: 1.0,
+                              ),
+                            ),
+                            child: Text(
+                              model.prText,
+                              style: const TextStyle(
+                                fontFamily: FtText.fontFamily,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                                color: FtGlassTheme.amberText,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      model.subtitle,
+                      style: TextStyle(
+                        fontFamily: FtText.fontFamily,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: context.ftMuted,
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+
+              // Right: kcal and label
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    model.kcalText,
+                    style: TextStyle(
+                      fontFamily: FtText.fontFamily,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: context.ftInk,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    model.statusLabel,
+                    style: TextStyle(
+                      fontFamily: FtText.fontFamily,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: model.statusLabelColor,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
 class _SessionRowModel {
+  final String sessionId;
   final IconData icon;
   final Color iconColor;
   final String title;
@@ -309,6 +349,7 @@ class _SessionRowModel {
   final Color statusLabelColor;
 
   const _SessionRowModel({
+    required this.sessionId,
     required this.icon,
     required this.iconColor,
     required this.title,

@@ -66,7 +66,7 @@ class _AnimatedGlassDockState extends ConsumerState<AnimatedGlassDock> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final dockWidth = math.min(screenWidth - 32, 353.0);
+    final dockWidth = math.max(0.0, math.min(screenWidth - 32, 353.0));
 
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -77,15 +77,17 @@ class _AnimatedGlassDockState extends ConsumerState<AnimatedGlassDock> {
     final primary = theme.colorScheme.primary;
 
     bool enableTransparency = true;
+    double blurScale = 1.0;
     try {
       final themeSettings = ref.watch(themeNotifierProvider);
       enableTransparency = themeSettings.enableGlassTransparency;
+      blurScale = (themeSettings.blurIntensity / 16.0).clamp(0.2, 2.5);
     } catch (_) {}
 
     // Resolved floating dock glass spec matching Stitch showcase
     final double blurSigma = !enableTransparency
         ? 0.0
-        : (isOled ? 28.0 : (isDark ? 26.0 : 24.0));
+        : ((isOled ? 28.0 : (isDark ? 26.0 : 24.0)) * blurScale);
     final Color dockFill = !enableTransparency
         ? (isOled
             ? const Color(0xFF0C0C12)
@@ -130,6 +132,7 @@ class _AnimatedGlassDockState extends ConsumerState<AnimatedGlassDock> {
 
     return Align(
       alignment: Alignment.bottomCenter,
+      heightFactor: 1.0,
       child: Padding(
         padding: EdgeInsets.only(bottom: 16.0 + bottomInset),
         child: RepaintBoundary(

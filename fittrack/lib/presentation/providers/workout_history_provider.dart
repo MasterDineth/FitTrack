@@ -1,6 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/workout_session.dart';
 
+import 'repository_providers.dart';
+import 'workout_logic_providers.dart';
+
 part 'workout_history_provider.g.dart';
 
 // ── Filter enum ───────────────────────────────────────────────────────────────
@@ -148,6 +151,13 @@ WorkoutSession? workoutSessionById(Ref ref, String id) {
   try {
     return state.allSessions.firstWhere((s) => s.id == id);
   } catch (_) {
-    return null;
+    try {
+      final sessionRepo = ref.watch(workoutSessionRepositoryProvider);
+      final recentAsync = ref.watch(recentWorkoutSessionsProvider(sessionRepo));
+      final recent = recentAsync.value ?? const [];
+      return recent.firstWhere((s) => s.id == id);
+    } catch (_) {
+      return null;
+    }
   }
 }

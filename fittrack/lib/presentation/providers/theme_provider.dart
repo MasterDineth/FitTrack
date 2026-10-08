@@ -78,6 +78,13 @@ class ThemeNotifier extends _$ThemeNotifier {
     state = updated;
     await ref.read(themeRepositoryProvider).saveThemeSettings(updated);
   }
+
+  /// Sets the blur intensity (in sigma px) for frosted glass surfaces.
+  Future<void> setBlurIntensity(double value) async {
+    final updated = state.copyWith(blurIntensity: value);
+    state = updated;
+    await ref.read(themeRepositoryProvider).saveThemeSettings(updated);
+  }
 }
 
 /// Convenience alias matching user prompt naming.

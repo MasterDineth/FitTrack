@@ -40,9 +40,11 @@ class GlassSurface extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     bool enableTransparency = true;
+    double blurScale = 1.0;
     try {
       final themeSettings = ref.watch(themeNotifierProvider);
       enableTransparency = themeSettings.enableGlassTransparency;
+      blurScale = (themeSettings.blurIntensity / 16.0).clamp(0.2, 2.5);
     } catch (_) {
       // Smooth fallback in isolated unit/widget tests without ProviderScope
     }
@@ -58,7 +60,7 @@ class GlassSurface extends ConsumerWidget {
     }
 
     final double effectiveBlur = (enableTransparency && enableBlur)
-        ? (customBlurSigma ?? spec.blurSigma)
+        ? ((customBlurSigma ?? spec.blurSigma) * blurScale)
         : 0.0;
 
     // Inner surface container with border, fill, and top specular highlight

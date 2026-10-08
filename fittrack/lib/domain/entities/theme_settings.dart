@@ -38,6 +38,7 @@ abstract class ThemeSettings with _$ThemeSettings {
     @Default(true) bool autoDarkWorkout,
     @Default(true) bool keepScreenAwake,
     @Default(true) bool enableGlassTransparency,
+    @Default(16.0) double blurIntensity,
   }) = _ThemeSettings;
 
   factory ThemeSettings.fromJson(Map<String, dynamic> json) =>

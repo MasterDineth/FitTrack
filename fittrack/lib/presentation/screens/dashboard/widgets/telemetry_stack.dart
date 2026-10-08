@@ -253,11 +253,6 @@ class _TelemetryStackState extends ConsumerState<TelemetryStack> {
       _ => 12.0,
     };
 
-    final double opacity = switch (offset) {
-      0 => 1.0,
-      1 => 0.88,
-      _ => 0.70,
-    };
 
 
     final double borderAlpha = switch (offset) {
@@ -307,6 +302,27 @@ class _TelemetryStackState extends ConsumerState<TelemetryStack> {
     final dragOffset = offset == 0 ? _dragDx : 0.0;
     final rotationAngle = offset == 0 ? (_dragDx / 600.0).clamp(-0.08, 0.08) : 0.0;
 
+    // Inner content rendering:
+    // Offset 0: active card, content always 1.0
+    // Offset 1: smoothly fade in as front card drags away or during tab transition
+    // Offset 2: empty (it only peeks 8px at the bottom edge as a glass layered rim)
+    final Widget contentWidget;
+    if (offset == 2) {
+      contentWidget = const SizedBox.shrink();
+    } else if (offset == 1) {
+      if (_isTransitioning) {
+        contentWidget = cardWidget;
+      } else {
+        final dragProgress = (_dragDx.abs() / 100.0).clamp(0.0, 1.0);
+        contentWidget = Opacity(
+          opacity: dragProgress,
+          child: cardWidget,
+        );
+      }
+    } else {
+      contentWidget = cardWidget;
+    }
+
     return AnimatedPositioned(
       key: ValueKey('telemetry_card_$cardIndex'),
       duration: _dragDx != 0 && offset == 0
@@ -317,43 +333,38 @@ class _TelemetryStackState extends ConsumerState<TelemetryStack> {
       left: horizontalInset,
       right: horizontalInset,
       height: 212,
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 260),
-        curve: Curves.easeOutCubic,
-        opacity: opacity,
-        child: Transform.translate(
-          offset: Offset(dragOffset, 0),
-          child: Transform.rotate(
-            angle: rotationAngle,
-            alignment: Alignment.bottomCenter,
-            child: IgnorePointer(
-              ignoring: !isInteractive && !isTappable,
-              child: GestureDetector(
-                onTap: isTappable ? () => _goTo(cardIndex) : null,
-                behavior: HitTestBehavior.opaque,
-                child: Builder(
-                  builder: (context) {
-                    final isDark = context.isDark;
-                    final cardBorder = isDark
-                        ? Colors.white.withValues(alpha: 0.12 * borderAlpha)
-                        : Colors.white.withValues(alpha: borderAlpha);
+      child: Transform.translate(
+        offset: Offset(dragOffset, 0),
+        child: Transform.rotate(
+          angle: rotationAngle,
+          alignment: Alignment.bottomCenter,
+          child: IgnorePointer(
+            ignoring: !isInteractive && !isTappable,
+            child: GestureDetector(
+              onTap: isTappable ? () => _goTo(cardIndex) : null,
+              behavior: HitTestBehavior.opaque,
+              child: Builder(
+                builder: (context) {
+                  final isDark = context.isDark;
+                  final cardBorder = isDark
+                      ? Colors.white.withValues(alpha: 0.12 * borderAlpha)
+                      : Colors.white.withValues(alpha: borderAlpha);
 
-                    return Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(FtGlassTheme.radiusStackCards),
-                        boxShadow: shadows,
-                      ),
-                      child: GlassSurface(
-                        tier: FtGlassTier.glass1,
-                        radius: FtGlassTheme.radiusStackCards,
-                        borderTint: cardBorder,
-                        padding: const EdgeInsets.all(16.0),
-                        shadow: false,
-                        child: cardWidget,
-                      ),
-                    );
-                  },
-                ),
+                  return Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(FtGlassTheme.radiusStackCards),
+                      boxShadow: shadows,
+                    ),
+                    child: GlassSurface(
+                      tier: FtGlassTier.glass1,
+                      radius: FtGlassTheme.radiusStackCards,
+                      borderTint: cardBorder,
+                      padding: const EdgeInsets.all(16.0),
+                      shadow: false,
+                      child: contentWidget,
+                    ),
+                  );
+                },
               ),
             ),
           ),

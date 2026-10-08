@@ -105,7 +105,7 @@ class DashboardHeader extends ConsumerWidget {
 
               // 36x36 circle avatar
               FtPressable(
-                onTap: () => context.go('/settings'),
+                onTap: () => context.push('/settings/profile'),
                 pressedScale: 0.95,
                 child: Container(
                   width: 36,

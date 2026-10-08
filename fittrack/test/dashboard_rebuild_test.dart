@@ -11,6 +11,7 @@ import 'package:fittrack/presentation/screens/dashboard/widgets/telemetry_stack.
 import 'package:fittrack/presentation/screens/dashboard/widgets/dashboard_greeting.dart';
 import 'package:fittrack/presentation/screens/dashboard/widgets/habits_recovery_section.dart';
 import 'package:fittrack/presentation/screens/dashboard/widgets/featured_workout_card.dart';
+import 'package:fittrack/presentation/screens/dashboard/widgets/weekly_streak_log_section.dart';
 
 class _TestHabitsRepository implements IHabitsRepository {
   List<DailyHabit> habits = [
@@ -366,6 +367,47 @@ void main() {
       await tester.tap(find.byIcon(Icons.fitness_center_outlined));
       await tester.pump(const Duration(milliseconds: 100));
       expect(activeIndex, 1);
+    });
+
+    testWidgets('DashboardScreen layout bounds last section neatly above dock', (tester) async {
+      tester.view.physicalSize = const Size(393, 852);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MediaQuery(
+          data: const MediaQueryData(disableAnimations: true),
+          child: ProviderScope(
+            overrides: [
+              habitsRepositoryProvider.overrideWithValue(_TestHabitsRepository()),
+            ],
+            child: MaterialApp(
+              home: Scaffold(
+                extendBody: true,
+                body: const DashboardScreen(),
+                bottomNavigationBar: AnimatedGlassDock(
+                  currentIndex: 0,
+                  onTap: (_) {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final scrollable = tester.state<ScrollableState>(find.byType(Scrollable));
+      scrollable.position.jumpTo(scrollable.position.maxScrollExtent);
+      await tester.pumpAndSettle();
+
+      final streakFinder = find.byType(WeeklyStreakLogSection);
+      expect(streakFinder, findsOneWidget);
+      final box = tester.renderObject<RenderBox>(streakFinder);
+      final pos = box.localToGlobal(Offset.zero);
+      // The WeeklyStreakLogSection should be visible and cleanly bounded above dock
+      expect(pos.dy, greaterThan(0));
+      expect(pos.dy + box.size.height, lessThanOrEqualTo(852));
     });
   });
 }

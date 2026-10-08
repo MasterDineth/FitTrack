@@ -1082,6 +1082,16 @@ class AppearanceSettingsScreen extends ConsumerWidget {
                 iconBg: iconBg,
                 onChanged: (val) => themeNotifier.toggleGlassTransparency(val),
               ),
+              if (themeSettings.enableGlassTransparency) ...[
+                _buildBlurIntensitySlider(
+                  themeSettings: themeSettings,
+                  themeNotifier: themeNotifier,
+                  accentColor: accent,
+                  textPrimary: textPrimary,
+                  textMuted: textMuted,
+                  iconBg: iconBg,
+                ),
+              ],
               Divider(height: 1, thickness: 1, color: borderColor),
 
               // 1. Pure Black OLED Mode (Disabled in Light Mode)
@@ -1218,6 +1228,146 @@ class AppearanceSettingsScreen extends ConsumerWidget {
             activeThumbColor: accentColor,
             activeTrackColor: accentColor.withValues(alpha: 0.35),
             onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBlurIntensitySlider({
+    required ThemeSettings themeSettings,
+    required ThemeNotifier themeNotifier,
+    required Color accentColor,
+    required Color textPrimary,
+    required Color textMuted,
+    required Color iconBg,
+  }) {
+    final intensity = themeSettings.blurIntensity;
+    final String intensityLabel = switch (intensity) {
+      <= 8.0 => 'Subtle',
+      <= 18.0 => 'Standard',
+      <= 26.0 => 'Heavy',
+      _ => 'Intense',
+    };
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.tune_rounded,
+                  size: 18,
+                  color: textPrimary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Blur Intensity',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Fine-tune frosted backdrop blur radius for glass cards and dock.',
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: 11,
+                        fontWeight: FontWeight.w400,
+                        color: textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  '${intensity.round()}px · $intensityLabel',
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: accentColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          SliderTheme(
+            data: SliderThemeData(
+              activeTrackColor: accentColor,
+              inactiveTrackColor: accentColor.withValues(alpha: 0.20),
+              thumbColor: accentColor,
+              overlayColor: accentColor.withValues(alpha: 0.15),
+              trackHeight: 4,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
+            ),
+            child: Slider(
+              value: intensity.clamp(4.0, 32.0),
+              min: 4.0,
+              max: 32.0,
+              divisions: 14,
+              onChanged: (val) => themeNotifier.setBlurIntensity(val),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '4px (Subtle)',
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color: textMuted,
+                  ),
+                ),
+                Text(
+                  '16px (Default)',
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color: textMuted,
+                  ),
+                ),
+                Text(
+                  '32px (Intense)',
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color: textMuted,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
