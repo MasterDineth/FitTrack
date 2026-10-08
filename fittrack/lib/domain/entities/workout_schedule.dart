@@ -27,4 +27,26 @@ abstract class WorkoutSchedule with _$WorkoutSchedule {
 
   factory WorkoutSchedule.fromJson(Map<String, dynamic> json) =>
       _$WorkoutScheduleFromJson(json);
+
+  factory WorkoutSchedule.fromSchedule(
+    dynamic schedule, [
+    List<ScheduleExercise> exercises = const [],
+  ]) {
+    return WorkoutSchedule(
+      id: schedule.id as String,
+      title: (schedule.name ?? schedule.title ?? '') as String,
+      description: (schedule.description ?? '') as String,
+      focus: (schedule.focus ?? 'Hypertrophy') as String,
+      experience: (schedule.experience ?? 'Intermediate') as String,
+      equipment: (schedule.equipment ?? 'Full Gym') as String,
+      durationWeeks: (schedule.durationWeeks ?? 8) as int,
+      daysPerWeek: (schedule.daysPerWeek ?? 4) as int,
+      isFavorite: (schedule.isFavorite ?? false) as bool,
+      isCustom: (schedule.isCustom ?? false) as bool,
+      targetMuscles: List<String>.from((schedule.targetMuscles as Iterable?) ?? const []),
+      exerciseCount: exercises.isNotEmpty ? exercises.length : 0,
+      estimatedMinutes: (schedule.estimatedMinutes ?? 45) as int,
+      exercises: exercises,
+    );
+  }
 }

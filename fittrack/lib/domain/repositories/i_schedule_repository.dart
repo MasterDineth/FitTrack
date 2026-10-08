@@ -12,4 +12,13 @@ abstract class IScheduleRepository {
 
   /// Removes a schedule and its associated schedule_exercises rows.
   Future<void> deleteSchedule(String scheduleId);
+
+  /// Toggles favorite/bookmark status for a given [scheduleId].
+  Future<void> toggleBookmark(String scheduleId, bool isFavorite);
+
+  /// Retrieves all active bookmarked/favorite schedules.
+  Future<List<Schedule>> getBookmarkedSchedules();
+
+  /// Searches schedules matching [query] with optional [category] filter.
+  Future<List<Schedule>> searchSchedules(String query, {String? category});
 }

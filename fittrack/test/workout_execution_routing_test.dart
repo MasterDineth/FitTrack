@@ -42,6 +42,29 @@ class FakeScheduleRepository implements IScheduleRepository {
     schedules.remove(id);
     scheduleExercises.remove(id);
   }
+
+  @override
+  Future<void> toggleBookmark(String scheduleId, bool isFavorite) async {
+    final sched = schedules[scheduleId];
+    if (sched != null) {
+      schedules[scheduleId] = sched.copyWith(isFavorite: isFavorite);
+    }
+  }
+
+  @override
+  Future<List<Schedule>> getBookmarkedSchedules() async {
+    return schedules.values.where((s) => s.isFavorite).toList();
+  }
+
+  @override
+  Future<List<Schedule>> searchSchedules(
+    String query, {
+    String? category,
+    String? experience,
+    String? equipment,
+  }) async {
+    return schedules.values.where((s) => s.name.contains(query)).toList();
+  }
 }
 
 class FakeExerciseRepository implements IExerciseRepository {

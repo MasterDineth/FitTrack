@@ -121,7 +121,7 @@ final class WorkoutSessionByIdProvider
 }
 
 String _$workoutSessionByIdHash() =>
-    r'c10780d84c1834ce044e556c6259a0a36660b6eb';
+    r'175e31dcb2e05cf9687826ffc0fe04369024a636';
 
 final class WorkoutSessionByIdFamily extends $Family
     with $FunctionalFamilyOverride<WorkoutSession?, String> {
