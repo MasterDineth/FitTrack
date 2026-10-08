@@ -14,12 +14,18 @@ class FtMeshBackground extends StatelessWidget {
     final isOled = isDark &&
         (theme.scaffoldBackgroundColor == Colors.black ||
             theme.scaffoldBackgroundColor == const Color(0xFF000000));
+    final primaryColor = theme.colorScheme.primary;
+    final backgroundColor = isDark
+        ? (isOled ? const Color(0xFF000000) : theme.scaffoldBackgroundColor)
+        : FtGlassTheme.canvas;
 
     return RepaintBoundary(
       child: CustomPaint(
         painter: _FtMeshCustomPainter(
           isDark: isDark,
           isOled: isOled,
+          primaryColor: primaryColor,
+          backgroundColor: backgroundColor,
         ),
         isComplex: true,
         willChange: false,
@@ -32,10 +38,14 @@ class FtMeshBackground extends StatelessWidget {
 class _FtMeshCustomPainter extends CustomPainter {
   final bool isDark;
   final bool isOled;
+  final Color primaryColor;
+  final Color backgroundColor;
 
   const _FtMeshCustomPainter({
     required this.isDark,
     required this.isOled,
+    required this.primaryColor,
+    required this.backgroundColor,
   });
 
   @override
@@ -44,7 +54,7 @@ class _FtMeshCustomPainter extends CustomPainter {
 
     if (!isDark) {
       // ── Light Mode Canvas & Glows (#F6F4FF) ────────────────────────────────
-      final bgPaint = Paint()..color = FtGlassTheme.canvas;
+      final bgPaint = Paint()..color = backgroundColor;
       canvas.drawRect(Offset.zero & size, bgPaint);
 
       _drawRadialGlow(
@@ -52,7 +62,7 @@ class _FtMeshCustomPainter extends CustomPainter {
         size: size,
         cxPercent: 0.10,
         cyPercent: 0.08,
-        color: const Color.fromRGBO(95, 59, 220, 0.22),
+        color: primaryColor.withValues(alpha: 0.22),
         stopPercent: 0.55,
       );
 
@@ -79,7 +89,7 @@ class _FtMeshCustomPainter extends CustomPainter {
         size: size,
         cxPercent: 0.85,
         cyPercent: 0.82,
-        color: const Color.fromRGBO(120, 88, 246, 0.20),
+        color: primaryColor.withValues(alpha: 0.18),
         stopPercent: 0.60,
       );
       return;
@@ -90,13 +100,13 @@ class _FtMeshCustomPainter extends CustomPainter {
       final bgPaint = Paint()..color = const Color(0xFF000000);
       canvas.drawRect(Offset.zero & size, bgPaint);
 
-      // radial-gradient(at 10% 6%, rgba(124, 92, 250, 0.14) 0px, transparent 45%)
+      // radial-gradient(at 10% 6%, primary@14% 0px, transparent 45%)
       _drawRadialGlow(
         canvas: canvas,
         size: size,
         cxPercent: 0.10,
         cyPercent: 0.06,
-        color: const Color.fromRGBO(124, 92, 250, 0.14),
+        color: primaryColor.withValues(alpha: 0.14),
         stopPercent: 0.45,
       );
 
@@ -110,13 +120,13 @@ class _FtMeshCustomPainter extends CustomPainter {
         stopPercent: 0.42,
       );
 
-      // radial-gradient(at 20% 60%, rgba(124, 92, 250, 0.08) 0px, transparent 48%)
+      // radial-gradient(at 20% 60%, primary@8% 0px, transparent 48%)
       _drawRadialGlow(
         canvas: canvas,
         size: size,
         cxPercent: 0.20,
         cyPercent: 0.60,
-        color: const Color.fromRGBO(124, 92, 250, 0.08),
+        color: primaryColor.withValues(alpha: 0.08),
         stopPercent: 0.48,
       );
 
@@ -133,7 +143,7 @@ class _FtMeshCustomPainter extends CustomPainter {
     }
 
     // ── Slate Dark Mode (#0C0A18 / #0B131F) ──────────────────────────────────
-    final bgPaint = Paint()..color = const Color(0xFF0C0A18);
+    final bgPaint = Paint()..color = backgroundColor;
     canvas.drawRect(Offset.zero & size, bgPaint);
 
     _drawRadialGlow(
@@ -141,7 +151,7 @@ class _FtMeshCustomPainter extends CustomPainter {
       size: size,
       cxPercent: 0.10,
       cyPercent: 0.08,
-      color: const Color.fromRGBO(139, 108, 253, 0.25),
+      color: primaryColor.withValues(alpha: 0.25),
       stopPercent: 0.55,
     );
 
@@ -159,7 +169,7 @@ class _FtMeshCustomPainter extends CustomPainter {
       size: size,
       cxPercent: 0.20,
       cyPercent: 0.60,
-      color: const Color.fromRGBO(124, 92, 250, 0.12),
+      color: primaryColor.withValues(alpha: 0.12),
       stopPercent: 0.55,
     );
 
@@ -203,6 +213,9 @@ class _FtMeshCustomPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _FtMeshCustomPainter oldDelegate) {
-    return oldDelegate.isDark != isDark || oldDelegate.isOled != isOled;
+    return oldDelegate.isDark != isDark ||
+        oldDelegate.isOled != isOled ||
+        oldDelegate.primaryColor != primaryColor ||
+        oldDelegate.backgroundColor != backgroundColor;
   }
 }

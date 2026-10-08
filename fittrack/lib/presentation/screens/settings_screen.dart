@@ -399,8 +399,7 @@ class SettingsScreen extends StatelessWidget {
         ? Colors.white.withValues(alpha: 0.08)
         : const Color(0xFFE2E8F0);
 
-    final hasCustomImage = profile?.profileImagePath != null &&
-        File(profile!.profileImagePath!).existsSync();
+    final customImagePath = profile?.profileImagePath;
     final name = (profile?.name.trim().isNotEmpty == true) ? profile!.name : 'Dineth';
     final initial = name.isNotEmpty ? name[0].toUpperCase() : 'D';
     final handle = '@${name.toLowerCase().replaceAll(' ', '')}.fit';
@@ -434,7 +433,7 @@ class SettingsScreen extends StatelessWidget {
                   height: 56,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: hasCustomImage
+                    gradient: (customImagePath != null && customImagePath.isNotEmpty)
                         ? null
                         : LinearGradient(
                             begin: Alignment.bottomLeft,
@@ -451,12 +450,24 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ),
                   child: ClipOval(
-                    child: hasCustomImage
+                    child: (customImagePath != null && customImagePath.isNotEmpty)
                         ? Image.file(
-                            File(profile.profileImagePath!),
+                            File(customImagePath),
                             width: 56,
                             height: 56,
                             fit: BoxFit.cover,
+                            cacheWidth: 112,
+                            errorBuilder: (_, _, _) => Center(
+                              child: Text(
+                                initial,
+                                style: TextStyle(
+                                  fontFamily: 'Plus Jakarta Sans',
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  color: colorScheme.onPrimary,
+                                ),
+                              ),
+                            ),
                           )
                         : Center(
                             child: Text(

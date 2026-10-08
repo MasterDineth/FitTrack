@@ -73,6 +73,7 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # flutter_native_splash configuration
+  image: any
 flutter_native_splash:
   color: "#0A0716"
   image: assets/splash/blank.png        # 1×1 transparent PNG

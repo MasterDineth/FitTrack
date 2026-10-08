@@ -106,41 +106,53 @@ class _BranchTransitionContainerState extends State<BranchTransitionContainer>
         }
 
         // Active transition
-        return AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            if (isCurrent) {
-              // Incoming: 180ms fade in + 10px slide in direction of travel
-              final fadeValue = _controller.value.clamp(0.0, 1.0);
-              final slideValue = (1.0 - _controller.value) * 10.0 * _direction;
-              return Transform.translate(
-                offset: Offset(slideValue, 0),
-                child: Opacity(
-                  opacity: fadeValue,
-                  child: child,
-                ),
-              );
-            } else {
-              // Outgoing: fades out in first 100ms
-              final progress = (_controller.value / (100.0 / 180.0)).clamp(0.0, 1.0);
-              if (progress >= 1.0) {
-                return const SizedBox.shrink();
-              }
-              final fadeValue = 1.0 - progress;
-              final slideValue = progress * -10.0 * _direction;
-              return Transform.translate(
-                offset: Offset(slideValue, 0),
-                child: Opacity(
-                  opacity: fadeValue,
-                  child: child,
-                ),
-              );
-            }
-          },
-          child: RepaintBoundary(
-            child: widget.children[index],
-          ),
-        );
+        if (isCurrent) {
+          final slideIn = Tween<Offset>(
+            begin: Offset(0.03 * _direction, 0.0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(
+            parent: _controller,
+            curve: Curves.easeOutCubic,
+          ));
+          final fadeIn = CurvedAnimation(
+            parent: _controller,
+            curve: Curves.easeOut,
+          );
+
+          return SlideTransition(
+            position: slideIn,
+            child: FadeTransition(
+              opacity: fadeIn,
+              child: RepaintBoundary(
+                child: widget.children[index],
+              ),
+            ),
+          );
+        } else {
+          final slideOut = Tween<Offset>(
+            begin: Offset.zero,
+            end: Offset(-0.03 * _direction, 0.0),
+          ).animate(CurvedAnimation(
+            parent: _controller,
+            curve: Curves.easeInCubic,
+          ));
+          final fadeOut = Tween<double>(begin: 1.0, end: 0.0).animate(
+            CurvedAnimation(
+              parent: _controller,
+              curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
+            ),
+          );
+
+          return SlideTransition(
+            position: slideOut,
+            child: FadeTransition(
+              opacity: fadeOut,
+              child: RepaintBoundary(
+                child: widget.children[index],
+              ),
+            ),
+          );
+        }
       }),
     );
   }

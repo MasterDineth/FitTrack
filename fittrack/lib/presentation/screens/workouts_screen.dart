@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../providers/schedules_provider.dart';
 import '../providers/user_profile_provider.dart';
 import '../theme/glass_tokens.dart';
-import '../widgets/ambient_mesh_background.dart';
 import '../widgets/glass/frosted_glass_box.dart';
 import '../widgets/glass/glass_hairline_divider.dart';
 import '../widgets/glass/glass_icon_button.dart';
@@ -97,11 +96,10 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: AmbientMeshBackground(
-        child: SafeArea(
-          bottom: false,
-          child: Stack(
-            children: [
+      body: SafeArea(
+        bottom: false,
+        child: Stack(
+          children: [
               CustomScrollView(
                 physics: const BouncingScrollPhysics(),
                 slivers: [
@@ -180,35 +178,24 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
                               child: ClipOval(
                                 child: (userProfileAsync.value?.profileImagePath !=
                                             null &&
-                                        File(userProfileAsync
-                                                .value!.profileImagePath!)
-                                            .existsSync())
+                                        userProfileAsync.value!.profileImagePath!
+                                            .isNotEmpty)
                                     ? Image.file(
                                         File(userProfileAsync
                                             .value!.profileImagePath!),
                                         width: 44,
                                         height: 44,
                                         fit: BoxFit.cover,
-                                      )
-                                    : Container(
-                                        color: primary,
-                                        alignment: Alignment.center,
-                                        child: Text(
-                                          (userProfileAsync.value?.name
-                                                      .trim()
-                                                      .isNotEmpty ==
-                                                  true)
-                                              ? userProfileAsync.value!.name
-                                                  .trim()[0]
-                                                  .toUpperCase()
-                                              : 'D',
-                                          style: const TextStyle(
-                                            fontFamily: 'Plus Jakarta Sans',
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w800,
-                                            color: Colors.white,
-                                          ),
+                                        cacheWidth: 88,
+                                        errorBuilder: (_, _, _) =>
+                                            _buildAvatarFallback(
+                                          primary,
+                                          userProfileAsync.value?.name,
                                         ),
+                                      )
+                                    : _buildAvatarFallback(
+                                        primary,
+                                        userProfileAsync.value?.name,
                                       ),
                               ),
                             ),
@@ -944,6 +931,23 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
             ],
           ),
         ),
+    );
+  }
+
+  Widget _buildAvatarFallback(Color primary, String? name) {
+    return Container(
+      color: primary,
+      alignment: Alignment.center,
+      child: Text(
+        (name != null && name.trim().isNotEmpty)
+            ? name.trim()[0].toUpperCase()
+            : 'D',
+        style: const TextStyle(
+          fontFamily: 'Plus Jakarta Sans',
+          fontSize: 15,
+          fontWeight: FontWeight.w800,
+          color: Colors.white,
+        ),
       ),
     );
   }
@@ -980,6 +984,7 @@ class _RecommendedProgramCard extends StatelessWidget {
 
     return FrostedGlassBox(
       tier: GlassTier.surface,
+      enableBlur: false,
       width: 295,
       borderRadius: BorderRadius.circular(24),
       padding: const EdgeInsets.all(16),
@@ -1198,6 +1203,7 @@ class _CompactBookmarkedCard extends StatelessWidget {
 
     return FrostedGlassBox(
       tier: GlassTier.surface,
+      enableBlur: false,
       width: 190,
       borderRadius: BorderRadius.circular(18),
       padding: const EdgeInsets.all(12),
@@ -1321,6 +1327,7 @@ class _BrowseProgramCard extends StatelessWidget {
 
     return FrostedGlassBox(
       tier: GlassTier.surface,
+      enableBlur: false,
       borderRadius: BorderRadius.circular(20),
       padding: const EdgeInsets.all(16),
       onTap: onTap,

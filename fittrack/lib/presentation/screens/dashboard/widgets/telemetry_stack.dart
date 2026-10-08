@@ -92,8 +92,8 @@ class _TelemetryStackState extends ConsumerState<TelemetryStack> {
                       Container(
                         width: 6,
                         height: 6,
-                        decoration: const BoxDecoration(
-                          color: FtGlassTheme.primary,
+                        decoration: BoxDecoration(
+                          color: context.ftPrimary,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -156,7 +156,7 @@ class _TelemetryStackState extends ConsumerState<TelemetryStack> {
                                   height: 6,
                                   decoration: BoxDecoration(
                                     color: isActive
-                                        ? FtGlassTheme.primary
+                                        ? context.ftPrimary
                                         : FtGlassTheme.outlineVariant,
                                     borderRadius: BorderRadius.circular(3),
                                   ),
@@ -468,11 +468,11 @@ class _BioMetricsBalanceCard extends ConsumerWidget {
                   name: 'Movement',
                   sub: '${_formatNumber(bio.movementSteps)} steps',
                   tag: bio.movementTag,
-                  tagColor: FtGlassTheme.primary,
+                  tagColor: context.ftPrimary,
                   progress: bio.movementPercent,
                   displayValue: '${(bio.movementPercent * 100).round()}%',
-                  gradientColors: const [Color(0xFF9B7BFF), Color(0xFF5F3BDC)],
-                  trackColor: const Color.fromRGBO(95, 59, 220, 0.12),
+                  gradientColors: [context.ftPrimaryLight, context.ftPrimary],
+                  trackColor: context.ftPrimary.withValues(alpha: 0.12),
                 ),
               ),
               const SizedBox(width: 8),
@@ -762,20 +762,20 @@ class _WeeklyMomentumCard extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: FtGlassTheme.primary.withValues(alpha: 0.10),
+                color: context.ftPrimary.withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
                 border: Border.all(
-                  color: FtGlassTheme.primary.withValues(alpha: 0.20),
+                  color: context.ftPrimary.withValues(alpha: 0.20),
                   width: 1.0,
                 ),
               ),
               child: Text(
                 '$streak% Streak',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: FtText.fontFamily,
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: FtGlassTheme.primary,
+                  color: context.ftPrimary,
                 ),
               ),
             ),
@@ -808,7 +808,7 @@ class _WeeklyMomentumCard extends ConsumerWidget {
           decoration: BoxDecoration(
             border: Border(
               top: BorderSide(
-                color: FtGlassTheme.primary.withValues(alpha: 0.10),
+                color: context.ftPrimary.withValues(alpha: 0.10),
                 width: 1.0,
               ),
             ),
@@ -830,9 +830,9 @@ class _WeeklyMomentumCard extends ConsumerWidget {
                       const TextSpan(text: 'Today: '),
                       TextSpan(
                         text: routineTitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w700,
-                          color: FtGlassTheme.primary,
+                          color: context.ftPrimary,
                         ),
                       ),
                     ],
@@ -904,11 +904,11 @@ class _WeeklyMomentumCard extends ConsumerWidget {
         return Container(
           padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
           decoration: BoxDecoration(
-            color: FtGlassTheme.primary,
+            color: context.ftPrimary,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: FtGlassTheme.primary.withValues(alpha: 0.30),
+                color: context.ftPrimary.withValues(alpha: 0.35),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -946,14 +946,18 @@ class _WeeklyMomentumCard extends ConsumerWidget {
 
       case DayStripStatus.scheduled:
         return Opacity(
-          opacity: 0.8,
+          opacity: isDark ? 0.95 : 0.8,
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.40),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.04)
+                  : Colors.white.withValues(alpha: 0.40),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.60),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.10)
+                    : Colors.white.withValues(alpha: 0.60),
                 width: 1.0,
               ),
             ),
@@ -962,11 +966,11 @@ class _WeeklyMomentumCard extends ConsumerWidget {
               children: [
                 Text(
                   item.letter,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: FtText.fontFamily,
                     fontSize: 9,
                     fontWeight: FontWeight.w700,
-                    color: FtGlassTheme.muted,
+                    color: context.ftMuted,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -977,17 +981,19 @@ class _WeeklyMomentumCard extends ConsumerWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: FtGlassTheme.outlineVariant,
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.16)
+                          : FtGlassTheme.outlineVariant,
                       width: 1.0,
                     ),
                   ),
                   child: Text(
                     '${item.dayNumber}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: FtText.fontFamily,
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
-                      color: FtGlassTheme.muted,
+                      color: context.ftSubtext,
                     ),
                   ),
                 ),
@@ -998,23 +1004,31 @@ class _WeeklyMomentumCard extends ConsumerWidget {
 
       case DayStripStatus.rest:
         return Opacity(
-          opacity: 0.6,
+          opacity: isDark ? 0.85 : 0.6,
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.30),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.02)
+                  : Colors.white.withValues(alpha: 0.30),
               borderRadius: BorderRadius.circular(12),
+              border: isDark
+                  ? Border.all(
+                      color: Colors.white.withValues(alpha: 0.06),
+                      width: 1.0,
+                    )
+                  : null,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   item.letter,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: FtText.fontFamily,
                     fontSize: 9,
                     fontWeight: FontWeight.w700,
-                    color: FtGlassTheme.muted,
+                    color: context.ftMuted,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1211,11 +1225,11 @@ class _WeeklyLoadCard extends ConsumerWidget {
                     const SizedBox(height: 2),
                     Text(
                       '$activeDays active days',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: FtText.fontFamily,
                         fontSize: 9,
                         fontWeight: FontWeight.w700,
-                        color: FtGlassTheme.primary,
+                        color: context.ftPrimary,
                       ),
                     ),
                   ],
@@ -1249,11 +1263,11 @@ class _WeeklyLoadCard extends ConsumerWidget {
                 zoneText,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: FtText.fontFamily,
                   fontSize: 10,
                   fontWeight: FontWeight.w800,
-                  color: FtGlassTheme.primary,
+                  color: context.ftPrimary,
                 ),
               ),
             ),

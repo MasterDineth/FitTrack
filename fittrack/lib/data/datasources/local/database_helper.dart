@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
   static const _databaseName = "FitTrack.db";
-  static const _databaseVersion = 9;
+  static const _databaseVersion = 10;
 
   DatabaseHelper._privateConstructor();
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
@@ -114,6 +114,50 @@ class DatabaseHelper {
           'orderIndex': 2,
         }, conflictAlgorithm: ConflictAlgorithm.ignore);
       } on DatabaseException catch (_) {}
+    }
+
+    if (oldVersion < 10) {
+      try {
+        final existingCount = Sqflite.firstIntValue(
+          await db.rawQuery('SELECT COUNT(*) FROM workout_sessions'),
+        ) ?? 0;
+        if (existingCount == 0) {
+          final now = DateTime.now();
+          final s1Time = now.subtract(const Duration(days: 1, hours: 2));
+          final s2Time = now.subtract(const Duration(days: 3, hours: 4));
+          final s3Time = now.subtract(const Duration(days: 5, hours: 1));
+
+          await db.insert('workout_sessions', {
+            'id': 'sess-1',
+            'scheduleId': 'sch1',
+            'startTime': s1Time.toIso8601String(),
+            'endTime': s1Time.add(const Duration(minutes: 52)).toIso8601String(),
+            'durationSeconds': 3120,
+            'totalCalories': 420,
+            'notes': 'Push Hypertrophy',
+          }, conflictAlgorithm: ConflictAlgorithm.ignore);
+
+          await db.insert('workout_sessions', {
+            'id': 'sess-2',
+            'scheduleId': 'sch2',
+            'startTime': s2Time.toIso8601String(),
+            'endTime': s2Time.add(const Duration(minutes: 44)).toIso8601String(),
+            'durationSeconds': 2640,
+            'totalCalories': 365,
+            'notes': 'Pull & Dynamic Core',
+          }, conflictAlgorithm: ConflictAlgorithm.ignore);
+
+          await db.insert('workout_sessions', {
+            'id': 'sess-3',
+            'scheduleId': 'sch3',
+            'startTime': s3Time.toIso8601String(),
+            'endTime': s3Time.add(const Duration(minutes: 55)).toIso8601String(),
+            'durationSeconds': 3300,
+            'totalCalories': 480,
+            'notes': 'Legs & Posterior Chain',
+          }, conflictAlgorithm: ConflictAlgorithm.ignore);
+        }
+      } on DatabaseException catch (_) {} catch (_) {}
     }
   }
 
@@ -347,6 +391,42 @@ class DatabaseHelper {
       'isCompleted': 0,
       'status': 'tonight',
       'orderIndex': 2,
+    }, conflictAlgorithm: ConflictAlgorithm.ignore);
+
+    // Default Recent Sessions
+    final now = DateTime.now();
+    final s1Time = now.subtract(const Duration(days: 1, hours: 2));
+    final s2Time = now.subtract(const Duration(days: 3, hours: 4));
+    final s3Time = now.subtract(const Duration(days: 5, hours: 1));
+
+    await db.insert('workout_sessions', {
+      'id': 'sess-1',
+      'scheduleId': 'sch1',
+      'startTime': s1Time.toIso8601String(),
+      'endTime': s1Time.add(const Duration(minutes: 52)).toIso8601String(),
+      'durationSeconds': 3120,
+      'totalCalories': 420,
+      'notes': 'Push Hypertrophy',
+    }, conflictAlgorithm: ConflictAlgorithm.ignore);
+
+    await db.insert('workout_sessions', {
+      'id': 'sess-2',
+      'scheduleId': 'sch2',
+      'startTime': s2Time.toIso8601String(),
+      'endTime': s2Time.add(const Duration(minutes: 44)).toIso8601String(),
+      'durationSeconds': 2640,
+      'totalCalories': 365,
+      'notes': 'Pull & Dynamic Core',
+    }, conflictAlgorithm: ConflictAlgorithm.ignore);
+
+    await db.insert('workout_sessions', {
+      'id': 'sess-3',
+      'scheduleId': 'sch3',
+      'startTime': s3Time.toIso8601String(),
+      'endTime': s3Time.add(const Duration(minutes: 55)).toIso8601String(),
+      'durationSeconds': 3300,
+      'totalCalories': 480,
+      'notes': 'Legs & Posterior Chain',
     }, conflictAlgorithm: ConflictAlgorithm.ignore);
   }
 }

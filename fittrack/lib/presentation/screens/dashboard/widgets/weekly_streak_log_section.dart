@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import '../../../../domain/entities/workout_session.dart';
 import '../../../theme/ft_glass.dart';
 import '../../../widgets/glass_surface.dart';
 import '../../../providers/repository_providers.dart';
+import '../../../providers/schedules_provider.dart';
 import '../../../providers/workout_logic_providers.dart';
 
 class WeeklyStreakLogSection extends ConsumerWidget {
@@ -15,92 +15,122 @@ class WeeklyStreakLogSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sessionRepo = ref.watch(workoutSessionRepositoryProvider);
     final sessionsAsync = ref.watch(recentWorkoutSessionsProvider(sessionRepo));
+    final schedulesState = ref.watch(schedulesNotifierProvider);
+    final schedulesMap = {for (final s in schedulesState.allSchedules) s.id: s.title};
     final sessions = sessionsAsync.value ?? const [];
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Header Row
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Text(
-                    'Weekly Streak & Log',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: FtText.fontFamily,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: context.ftInk,
-                    ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Header Row
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  'Weekly Streak & Log',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: FtText.fontFamily,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: context.ftInk,
                   ),
                 ),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: () => context.go('/history'),
-                  child: const Text(
-                    'See all',
-                    style: TextStyle(
-                      fontFamily: FtText.fontFamily,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: FtGlassTheme.primary,
-                    ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () => context.go('/history'),
+                child: Text(
+                  'See all',
+                  style: TextStyle(
+                    fontFamily: FtText.fontFamily,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: context.ftPrimary,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
+        ),
 
-          // Container: glass1, radius 20, with adaptive dividers
-          GlassSurface(
-            tier: FtGlassTier.glass1,
-            radius: FtGlassTheme.radiusCards,
-            shadow: true,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: _buildSessionRows(sessions, context),
-            ),
+        // Container: glass1, radius 20, with adaptive dividers
+        GlassSurface(
+          tier: FtGlassTier.glass1,
+          radius: FtGlassTheme.radiusCards,
+          shadow: true,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: _buildSessionRows(sessions, schedulesMap, context),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  List<Widget> _buildSessionRows(List<WorkoutSession> sessions, BuildContext context) {
-    // If sessions in database exist, map up to 3; otherwise show template sessions
+  List<Widget> _buildSessionRows(
+    List<WorkoutSession> sessions,
+    Map<String, String> schedulesMap,
+    BuildContext context,
+  ) {
+    // If sessions in database exist, map up to 3; otherwise show 3 template sessions
     final rowsData = sessions.isNotEmpty
         ? sessions.take(3).map((s) {
             final durationMins = ((s.durationSeconds ?? 2880) / 60).round();
-            final dateStr = DateFormat('MMM d').format(s.startTime);
+            final diffDays = DateTime.now().difference(s.startTime).inDays;
+            final String dateStr;
+            if (diffDays <= 0) {
+              dateStr = 'Today';
+            } else if (diffDays == 1) {
+              dateStr = 'Yesterday';
+            } else {
+              dateStr = '$diffDays days ago';
+            }
+
             final cals = (s.totalCalories ?? 0) > 0 ? s.totalCalories! : 390;
-            final isOptimal = s.totalVolumeKg > 5000;
+            final isOptimal = s.totalVolumeKg > 5000 || s.id.hashCode % 2 != 0;
+            final resolvedTitle = schedulesMap[s.scheduleId] ??
+                (s.notes != null && s.notes!.isNotEmpty
+                    ? s.notes!
+                    : 'Push Hypertrophy');
+
+            final IconData icon;
+            final Color iconColor;
+            final lowerTitle = resolvedTitle.toLowerCase();
+            if (s.scheduleId == 'sch2' || lowerTitle.contains('pull') || lowerTitle.contains('back')) {
+              icon = Icons.bolt_rounded;
+              iconColor = FtGlassTheme.teal;
+            } else if (s.scheduleId == 'sch3' || lowerTitle.contains('leg') || lowerTitle.contains('lower')) {
+              icon = Icons.directions_run_rounded;
+              iconColor = FtGlassTheme.orange;
+            } else {
+              icon = Icons.fitness_center_rounded;
+              iconColor = context.ftPrimary;
+            }
 
             return _SessionRowModel(
-              icon: Icons.fitness_center_rounded,
-              iconColor: FtGlassTheme.primary,
-              title: 'Push Hypertrophy',
+              icon: icon,
+              iconColor: iconColor,
+              title: resolvedTitle,
               subtitle: '$dateStr · ${durationMins}m duration',
               hasPr: s.id.hashCode % 2 == 0,
               prText: 'PR +5kg',
               kcalText: '$cals kcal',
               statusLabel: isOptimal ? 'Optimal Load' : 'Recovery',
-              statusLabelColor: isOptimal ? FtGlassTheme.teal : FtGlassTheme.primary,
+              statusLabelColor: isOptimal ? FtGlassTheme.teal : context.ftPrimary,
             );
           }).toList()
-        : const [
+        : [
             _SessionRowModel(
               icon: Icons.fitness_center_rounded,
-              iconColor: FtGlassTheme.primary,
-              title: 'Push Hypertrophy',
+              iconColor: context.ftPrimary,
+              title: 'Day 1: Chest, Shoulders & Triceps',
               subtitle: 'Yesterday · 52m duration',
               hasPr: true,
               prText: 'PR +5kg',
@@ -111,20 +141,31 @@ class WeeklyStreakLogSection extends ConsumerWidget {
             _SessionRowModel(
               icon: Icons.bolt_rounded,
               iconColor: FtGlassTheme.teal,
-              title: 'Pull & Dynamic Core',
-              subtitle: '2 days ago · 44m duration',
+              title: 'Day 2: Back & Biceps',
+              subtitle: '3 days ago · 44m duration',
               hasPr: false,
               prText: '',
               kcalText: '365 kcal',
               statusLabel: 'Recovery',
-              statusLabelColor: FtGlassTheme.primary,
+              statusLabelColor: context.ftPrimary,
+            ),
+            _SessionRowModel(
+              icon: Icons.directions_run_rounded,
+              iconColor: FtGlassTheme.orange,
+              title: 'Day 3: Legs & Posterior Chain',
+              subtitle: '5 days ago · 55m duration',
+              hasPr: true,
+              prText: 'PR +10kg',
+              kcalText: '480 kcal',
+              statusLabel: 'Optimal Load',
+              statusLabelColor: FtGlassTheme.teal,
             ),
           ];
 
     final List<Widget> widgets = [];
     final dividerColor = context.isDark
         ? Colors.white.withValues(alpha: 0.10)
-        : FtGlassTheme.primary.withValues(alpha: 0.10);
+        : context.ftPrimary.withValues(alpha: 0.10);
 
     for (int i = 0; i < rowsData.length; i++) {
       widgets.add(_buildRowWidget(rowsData[i], context));

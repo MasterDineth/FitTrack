@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../providers/schedules_provider.dart';
 import '../providers/user_profile_provider.dart';
 import '../theme/glass_tokens.dart';
-import '../widgets/ambient_mesh_background.dart';
 import '../widgets/glass/frosted_glass_box.dart';
 import '../widgets/glass/glass_hairline_divider.dart';
 import '../widgets/glass/glass_icon_button.dart';
@@ -132,10 +131,9 @@ class _WorkoutSearchScreenState extends ConsumerState<WorkoutSearchScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: AmbientMeshBackground(
-        child: SafeArea(
-          bottom: false,
-          child: CustomScrollView(
+      body: SafeArea(
+        bottom: false,
+        child: CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
               // ── 1. Top Bar: Back Action, Title, Notification & Profile ─────
@@ -224,35 +222,24 @@ class _WorkoutSearchScreenState extends ConsumerState<WorkoutSearchScreen> {
                           child: ClipOval(
                             child: (userProfileAsync.value?.profileImagePath !=
                                         null &&
-                                    File(userProfileAsync
-                                            .value!.profileImagePath!)
-                                        .existsSync())
+                                    userProfileAsync.value!.profileImagePath!
+                                        .isNotEmpty)
                                 ? Image.file(
                                     File(userProfileAsync
                                         .value!.profileImagePath!),
                                     width: 40,
                                     height: 40,
                                     fit: BoxFit.cover,
-                                  )
-                                : Container(
-                                    color: primary,
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      (userProfileAsync.value?.name
-                                                  .trim()
-                                                  .isNotEmpty ==
-                                              true)
-                                          ? userProfileAsync.value!.name
-                                              .trim()[0]
-                                              .toUpperCase()
-                                          : 'D',
-                                      style: const TextStyle(
-                                        fontFamily: 'Plus Jakarta Sans',
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w800,
-                                        color: Colors.white,
-                                      ),
+                                    cacheWidth: 80,
+                                    errorBuilder: (_, _, _) =>
+                                        _buildAvatarFallback(
+                                      primary,
+                                      userProfileAsync.value?.name,
                                     ),
+                                  )
+                                : _buildAvatarFallback(
+                                    primary,
+                                    userProfileAsync.value?.name,
                                   ),
                           ),
                         ),
@@ -634,6 +621,23 @@ class _WorkoutSearchScreenState extends ConsumerState<WorkoutSearchScreen> {
             ],
           ),
         ),
+    );
+  }
+
+  Widget _buildAvatarFallback(Color primary, String? name) {
+    return Container(
+      color: primary,
+      alignment: Alignment.center,
+      child: Text(
+        (name != null && name.trim().isNotEmpty)
+            ? name.trim()[0].toUpperCase()
+            : 'D',
+        style: const TextStyle(
+          fontFamily: 'Plus Jakarta Sans',
+          fontSize: 14,
+          fontWeight: FontWeight.w800,
+          color: Colors.white,
+        ),
       ),
     );
   }
@@ -689,6 +693,7 @@ class _SearchResultCard extends StatelessWidget {
 
     return FrostedGlassBox(
       tier: GlassTier.surface,
+      enableBlur: false,
       borderRadius: BorderRadius.circular(20),
       padding: const EdgeInsets.all(16),
       child: Column(

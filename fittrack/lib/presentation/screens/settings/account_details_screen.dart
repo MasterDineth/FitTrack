@@ -350,8 +350,7 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
 
     final profileImagePath = profile?.profileImagePath;
     final hasCustomImage = profileImagePath != null &&
-        profileImagePath.trim().isNotEmpty &&
-        File(profileImagePath).existsSync();
+        profileImagePath.trim().isNotEmpty;
     final name = (profile?.name.trim().isNotEmpty == true)
         ? profile!.name
         : (_originalName.isNotEmpty ? _originalName : 'Dineth');

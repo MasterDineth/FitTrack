@@ -50,6 +50,7 @@ class GlassPillChip extends StatelessWidget {
 
     return FrostedGlassBox(
       tier: GlassTier.elevated,
+      enableBlur: false,
       height: height,
       borderRadius: BorderRadius.circular(height / 2),
       border: Border.all(color: effectiveBorder, width: 1),

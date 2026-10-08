@@ -88,7 +88,7 @@ class DashboardHeader extends ConsumerWidget {
                             width: 8,
                             height: 8,
                             decoration: BoxDecoration(
-                              color: FtGlassTheme.primary,
+                              color: context.ftPrimary,
                               shape: BoxShape.circle,
                               border: Border.all(
                                 color: Colors.white,
@@ -138,19 +138,21 @@ class DashboardHeader extends ConsumerWidget {
 
   Widget _buildAvatarImage(String? path, String? name) {
     if (path != null && path.isNotEmpty) {
-      final file = File(path);
-      if (file.existsSync()) {
-        return Image.file(
-          file,
-          width: 36,
-          height: 36,
-          fit: BoxFit.cover,
-          cacheWidth: 72,
-        );
-      }
+      return Image.file(
+        File(path),
+        width: 36,
+        height: 36,
+        fit: BoxFit.cover,
+        cacheWidth: 72,
+        errorBuilder: (_, _, _) => _buildFallbackAvatar(),
+      );
     }
 
     // Bundled 2x sample avatar
+    return _buildFallbackAvatar();
+  }
+
+  Widget _buildFallbackAvatar() {
     return Image.asset(
       'assets/images/dashboard/sample_avatar.webp',
       width: 36,

@@ -236,8 +236,7 @@ class WorkoutHistoryScreen extends ConsumerWidget {
     final userProfileAsync = ref.watch(userProfileProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final isLight = Theme.of(context).brightness == Brightness.light;
-    final hasCustomImage = userProfileAsync.value?.profileImagePath != null &&
-        File(userProfileAsync.value!.profileImagePath!).existsSync();
+    final customImagePath = userProfileAsync.value?.profileImagePath;
     final initial = (userProfileAsync.value?.name.trim().isNotEmpty == true)
         ? userProfileAsync.value!.name.trim()[0].toUpperCase()
         : 'D';
@@ -311,12 +310,23 @@ class WorkoutHistoryScreen extends ConsumerWidget {
                   border: Border.all(color: colorScheme.surface, width: 2),
                 ),
                 child: ClipOval(
-                  child: hasCustomImage
+                  child: (customImagePath != null && customImagePath.isNotEmpty)
                       ? Image.file(
-                          File(userProfileAsync.value!.profileImagePath!),
+                          File(customImagePath),
                           width: 38,
                           height: 38,
                           fit: BoxFit.cover,
+                          cacheWidth: 76,
+                          errorBuilder: (_, _, _) => Center(
+                            child: Text(
+                              initial,
+                              style: TextStyle(
+                                color: colorScheme.onPrimary,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
                         )
                       : Center(
                           child: Text(

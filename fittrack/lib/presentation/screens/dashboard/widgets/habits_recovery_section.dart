@@ -48,7 +48,7 @@ class HabitsRecoverySection extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                   decoration: BoxDecoration(
-                    color: FtGlassTheme.primary.withValues(alpha: 0.10),
+                    color: context.ftPrimary.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
                   ),
                   child: AnimatedSwitcher(
@@ -59,11 +59,11 @@ class HabitsRecoverySection extends ConsumerWidget {
                     child: Text(
                       '$doneCount of $totalCount complete',
                       key: ValueKey<int>(doneCount),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: FtText.fontFamily,
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: FtGlassTheme.primary,
+                        color: context.ftPrimary,
                       ),
                     ),
                   ),
@@ -121,7 +121,7 @@ class _HabitItemRow extends StatelessWidget {
       rowBg = isDark
           ? const Color(0xB31A1A28)
           : Colors.white.withValues(alpha: 0.75);
-      rowBorder = FtGlassTheme.primary.withValues(alpha: isDark ? 0.35 : 0.25);
+      rowBorder = context.ftPrimary.withValues(alpha: isDark ? 0.35 : 0.25);
     } else {
       rowBg = isDark
           ? (context.isOled ? const Color(0xA6161620) : const Color(0xA6181426))
@@ -141,7 +141,7 @@ class _HabitItemRow extends StatelessWidget {
       boxShadow: isPending
           ? [
               BoxShadow(
-                color: isDark ? const Color(0x335F3BDC) : const Color(0x0F5F3BDC),
+                color: context.ftPrimary.withValues(alpha: isDark ? 0.30 : 0.12),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -219,7 +219,7 @@ class _AnimatedHabitCheckbox extends StatelessWidget {
               ? null
               : Border.all(
                   color: isPending
-                      ? FtGlassTheme.primary
+                      ? context.ftPrimary
                       : (context.isDark
                           ? Colors.white.withValues(alpha: 0.25)
                           : FtGlassTheme.outlineVariant),
@@ -236,7 +236,7 @@ class _AnimatedHabitCheckbox extends StatelessWidget {
               scale: scale,
               child: Container(
                 decoration: BoxDecoration(
-                  color: FtGlassTheme.primary,
+                  color: context.ftPrimary,
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 child: const Icon(

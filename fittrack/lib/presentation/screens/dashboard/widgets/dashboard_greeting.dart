@@ -46,17 +46,17 @@ class DashboardGreeting extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: FtGlassTheme.primary.withValues(alpha: 0.10),
+                    color: context.ftPrimary.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
                   ),
-                  child: const Text(
+                  child: Text(
                     'READY TO PEAK',
                     style: TextStyle(
                       fontFamily: FtText.fontFamily,
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.55, // 0.05em
-                      color: FtGlassTheme.primary,
+                      color: context.ftPrimary,
                     ),
                   ),
                 ),

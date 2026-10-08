@@ -57,7 +57,7 @@ class _FeaturedWorkoutCardState extends ConsumerState<FeaturedWorkoutCard> {
                 GlassSurface(
                   tier: FtGlassTier.glass2,
                   radius: FtGlassTheme.radiusPill,
-                  borderTint: FtGlassTheme.primary.withValues(alpha: 0.20),
+                  borderTint: context.ftPrimary.withValues(alpha: 0.20),
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   shadow: false,
                   child: Row(
@@ -66,20 +66,20 @@ class _FeaturedWorkoutCardState extends ConsumerState<FeaturedWorkoutCard> {
                       Container(
                         width: 6,
                         height: 6,
-                        decoration: const BoxDecoration(
-                          color: FtGlassTheme.primary,
+                        decoration: BoxDecoration(
+                          color: context.ftPrimary,
                           shape: BoxShape.circle,
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Text(
+                      Text(
                         'RECOMMENDED · TODAY',
                         style: TextStyle(
                           fontFamily: FtText.fontFamily,
                           fontSize: 9.5,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.25,
-                          color: FtGlassTheme.primary,
+                          color: context.ftPrimary,
                         ),
                       ),
                     ],
@@ -308,10 +308,10 @@ class _FeaturedWorkoutCardState extends ConsumerState<FeaturedWorkoutCard> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.access_time_rounded,
                       size: 16,
-                      color: FtGlassTheme.primary,
+                      color: context.ftPrimary,
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -365,13 +365,13 @@ class _FeaturedWorkoutCardState extends ConsumerState<FeaturedWorkoutCard> {
                   height: 40,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   decoration: BoxDecoration(
-                    color: FtGlassTheme.primary,
+                    color: context.ftPrimary,
                     borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
-                    boxShadow: const [
+                    boxShadow: [
                       BoxShadow(
-                        color: Color(0x335F3BDC),
+                        color: context.ftPrimary.withValues(alpha: 0.25),
                         blurRadius: 10,
-                        offset: Offset(0, 4),
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),

@@ -44,13 +44,13 @@ class LifestyleMasterclassSection extends ConsumerWidget {
                   onTap: () {
                     // Navigate to lifestyle catalog
                   },
-                  child: const Text(
+                  child: Text(
                     'Explore',
                     style: TextStyle(
                       fontFamily: FtText.fontFamily,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: FtGlassTheme.primary,
+                      color: context.ftPrimary,
                     ),
                   ),
                 ),
@@ -97,7 +97,7 @@ class _LifestyleCardState extends State<_LifestyleCard> {
   Widget build(BuildContext context) {
     final article = widget.article;
     final isPrimaryCategory = article.category.toLowerCase() == 'coaching';
-    final tagTextColor = isPrimaryCategory ? FtGlassTheme.primary : context.ftInk;
+    final tagTextColor = isPrimaryCategory ? context.ftPrimary : context.ftInk;
 
     return GlassSurface(
       tier: FtGlassTier.glass1,
@@ -241,7 +241,7 @@ class _LifestyleCardState extends State<_LifestyleCard> {
                   decoration: BoxDecoration(
                     border: Border(
                       top: BorderSide(
-                        color: FtGlassTheme.primary.withValues(alpha: 0.10),
+                        color: context.ftPrimary.withValues(alpha: 0.10),
                         width: 1.0,
                       ),
                     ),
@@ -251,17 +251,17 @@ class _LifestyleCardState extends State<_LifestyleCard> {
                     children: [
                       Text(
                         article.actionLabel,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: FtText.fontFamily,
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
-                          color: FtGlassTheme.primary,
+                          color: context.ftPrimary,
                         ),
                       ),
-                      const Icon(
+                      Icon(
                         Icons.chevron_right_rounded,
                         size: 12,
-                        color: FtGlassTheme.primary,
+                        color: context.ftPrimary,
                       ),
                     ],
                   ),

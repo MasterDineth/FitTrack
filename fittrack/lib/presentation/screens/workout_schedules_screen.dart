@@ -178,10 +178,8 @@ class _WorkoutSchedulesScreenState
           Builder(
             builder: (context) {
               final userProfileAsync = ref.watch(userProfileProvider);
-              final hasCustomImage =
-                  userProfileAsync.value?.profileImagePath != null &&
-                      File(userProfileAsync.value!.profileImagePath!)
-                          .existsSync();
+              final customImagePath =
+                  userProfileAsync.value?.profileImagePath;
               final initial =
                   (userProfileAsync.value?.name.trim().isNotEmpty == true)
                       ? userProfileAsync.value!.name.trim()[0].toUpperCase()
@@ -208,12 +206,23 @@ class _WorkoutSchedulesScreenState
                         border: Border.all(color: colorScheme.surface, width: 2),
                       ),
                       child: ClipOval(
-                        child: hasCustomImage
+                        child: (customImagePath != null && customImagePath.isNotEmpty)
                             ? Image.file(
-                                File(userProfileAsync.value!.profileImagePath!),
+                                File(customImagePath),
                                 width: 36,
                                 height: 36,
                                 fit: BoxFit.cover,
+                                cacheWidth: 72,
+                                errorBuilder: (_, _, _) => Center(
+                                  child: Text(
+                                    initial,
+                                    style: TextStyle(
+                                      color: colorScheme.onPrimary,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
                               )
                             : Center(
                                 child: Text(

@@ -72,6 +72,8 @@ class _AnimatedGlassDockState extends State<AnimatedGlassDock> {
         (theme.scaffoldBackgroundColor == Colors.black ||
             theme.scaffoldBackgroundColor == const Color(0xFF000000));
 
+    final primary = theme.colorScheme.primary;
+
     // Resolved floating dock glass spec matching Stitch showcase
     final double blurSigma = isOled ? 28.0 : (isDark ? 26.0 : 24.0);
     final Color dockFill = isOled
@@ -100,11 +102,11 @@ class _AnimatedGlassDockState extends State<AnimatedGlassDock> {
                   offset: Offset(0, 16),
                 ),
               ]
-            : const [
+            : [
                 BoxShadow(
-                  color: Color(0x1F7C5CFA), // 0 16px 36px rgba(124, 92, 250, 0.12)
+                  color: primary.withValues(alpha: 0.12), // 0 16px 36px primary@12%
                   blurRadius: 36,
-                  offset: Offset(0, 16),
+                  offset: const Offset(0, 16),
                 ),
               ]);
 
@@ -179,6 +181,7 @@ class _AnimatedGlassDockState extends State<AnimatedGlassDock> {
                           isActive: isActive,
                           isPressed: isPressed,
                           isDark: isDark,
+                          primary: primary,
                         );
                       }),
                     ),
@@ -198,37 +201,42 @@ class _AnimatedGlassDockState extends State<AnimatedGlassDock> {
     required bool isActive,
     required bool isPressed,
     required bool isDark,
+    required Color primary,
   }) {
-    // Colors matching Stitch Showcase:
-    // Light Active: bg-violet-100/90 (#EDE9FE with 90% opacity), text #7C5CFA, icon #7C5CFA
-    // Dark Active: bg-violet-500/20 (rgba(139, 92, 246, 0.20)), text #C4B5FD, icon #8B6CFD
+    // Theme-adaptive colors derived from user's chosen accent color:
+    // Light Active: primary@12% fill, text & icon primary
+    // Dark Active: primary@20% fill, text & icon lightened primary
     // Inactive: slate-400 (#94A3B8 in dark, #64748B in light)
     final Color activePillBg = isDark
-        ? const Color(0x338B5CF6) // bg-violet-500/20
-        : const Color(0xE6EDE9FE); // bg-violet-100/90
+        ? primary.withValues(alpha: 0.20)
+        : primary.withValues(alpha: 0.12);
     final Color activeTextColor = isDark
-        ? const Color(0xFFC4B5FD)
-        : const Color(0xFF7C5CFA);
+        ? HSLColor.fromColor(primary)
+            .withLightness((HSLColor.fromColor(primary).lightness + 0.25).clamp(0.0, 1.0))
+            .toColor()
+        : primary;
     final Color activeIconColor = isDark
-        ? const Color(0xFF8B6CFD)
-        : const Color(0xFF7C5CFA);
+        ? HSLColor.fromColor(primary)
+            .withLightness((HSLColor.fromColor(primary).lightness + 0.15).clamp(0.0, 1.0))
+            .toColor()
+        : primary;
     final Color inactiveColor = isDark
         ? const Color(0xFF94A3B8)
         : const Color(0xFF64748B);
 
     final activeShadow = isDark
-        ? const [
+        ? [
             BoxShadow(
-              color: Color(0x268B5CF6),
+              color: primary.withValues(alpha: 0.25),
               blurRadius: 10,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ]
-        : const [
+        : [
             BoxShadow(
-              color: Color(0x147C5CFA),
+              color: primary.withValues(alpha: 0.14),
               blurRadius: 8,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ];
 

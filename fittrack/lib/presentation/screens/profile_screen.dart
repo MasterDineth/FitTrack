@@ -163,8 +163,7 @@ class ProfileScreen extends ConsumerWidget {
     final cardBg = theme.cardTheme.color ?? colorScheme.surface;
     final tileBg = colorScheme.surfaceContainerHighest.withValues(alpha: 0.5);
 
-    final hasCustomImage = profile.profileImagePath != null &&
-        File(profile.profileImagePath!).existsSync();
+    final customImagePath = profile.profileImagePath;
 
     final initials = profile.name.trim().isNotEmpty
         ? profile.name.trim()[0].toUpperCase()
@@ -212,12 +211,24 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
                 child: ClipOval(
-                  child: hasCustomImage
+                  child: (customImagePath != null && customImagePath.isNotEmpty)
                       ? Image.file(
-                          File(profile.profileImagePath!),
+                          File(customImagePath),
                           width: 104,
                           height: 104,
                           fit: BoxFit.cover,
+                          cacheWidth: 208,
+                          errorBuilder: (_, _, _) => Center(
+                            child: Text(
+                              initials,
+                              style: TextStyle(
+                                fontFamily: 'Plus Jakarta Sans',
+                                fontSize: 38,
+                                fontWeight: FontWeight.w800,
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
                         )
                       : Center(
                           child: Text(

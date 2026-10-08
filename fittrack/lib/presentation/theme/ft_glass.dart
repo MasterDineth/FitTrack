@@ -255,11 +255,21 @@ extension FtThemeContext on BuildContext {
       (Theme.of(this).scaffoldBackgroundColor == Colors.black ||
           Theme.of(this).scaffoldBackgroundColor == const Color(0xFF000000));
 
+  Color get ftPrimary => Theme.of(this).colorScheme.primary;
+
+  Color get ftPrimaryLight => HSLColor.fromColor(ftPrimary)
+      .withLightness((HSLColor.fromColor(ftPrimary).lightness + 0.20).clamp(0.0, 1.0))
+      .toColor();
+
   Color get ftInk => isDark ? Colors.white : FtGlassTheme.ink;
 
   Color get ftMuted => isDark ? const Color(0xFF94A3B8) : FtGlassTheme.muted;
 
   Color get ftSubtext => isDark ? const Color(0xFFCBD5E1) : FtGlassTheme.muted;
+
+  Color get ftCanvas => isDark
+      ? Theme.of(this).scaffoldBackgroundColor
+      : FtGlassTheme.canvas;
 
   FtGlassSpec glassSpec(FtGlassTier tier) => FtGlassTheme.specFor(tier, this);
 }
