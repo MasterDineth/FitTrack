@@ -1069,6 +1069,21 @@ class AppearanceSettingsScreen extends ConsumerWidget {
           ),
           child: Column(
             children: [
+              // 0. Frosted Glass Transparency
+              _buildSwitchRow(
+                icon: Icons.blur_on,
+                title: 'Frosted Glass Transparency',
+                subtitle:
+                    'Render translucent frosted glass surfaces with real-time backdrop blur matching Stitch design',
+                value: themeSettings.enableGlassTransparency,
+                accentColor: accent,
+                textPrimary: textPrimary,
+                textMuted: textMuted,
+                iconBg: iconBg,
+                onChanged: (val) => themeNotifier.toggleGlassTransparency(val),
+              ),
+              Divider(height: 1, thickness: 1, color: borderColor),
+
               // 1. Pure Black OLED Mode (Disabled in Light Mode)
               IgnorePointer(
                 ignoring: isLightMode,

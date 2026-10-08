@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ThemeSettings {
 
-@ThemeModeConverter() ThemeMode get themeMode; int get accentColorValue; bool get useDynamicAccent; bool get useOledBlack; bool get useHighContrast; bool get autoDarkWorkout; bool get keepScreenAwake;
+@ThemeModeConverter() ThemeMode get themeMode; int get accentColorValue; bool get useDynamicAccent; bool get useOledBlack; bool get useHighContrast; bool get autoDarkWorkout; bool get keepScreenAwake; bool get enableGlassTransparency;
 /// Create a copy of ThemeSettings
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +30,20 @@ $ThemeSettingsCopyWith<ThemeSettings> get copyWith => _$ThemeSettingsCopyWithImp
 @override
 bool operator ==(Object other) {
   final _this = this as ThemeSettings;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ThemeSettings&&(identical(other.themeMode, _this.themeMode) || other.themeMode == _this.themeMode)&&(identical(other.accentColorValue, _this.accentColorValue) || other.accentColorValue == _this.accentColorValue)&&(identical(other.useDynamicAccent, _this.useDynamicAccent) || other.useDynamicAccent == _this.useDynamicAccent)&&(identical(other.useOledBlack, _this.useOledBlack) || other.useOledBlack == _this.useOledBlack)&&(identical(other.useHighContrast, _this.useHighContrast) || other.useHighContrast == _this.useHighContrast)&&(identical(other.autoDarkWorkout, _this.autoDarkWorkout) || other.autoDarkWorkout == _this.autoDarkWorkout)&&(identical(other.keepScreenAwake, _this.keepScreenAwake) || other.keepScreenAwake == _this.keepScreenAwake));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ThemeSettings&&(identical(other.themeMode, _this.themeMode) || other.themeMode == _this.themeMode)&&(identical(other.accentColorValue, _this.accentColorValue) || other.accentColorValue == _this.accentColorValue)&&(identical(other.useDynamicAccent, _this.useDynamicAccent) || other.useDynamicAccent == _this.useDynamicAccent)&&(identical(other.useOledBlack, _this.useOledBlack) || other.useOledBlack == _this.useOledBlack)&&(identical(other.useHighContrast, _this.useHighContrast) || other.useHighContrast == _this.useHighContrast)&&(identical(other.autoDarkWorkout, _this.autoDarkWorkout) || other.autoDarkWorkout == _this.autoDarkWorkout)&&(identical(other.keepScreenAwake, _this.keepScreenAwake) || other.keepScreenAwake == _this.keepScreenAwake)&&(identical(other.enableGlassTransparency, _this.enableGlassTransparency) || other.enableGlassTransparency == _this.enableGlassTransparency));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as ThemeSettings;
-  return Object.hash(runtimeType,_this.themeMode,_this.accentColorValue,_this.useDynamicAccent,_this.useOledBlack,_this.useHighContrast,_this.autoDarkWorkout,_this.keepScreenAwake);
+  return Object.hash(runtimeType,_this.themeMode,_this.accentColorValue,_this.useDynamicAccent,_this.useOledBlack,_this.useHighContrast,_this.autoDarkWorkout,_this.keepScreenAwake,_this.enableGlassTransparency);
 }
 
 @override
 String toString() {
   final _this = this as ThemeSettings;
-  return 'ThemeSettings(themeMode: ${_this.themeMode}, accentColorValue: ${_this.accentColorValue}, useDynamicAccent: ${_this.useDynamicAccent}, useOledBlack: ${_this.useOledBlack}, useHighContrast: ${_this.useHighContrast}, autoDarkWorkout: ${_this.autoDarkWorkout}, keepScreenAwake: ${_this.keepScreenAwake})';
+  return 'ThemeSettings(themeMode: ${_this.themeMode}, accentColorValue: ${_this.accentColorValue}, useDynamicAccent: ${_this.useDynamicAccent}, useOledBlack: ${_this.useOledBlack}, useHighContrast: ${_this.useHighContrast}, autoDarkWorkout: ${_this.autoDarkWorkout}, keepScreenAwake: ${_this.keepScreenAwake}, enableGlassTransparency: ${_this.enableGlassTransparency})';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $ThemeSettingsCopyWith<$Res>  {
   factory $ThemeSettingsCopyWith(ThemeSettings value, $Res Function(ThemeSettings) _then) = _$ThemeSettingsCopyWithImpl;
 @useResult
 $Res call({
-@ThemeModeConverter() ThemeMode themeMode, int accentColorValue, bool useDynamicAccent, bool useOledBlack, bool useHighContrast, bool autoDarkWorkout, bool keepScreenAwake
+@ThemeModeConverter() ThemeMode themeMode, int accentColorValue, bool useDynamicAccent, bool useOledBlack, bool useHighContrast, bool autoDarkWorkout, bool keepScreenAwake, bool enableGlassTransparency
 });
 
 
@@ -71,7 +71,7 @@ class _$ThemeSettingsCopyWithImpl<$Res>
 
 /// Create a copy of ThemeSettings
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? themeMode = null,Object? accentColorValue = null,Object? useDynamicAccent = null,Object? useOledBlack = null,Object? useHighContrast = null,Object? autoDarkWorkout = null,Object? keepScreenAwake = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? themeMode = null,Object? accentColorValue = null,Object? useDynamicAccent = null,Object? useOledBlack = null,Object? useHighContrast = null,Object? autoDarkWorkout = null,Object? keepScreenAwake = null,Object? enableGlassTransparency = null,}) {
   return _then(ThemeSettings(
 themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
 as ThemeMode,accentColorValue: null == accentColorValue ? _self.accentColorValue : accentColorValue // ignore: cast_nullable_to_non_nullable
@@ -80,6 +80,7 @@ as bool,useOledBlack: null == useOledBlack ? _self.useOledBlack : useOledBlack /
 as bool,useHighContrast: null == useHighContrast ? _self.useHighContrast : useHighContrast // ignore: cast_nullable_to_non_nullable
 as bool,autoDarkWorkout: null == autoDarkWorkout ? _self.autoDarkWorkout : autoDarkWorkout // ignore: cast_nullable_to_non_nullable
 as bool,keepScreenAwake: null == keepScreenAwake ? _self.keepScreenAwake : keepScreenAwake // ignore: cast_nullable_to_non_nullable
+as bool,enableGlassTransparency: null == enableGlassTransparency ? _self.enableGlassTransparency : enableGlassTransparency // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
@@ -165,10 +166,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@ThemeModeConverter()  ThemeMode themeMode,  int accentColorValue,  bool useDynamicAccent,  bool useOledBlack,  bool useHighContrast,  bool autoDarkWorkout,  bool keepScreenAwake)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@ThemeModeConverter()  ThemeMode themeMode,  int accentColorValue,  bool useDynamicAccent,  bool useOledBlack,  bool useHighContrast,  bool autoDarkWorkout,  bool keepScreenAwake,  bool enableGlassTransparency)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ThemeSettings() when $default != null:
-return $default(_that.themeMode,_that.accentColorValue,_that.useDynamicAccent,_that.useOledBlack,_that.useHighContrast,_that.autoDarkWorkout,_that.keepScreenAwake);case _:
+return $default(_that.themeMode,_that.accentColorValue,_that.useDynamicAccent,_that.useOledBlack,_that.useHighContrast,_that.autoDarkWorkout,_that.keepScreenAwake,_that.enableGlassTransparency);case _:
   return orElse();
 
 }
@@ -186,10 +187,10 @@ return $default(_that.themeMode,_that.accentColorValue,_that.useDynamicAccent,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@ThemeModeConverter()  ThemeMode themeMode,  int accentColorValue,  bool useDynamicAccent,  bool useOledBlack,  bool useHighContrast,  bool autoDarkWorkout,  bool keepScreenAwake)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@ThemeModeConverter()  ThemeMode themeMode,  int accentColorValue,  bool useDynamicAccent,  bool useOledBlack,  bool useHighContrast,  bool autoDarkWorkout,  bool keepScreenAwake,  bool enableGlassTransparency)  $default,) {final _that = this;
 switch (_that) {
 case _ThemeSettings():
-return $default(_that.themeMode,_that.accentColorValue,_that.useDynamicAccent,_that.useOledBlack,_that.useHighContrast,_that.autoDarkWorkout,_that.keepScreenAwake);case _:
+return $default(_that.themeMode,_that.accentColorValue,_that.useDynamicAccent,_that.useOledBlack,_that.useHighContrast,_that.autoDarkWorkout,_that.keepScreenAwake,_that.enableGlassTransparency);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -206,10 +207,10 @@ return $default(_that.themeMode,_that.accentColorValue,_that.useDynamicAccent,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@ThemeModeConverter()  ThemeMode themeMode,  int accentColorValue,  bool useDynamicAccent,  bool useOledBlack,  bool useHighContrast,  bool autoDarkWorkout,  bool keepScreenAwake)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@ThemeModeConverter()  ThemeMode themeMode,  int accentColorValue,  bool useDynamicAccent,  bool useOledBlack,  bool useHighContrast,  bool autoDarkWorkout,  bool keepScreenAwake,  bool enableGlassTransparency)?  $default,) {final _that = this;
 switch (_that) {
 case _ThemeSettings() when $default != null:
-return $default(_that.themeMode,_that.accentColorValue,_that.useDynamicAccent,_that.useOledBlack,_that.useHighContrast,_that.autoDarkWorkout,_that.keepScreenAwake);case _:
+return $default(_that.themeMode,_that.accentColorValue,_that.useDynamicAccent,_that.useOledBlack,_that.useHighContrast,_that.autoDarkWorkout,_that.keepScreenAwake,_that.enableGlassTransparency);case _:
   return null;
 
 }
@@ -221,7 +222,7 @@ return $default(_that.themeMode,_that.accentColorValue,_that.useDynamicAccent,_t
 @JsonSerializable()
 
 class _ThemeSettings extends ThemeSettings {
-  const _ThemeSettings({@ThemeModeConverter() this.themeMode = ThemeMode.system, this.accentColorValue = 0xFF00D68F, this.useDynamicAccent = false, this.useOledBlack = false, this.useHighContrast = false, this.autoDarkWorkout = true, this.keepScreenAwake = true}): super._();
+  const _ThemeSettings({@ThemeModeConverter() this.themeMode = ThemeMode.system, this.accentColorValue = 0xFF00D68F, this.useDynamicAccent = false, this.useOledBlack = false, this.useHighContrast = false, this.autoDarkWorkout = true, this.keepScreenAwake = true, this.enableGlassTransparency = true}): super._();
   factory _ThemeSettings.fromJson(Map<String, dynamic> json) => _$ThemeSettingsFromJson(json);
 
 @override@JsonKey()@ThemeModeConverter() final  ThemeMode themeMode;
@@ -231,6 +232,7 @@ class _ThemeSettings extends ThemeSettings {
 @override@JsonKey() final  bool useHighContrast;
 @override@JsonKey() final  bool autoDarkWorkout;
 @override@JsonKey() final  bool keepScreenAwake;
+@override@JsonKey() final  bool enableGlassTransparency;
 
 /// Create a copy of ThemeSettings
 /// with the given fields replaced by the non-null parameter values.
@@ -245,18 +247,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ThemeSettings&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.accentColorValue, accentColorValue) || other.accentColorValue == accentColorValue)&&(identical(other.useDynamicAccent, useDynamicAccent) || other.useDynamicAccent == useDynamicAccent)&&(identical(other.useOledBlack, useOledBlack) || other.useOledBlack == useOledBlack)&&(identical(other.useHighContrast, useHighContrast) || other.useHighContrast == useHighContrast)&&(identical(other.autoDarkWorkout, autoDarkWorkout) || other.autoDarkWorkout == autoDarkWorkout)&&(identical(other.keepScreenAwake, keepScreenAwake) || other.keepScreenAwake == keepScreenAwake));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ThemeSettings&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.accentColorValue, accentColorValue) || other.accentColorValue == accentColorValue)&&(identical(other.useDynamicAccent, useDynamicAccent) || other.useDynamicAccent == useDynamicAccent)&&(identical(other.useOledBlack, useOledBlack) || other.useOledBlack == useOledBlack)&&(identical(other.useHighContrast, useHighContrast) || other.useHighContrast == useHighContrast)&&(identical(other.autoDarkWorkout, autoDarkWorkout) || other.autoDarkWorkout == autoDarkWorkout)&&(identical(other.keepScreenAwake, keepScreenAwake) || other.keepScreenAwake == keepScreenAwake)&&(identical(other.enableGlassTransparency, enableGlassTransparency) || other.enableGlassTransparency == enableGlassTransparency));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,themeMode,accentColorValue,useDynamicAccent,useOledBlack,useHighContrast,autoDarkWorkout,keepScreenAwake);
+    return Object.hash(runtimeType,themeMode,accentColorValue,useDynamicAccent,useOledBlack,useHighContrast,autoDarkWorkout,keepScreenAwake,enableGlassTransparency);
 }
 
 @override
 String toString() {
-    return 'ThemeSettings(themeMode: $themeMode, accentColorValue: $accentColorValue, useDynamicAccent: $useDynamicAccent, useOledBlack: $useOledBlack, useHighContrast: $useHighContrast, autoDarkWorkout: $autoDarkWorkout, keepScreenAwake: $keepScreenAwake)';
+    return 'ThemeSettings(themeMode: $themeMode, accentColorValue: $accentColorValue, useDynamicAccent: $useDynamicAccent, useOledBlack: $useOledBlack, useHighContrast: $useHighContrast, autoDarkWorkout: $autoDarkWorkout, keepScreenAwake: $keepScreenAwake, enableGlassTransparency: $enableGlassTransparency)';
 }
 
 
@@ -267,7 +269,7 @@ abstract mixin class _$ThemeSettingsCopyWith<$Res> implements $ThemeSettingsCopy
   factory _$ThemeSettingsCopyWith(_ThemeSettings value, $Res Function(_ThemeSettings) _then) = __$ThemeSettingsCopyWithImpl;
 @override @useResult
 $Res call({
-@ThemeModeConverter() ThemeMode themeMode, int accentColorValue, bool useDynamicAccent, bool useOledBlack, bool useHighContrast, bool autoDarkWorkout, bool keepScreenAwake
+@ThemeModeConverter() ThemeMode themeMode, int accentColorValue, bool useDynamicAccent, bool useOledBlack, bool useHighContrast, bool autoDarkWorkout, bool keepScreenAwake, bool enableGlassTransparency
 });
 
 
@@ -284,7 +286,7 @@ class __$ThemeSettingsCopyWithImpl<$Res>
 
 /// Create a copy of ThemeSettings
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? themeMode = null,Object? accentColorValue = null,Object? useDynamicAccent = null,Object? useOledBlack = null,Object? useHighContrast = null,Object? autoDarkWorkout = null,Object? keepScreenAwake = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? themeMode = null,Object? accentColorValue = null,Object? useDynamicAccent = null,Object? useOledBlack = null,Object? useHighContrast = null,Object? autoDarkWorkout = null,Object? keepScreenAwake = null,Object? enableGlassTransparency = null,}) {
   return _then(_ThemeSettings(
 themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
 as ThemeMode,accentColorValue: null == accentColorValue ? _self.accentColorValue : accentColorValue // ignore: cast_nullable_to_non_nullable
@@ -293,6 +295,7 @@ as bool,useOledBlack: null == useOledBlack ? _self.useOledBlack : useOledBlack /
 as bool,useHighContrast: null == useHighContrast ? _self.useHighContrast : useHighContrast // ignore: cast_nullable_to_non_nullable
 as bool,autoDarkWorkout: null == autoDarkWorkout ? _self.autoDarkWorkout : autoDarkWorkout // ignore: cast_nullable_to_non_nullable
 as bool,keepScreenAwake: null == keepScreenAwake ? _self.keepScreenAwake : keepScreenAwake // ignore: cast_nullable_to_non_nullable
+as bool,enableGlassTransparency: null == enableGlassTransparency ? _self.enableGlassTransparency : enableGlassTransparency // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }

@@ -55,7 +55,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     final sections = [
       const DashboardHeader(),
       const DashboardGreeting(),
-      const HydrationBanner(initialVisible: false),
+      const HydrationBanner(initialVisible: true),
       const TelemetryStack(),
       const FeaturedWorkoutCard(),
       const HabitsRecoverySection(),

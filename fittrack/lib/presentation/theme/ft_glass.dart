@@ -46,11 +46,11 @@ class FtGlassTheme extends ThemeExtension<FtGlassTheme> {
   static const Color amberBorder = Color(0xFFFCD34D);
 
   // ── Light Mode Glass Tiers ────────────────────────────────────────────────
-  // glass1: white 72% / white 85% / 0 8 32 rgba(95,59,220,.08) / white 90%
+  // glass1: white 60% / white 85% / 0 8 32 rgba(95,59,220,.08) / white 95%, blur sigma 16
   static const FtGlassSpec glass1 = FtGlassSpec(
-    fill: Color(0xB8FFFFFF), // 72%
+    fill: Color(0x99FFFFFF), // 60% translucent
     border: Color(0xD9FFFFFF), // 85%
-    highlight: Color(0xE6FFFFFF), // 90%
+    highlight: Color(0xF2FFFFFF), // 95%
     shadows: [
       BoxShadow(
         color: Color(0x145F3BDC), // rgba(95,59,220, 0.08)
@@ -58,14 +58,16 @@ class FtGlassTheme extends ThemeExtension<FtGlassTheme> {
         offset: Offset(0, 8),
       ),
     ],
+    blurSigma: 16.0,
   );
 
-  // glass2: white 80% / white 85% / none / white 90%
+  // glass2: white 50% / white 70% / none / white 85%, blur sigma 10
   static const FtGlassSpec glass2 = FtGlassSpec(
-    fill: Color(0xCCFFFFFF), // 80%
-    border: Color(0xD9FFFFFF), // 85%
-    highlight: Color(0xE6FFFFFF), // 90%
+    fill: Color(0x80FFFFFF), // 50% translucent
+    border: Color(0xB3FFFFFF), // 70%
+    highlight: Color(0xD9FFFFFF), // 85%
     shadows: [],
+    blurSigma: 10.0,
   );
 
   // glassFloating: white 78% / white 90% / 0 16 36 rgba(124,92,250,.12) / white 95%, blur sigma 24
@@ -84,11 +86,11 @@ class FtGlassTheme extends ThemeExtension<FtGlassTheme> {
   );
 
   // ── Slate Dark Mode Glass Tiers (#0C0A18 / #0B131F) ────────────────────────
-  // glass1Dark: rgba(22, 18, 38, 0.65) / border rgba(255,255,255,0.12) / shadow 0 12 36 rgba(0,0,0,0.5)
+  // glass1Dark: rgba(22, 18, 38, 0.50) / border rgba(255,255,255,0.15) / blur sigma 18
   static const FtGlassSpec glass1Dark = FtGlassSpec(
-    fill: Color(0xA6161226), // rgba(22, 18, 38, 0.65)
-    border: Color(0x1FFFFFFF), // rgba(255, 255, 255, 0.12)
-    highlight: Color(0x24FFFFFF), // rgba(255, 255, 255, 0.14)
+    fill: Color(0x80161226), // 50% translucent dark slate
+    border: Color(0x26FFFFFF), // 15% glowing white border
+    highlight: Color(0x2EFFFFFF), // 18%
     shadows: [
       BoxShadow(
         color: Color(0x80000000), // rgba(0, 0, 0, 0.50)
@@ -96,14 +98,16 @@ class FtGlassTheme extends ThemeExtension<FtGlassTheme> {
         offset: Offset(0, 12),
       ),
     ],
+    blurSigma: 18.0,
   );
 
-  // glass2Dark: rgba(28, 22, 48, 0.75) / border rgba(255,255,255,0.10)
+  // glass2Dark: rgba(28, 22, 48, 0.30) / border rgba(255,255,255,0.12), blur sigma 10
   static const FtGlassSpec glass2Dark = FtGlassSpec(
-    fill: Color(0xBF1C1630), // rgba(28, 22, 48, 0.75)
-    border: Color(0x1AFFFFFF), // rgba(255, 255, 255, 0.10)
+    fill: Color(0x4D1C1630), // 30% translucent dark slate
+    border: Color(0x1FFFFFFF), // 12%
     highlight: Color(0x24FFFFFF),
     shadows: [],
+    blurSigma: 10.0,
   );
 
   // glassFloatingDark: rgba(18, 14, 34, 0.76) / border rgba(255,255,255,0.14) / blur sigma 26
@@ -122,11 +126,11 @@ class FtGlassTheme extends ThemeExtension<FtGlassTheme> {
   );
 
   // ── Pure AMOLED OLED Dark Mode Glass Tiers (#000000) ────────────────────────
-  // glass1Oled: rgba(14, 14, 20, 0.72) / border rgba(255,255,255,0.09) / shadow 0 8 32 rgba(0,0,0,0.55)
+  // glass1Oled: rgba(14, 14, 20, 0.52) / border rgba(255,255,255,0.12) / blur sigma 18
   static const FtGlassSpec glass1Oled = FtGlassSpec(
-    fill: Color(0xB80E0E14), // rgba(14, 14, 20, 0.72)
-    border: Color(0x17FFFFFF), // rgba(255, 255, 255, 0.09)
-    highlight: Color(0x1AFFFFFF),
+    fill: Color(0x850E0E14), // 52% translucent OLED dark
+    border: Color(0x1FFFFFFF), // 12%
+    highlight: Color(0x24FFFFFF),
     shadows: [
       BoxShadow(
         color: Color(0x8C000000), // rgba(0, 0, 0, 0.55)
@@ -134,14 +138,16 @@ class FtGlassTheme extends ThemeExtension<FtGlassTheme> {
         offset: Offset(0, 8),
       ),
     ],
+    blurSigma: 18.0,
   );
 
-  // glass2Oled: rgba(22, 22, 32, 0.65) / border rgba(255,255,255,0.07)
+  // glass2Oled: rgba(22, 22, 32, 0.30) / border rgba(255,255,255,0.09), blur sigma 10
   static const FtGlassSpec glass2Oled = FtGlassSpec(
-    fill: Color(0xA6161620), // rgba(22, 22, 32, 0.65)
-    border: Color(0x12FFFFFF), // rgba(255, 255, 255, 0.07)
-    highlight: Color(0x14FFFFFF),
+    fill: Color(0x4D161620), // 30% translucent OLED dark
+    border: Color(0x17FFFFFF), // 9%
+    highlight: Color(0x1AFFFFFF),
     shadows: [],
+    blurSigma: 10.0,
   );
 
   // glassFloatingOled: rgba(12, 12, 18, 0.82) / border rgba(255,255,255,0.12) / blur sigma 28
@@ -159,6 +165,73 @@ class FtGlassTheme extends ThemeExtension<FtGlassTheme> {
     blurSigma: 28.0,
   );
 
+  // ── Solid Fallback Tiers (When Glass Transparency is toggled Off) ───────────
+  static const FtGlassSpec solid1Light = FtGlassSpec(
+    fill: Colors.white,
+    border: Color(0xFFE2E8F0),
+    highlight: Colors.transparent,
+    shadows: [
+      BoxShadow(
+        color: Color(0x0F000000),
+        blurRadius: 16,
+        offset: Offset(0, 4),
+      ),
+    ],
+    blurSigma: 0.0,
+  );
+
+  static const FtGlassSpec solid2Light = FtGlassSpec(
+    fill: Color(0xFFF8FAFC),
+    border: Color(0xFFE2E8F0),
+    highlight: Colors.transparent,
+    shadows: [],
+    blurSigma: 0.0,
+  );
+
+  static const FtGlassSpec solid1Dark = FtGlassSpec(
+    fill: Color(0xFF161226),
+    border: Color(0x1FFFFFFF),
+    highlight: Colors.transparent,
+    shadows: [
+      BoxShadow(
+        color: Color(0x80000000),
+        blurRadius: 24,
+        offset: Offset(0, 8),
+      ),
+    ],
+    blurSigma: 0.0,
+  );
+
+  static const FtGlassSpec solid2Dark = FtGlassSpec(
+    fill: Color(0xFF1C1630),
+    border: Color(0x1AFFFFFF),
+    highlight: Colors.transparent,
+    shadows: [],
+    blurSigma: 0.0,
+  );
+
+  static const FtGlassSpec solid1Oled = FtGlassSpec(
+    fill: Color(0xFF0E0E14),
+    border: Color(0x17FFFFFF),
+    highlight: Colors.transparent,
+    shadows: [
+      BoxShadow(
+        color: Color(0x8C000000),
+        blurRadius: 24,
+        offset: Offset(0, 8),
+      ),
+    ],
+    blurSigma: 0.0,
+  );
+
+  static const FtGlassSpec solid2Oled = FtGlassSpec(
+    fill: Color(0xFF161620),
+    border: Color(0x12FFFFFF),
+    highlight: Colors.transparent,
+    shadows: [],
+    blurSigma: 0.0,
+  );
+
   // Corner Radii
   static const double radiusHero = 26.0;
   static const double radiusStackCards = 22.0;
@@ -171,8 +244,39 @@ class FtGlassTheme extends ThemeExtension<FtGlassTheme> {
 
   /// Resolves the glass specification for a given [tier] and optional [context].
   /// When [context] is provided, dynamically adapts between Light, Slate Dark,
-  /// and Pure OLED Dark based on theme brightness and scaffold background.
-  static FtGlassSpec specFor(FtGlassTier tier, [BuildContext? context]) {
+  /// and Pure OLED Dark based on theme brightness, scaffold background, and
+  /// [enableTransparency].
+  static FtGlassSpec specFor(
+    FtGlassTier tier, [
+    BuildContext? context,
+    bool enableTransparency = true,
+  ]) {
+    if (!enableTransparency) {
+      final isDark = context != null && Theme.of(context).brightness == Brightness.dark;
+      final isOled = isDark &&
+          (Theme.of(context).scaffoldBackgroundColor == Colors.black ||
+              Theme.of(context).scaffoldBackgroundColor == const Color(0xFF000000));
+      if (!isDark) {
+        return switch (tier) {
+          FtGlassTier.glass1 => solid1Light,
+          FtGlassTier.glass2 => solid2Light,
+          FtGlassTier.glassFloating => solid1Light,
+        };
+      }
+      if (isOled) {
+        return switch (tier) {
+          FtGlassTier.glass1 => solid1Oled,
+          FtGlassTier.glass2 => solid2Oled,
+          FtGlassTier.glassFloating => solid1Oled,
+        };
+      }
+      return switch (tier) {
+        FtGlassTier.glass1 => solid1Dark,
+        FtGlassTier.glass2 => solid2Dark,
+        FtGlassTier.glassFloating => solid1Dark,
+      };
+    }
+
     if (context == null) {
       switch (tier) {
         case FtGlassTier.glass1:

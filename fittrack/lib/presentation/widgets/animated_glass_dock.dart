@@ -2,6 +2,8 @@ import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/theme_provider.dart';
 import '../theme/ft_glass.dart';
 
 /// Floating Bottom Navigation Bar rebuilt exactly according to the Google Stitch
@@ -11,10 +13,10 @@ import '../theme/ft_glass.dart';
 /// - Single [BackdropFilter] wrapped in [RepaintBoundary] (sigma 24 in light, 26 in dark, 28 in OLED).
 /// - Exact Stitch dock geometry: 58px height, 353px max-width, floating 16px above navigation bar.
 /// - Borderless luminous active tab pill (light: bg-violet-100/90, dark/OLED: bg-violet-500/20).
-/// - Inactive tabs in minimal icon-only outlined style with 48x48 tap targets.
+/// - Large, effortless 66x58px hit targets spanning the full height of the dock without dead zones.
 /// - Crisp modern haptic tap feedback ([HapticFeedback.lightImpact]).
 /// - Smooth 200ms kinetic spring expansion/collapse transitions without jank or layout lag.
-class AnimatedGlassDock extends StatefulWidget {
+class AnimatedGlassDock extends ConsumerStatefulWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
@@ -25,10 +27,10 @@ class AnimatedGlassDock extends StatefulWidget {
   });
 
   @override
-  State<AnimatedGlassDock> createState() => _AnimatedGlassDockState();
+  ConsumerState<AnimatedGlassDock> createState() => _AnimatedGlassDockState();
 }
 
-class _AnimatedGlassDockState extends State<AnimatedGlassDock> {
+class _AnimatedGlassDockState extends ConsumerState<AnimatedGlassDock> {
   int? _pressedTabIndex;
 
   static const List<_DockTabItem> _tabs = [
@@ -74,13 +76,25 @@ class _AnimatedGlassDockState extends State<AnimatedGlassDock> {
 
     final primary = theme.colorScheme.primary;
 
+    bool enableTransparency = true;
+    try {
+      final themeSettings = ref.watch(themeNotifierProvider);
+      enableTransparency = themeSettings.enableGlassTransparency;
+    } catch (_) {}
+
     // Resolved floating dock glass spec matching Stitch showcase
-    final double blurSigma = isOled ? 28.0 : (isDark ? 26.0 : 24.0);
-    final Color dockFill = isOled
-        ? const Color(0xD10C0C12) // rgba(12, 12, 18, 0.82)
-        : (isDark
-            ? const Color(0xC2120E22) // rgba(18, 14, 34, 0.76)
-            : const Color(0xC7FFFFFF)); // rgba(255, 255, 255, 0.78)
+    final double blurSigma = !enableTransparency
+        ? 0.0
+        : (isOled ? 28.0 : (isDark ? 26.0 : 24.0));
+    final Color dockFill = !enableTransparency
+        ? (isOled
+            ? const Color(0xFF0C0C12)
+            : (isDark ? const Color(0xFF161226) : Colors.white))
+        : (isOled
+            ? const Color(0xD10C0C12) // rgba(12, 12, 18, 0.82)
+            : (isDark
+                ? const Color(0xC2120E22) // rgba(18, 14, 34, 0.76)
+                : const Color(0xC7FFFFFF))); // rgba(255, 255, 255, 0.78)
     final Color dockBorder = isOled
         ? const Color(0x1FFFFFFF) // 1px solid rgba(255, 255, 255, 0.12)
         : (isDark
@@ -128,20 +142,32 @@ class _AnimatedGlassDockState extends State<AnimatedGlassDock> {
                 // 1. Frosted Glass Floating Dock Shell (The ONLY BackdropFilter on this screen)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: dockFill,
-                        borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
-                        border: Border.all(
-                          color: dockBorder,
-                          width: 1.0,
+                  child: blurSigma > 0
+                      ? BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: dockFill,
+                              borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
+                              border: Border.all(
+                                color: dockBorder,
+                                width: 1.0,
+                              ),
+                              boxShadow: dockShadow,
+                            ),
+                          ),
+                        )
+                      : Container(
+                          decoration: BoxDecoration(
+                            color: dockFill,
+                            borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
+                            border: Border.all(
+                              color: dockBorder,
+                              width: 1.0,
+                            ),
+                            boxShadow: dockShadow,
+                          ),
                         ),
-                        boxShadow: dockShadow,
-                      ),
-                    ),
-                  ),
                 ),
 
                 // Inset specular rim highlight at the top edge
@@ -163,25 +189,27 @@ class _AnimatedGlassDockState extends State<AnimatedGlassDock> {
                   ),
                 ),
 
-                // 2. Interactive Navigation Tabs Row
+                // 2. Interactive Navigation Tabs Row spanning full 58px height
                 Positioned.fill(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: List.generate(_tabs.length, (index) {
                         final tab = _tabs[index];
                         final isActive = index == widget.currentIndex;
                         final isPressed = _pressedTabIndex == index;
 
-                        return _buildDockTab(
-                          index: index,
-                          tab: tab,
-                          isActive: isActive,
-                          isPressed: isPressed,
-                          isDark: isDark,
-                          primary: primary,
+                        return Expanded(
+                          flex: isActive ? 2 : 1,
+                          child: _buildDockTab(
+                            index: index,
+                            tab: tab,
+                            isActive: isActive,
+                            isPressed: isPressed,
+                            isDark: isDark,
+                            primary: primary,
+                          ),
                         );
                       }),
                     ),
@@ -264,42 +292,48 @@ class _AnimatedGlassDockState extends State<AnimatedGlassDock> {
         onTapCancel: () => setState(() => _pressedTabIndex = null),
         onTap: () => _handleTap(index),
         behavior: HitTestBehavior.opaque,
-        child: AnimatedScale(
-          scale: isPressed ? 0.95 : 1.0,
-          duration: const Duration(milliseconds: 100),
-          curve: Curves.easeOut,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.fastOutSlowIn,
-            padding: isActive
-                ? const EdgeInsets.symmetric(horizontal: 14.0, vertical: 7.0)
-                : const EdgeInsets.all(8.0),
-            decoration: BoxDecoration(
-              color: isActive ? activePillBg : Colors.transparent,
-              borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
-              boxShadow: isActive ? activeShadow : null,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                iconWidget,
-                if (isActive) ...[
-                  const SizedBox(width: 6.0),
-                  Text(
-                    tab.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.clip,
-                    style: TextStyle(
-                      fontFamily: FtText.fontFamily,
-                      fontSize: 13.0,
-                      fontWeight: FontWeight.w700,
-                      color: activeTextColor,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                ],
-              ],
+        child: SizedBox.expand(
+          child: Center(
+            child: AnimatedScale(
+              scale: isPressed ? 0.95 : 1.0,
+              duration: const Duration(milliseconds: 100),
+              curve: Curves.easeOut,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.fastOutSlowIn,
+                padding: isActive
+                    ? const EdgeInsets.symmetric(horizontal: 14.0, vertical: 7.0)
+                    : const EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  color: isActive ? activePillBg : Colors.transparent,
+                  borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
+                  boxShadow: isActive ? activeShadow : null,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    iconWidget,
+                    if (isActive) ...[
+                      const SizedBox(width: 6.0),
+                      Flexible(
+                        child: Text(
+                          tab.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: FtText.fontFamily,
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.w700,
+                            color: activeTextColor,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           ),
         ),

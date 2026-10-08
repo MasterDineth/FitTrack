@@ -259,11 +259,6 @@ class _TelemetryStackState extends ConsumerState<TelemetryStack> {
       _ => 0.70,
     };
 
-    final double fillAlpha = switch (offset) {
-      0 => 0.95,
-      1 => 0.88,
-      _ => 0.78,
-    };
 
     final double borderAlpha = switch (offset) {
       0 => 0.90,
@@ -339,17 +334,12 @@ class _TelemetryStackState extends ConsumerState<TelemetryStack> {
                 child: Builder(
                   builder: (context) {
                     final isDark = context.isDark;
-                    final isOled = context.isOled;
-                    final cardBaseBg = isDark
-                        ? (isOled ? const Color(0xFF0E0E14) : const Color(0xFF161226))
-                        : Colors.white;
                     final cardBorder = isDark
                         ? Colors.white.withValues(alpha: 0.12 * borderAlpha)
                         : Colors.white.withValues(alpha: borderAlpha);
 
                     return Container(
                       decoration: BoxDecoration(
-                        color: cardBaseBg.withValues(alpha: fillAlpha),
                         borderRadius: BorderRadius.circular(FtGlassTheme.radiusStackCards),
                         boxShadow: shadows,
                       ),
@@ -358,6 +348,7 @@ class _TelemetryStackState extends ConsumerState<TelemetryStack> {
                         radius: FtGlassTheme.radiusStackCards,
                         borderTint: cardBorder,
                         padding: const EdgeInsets.all(16.0),
+                        shadow: false,
                         child: cardWidget,
                       ),
                     );
@@ -545,6 +536,7 @@ class _BioMetricRingTile extends StatelessWidget {
       radius: FtGlassTheme.radiusTiles,
       padding: const EdgeInsets.all(8.0),
       shadow: false,
+      enableBlur: false,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,

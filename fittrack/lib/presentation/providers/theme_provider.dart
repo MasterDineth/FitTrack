@@ -71,6 +71,13 @@ class ThemeNotifier extends _$ThemeNotifier {
     state = updated;
     await ref.read(themeRepositoryProvider).saveThemeSettings(updated);
   }
+
+  /// Toggles frosted glass transparency across cards and navigation.
+  Future<void> toggleGlassTransparency(bool value) async {
+    final updated = state.copyWith(enableGlassTransparency: value);
+    state = updated;
+    await ref.read(themeRepositoryProvider).saveThemeSettings(updated);
+  }
 }
 
 /// Convenience alias matching user prompt naming.
