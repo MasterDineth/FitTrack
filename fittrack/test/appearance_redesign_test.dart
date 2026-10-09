@@ -142,7 +142,7 @@ void main() {
       expect(find.text('Blur Intensity'), findsOneWidget);
       expect(find.text('16px · Standard'), findsOneWidget);
       expect(find.text('Pure Black OLED Mode'), findsOneWidget);
-      expect(find.text('High Contrast Text'), findsOneWidget);
+      expect(find.text('High Contrast Text'), findsNothing);
       expect(find.text('Auto-Dark During Workouts'), findsOneWidget);
       expect(find.text('Keep Screen Awake'), findsOneWidget);
 

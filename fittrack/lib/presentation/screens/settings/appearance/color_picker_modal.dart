@@ -119,50 +119,53 @@ class _ColorPickerModalState extends ConsumerState<ColorPickerModal> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final screenHeight = MediaQuery.sizeOf(context).height;
     final textPrimary = theme.colorScheme.onSurface;
     final textMuted = theme.colorScheme.onSurface.withValues(alpha: 0.60);
     final currentColor = _currentColor;
     final currentHex = _colorToHex(currentColor);
     final activeGradientColor = _activeGradientStopIndex == 0 ? _gradientStop1 : _gradientStop2;
 
-    return AnimatedPadding(
-      padding: EdgeInsets.only(bottom: bottomInset),
-      duration: const Duration(milliseconds: 150),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 412),
-          child: ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xB8151329)
-                      : Colors.white.withValues(alpha: 0.88),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                  border: Border.all(
-                    color: isDark
-                        ? const Color(0x33FFFFFF)
-                        : const Color(0xF0FFFFFF),
-                    width: 1,
-                  ),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x2E5F3BDC),
-                      blurRadius: 40,
-                      offset: Offset(0, -10),
-                    ),
-                  ],
-                ),
-                child: SafeArea(
-                  top: false,
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
+    final themeSettings = ref.watch(themeNotifierProvider);
+    final enableGlass = themeSettings.enableGlassTransparency;
+    final blurSigma = enableGlass ? themeSettings.blurIntensity : 0.0;
+
+    final Widget modalContent = Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: enableGlass
+            ? (isDark
+                ? const Color(0xC7151329)
+                : Colors.white.withValues(alpha: 0.88))
+            : (isDark
+                ? const Color(0xFF151329)
+                : Colors.white),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        border: Border.all(
+          color: enableGlass
+              ? (isDark ? const Color(0x33FFFFFF) : const Color(0xF0FFFFFF))
+              : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFCBD5E1)),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: enableGlass
+                ? const Color(0x2E5F3BDC)
+                : Colors.black.withValues(alpha: 0.25),
+            blurRadius: enableGlass ? (blurSigma * 2.0).clamp(16.0, 48.0) : 24.0,
+            offset: const Offset(0, -8),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        bottom: true,
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
                         // Drag Handle Pill
                         Container(
                           width: 40,
@@ -254,6 +257,7 @@ class _ColorPickerModalState extends ConsumerState<ColorPickerModal> {
                             currentColor: currentColor,
                             currentHex: currentHex,
                             hexController: _singleHexController,
+                            enableGlass: enableGlass,
                             onHueChanged: (newHue) {
                               setState(() {
                                 _hue = newHue;
@@ -282,6 +286,7 @@ class _ColorPickerModalState extends ConsumerState<ColorPickerModal> {
                             stop2: _gradientStop2,
                             activeStopIndex: _activeGradientStopIndex,
                             angle: _gradientAngle,
+                            enableGlass: enableGlass,
                             onSelectStop: (idx) {
                               setState(() {
                                 _activeGradientStopIndex = idx;
@@ -437,9 +442,29 @@ class _ColorPickerModalState extends ConsumerState<ColorPickerModal> {
                     ),
                   ),
                 ),
-              ),
-            ),
+              );
+
+    final Widget sheetBody = ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+      child: enableGlass && blurSigma > 0
+          ? BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+              child: modalContent,
+            )
+          : modalContent,
+    );
+
+    return AnimatedPadding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      duration: const Duration(milliseconds: 150),
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 480,
+            maxHeight: screenHeight * 0.90,
           ),
+          child: sheetBody,
         ),
       ),
     );

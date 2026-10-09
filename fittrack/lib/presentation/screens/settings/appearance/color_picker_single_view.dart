@@ -18,6 +18,8 @@ class ColorPickerSingleView extends StatelessWidget {
   final ValueChanged<Color> onColorSelected;
   final ValueChanged<String> onHexSubmitted;
 
+  final bool enableGlass;
+
   const ColorPickerSingleView({
     super.key,
     required this.hue,
@@ -30,6 +32,7 @@ class ColorPickerSingleView extends StatelessWidget {
     required this.onSaturationChanged,
     required this.onColorSelected,
     required this.onHexSubmitted,
+    this.enableGlass = true,
   });
 
   static const List<Color> _presetColors = [
@@ -70,6 +73,13 @@ class ColorPickerSingleView extends StatelessWidget {
     final textPrimary = theme.colorScheme.onSurface;
     final textMuted = theme.colorScheme.onSurface.withValues(alpha: 0.60);
 
+    final cardColor = enableGlass
+        ? (isDark ? const Color(0x331E293B) : Colors.white.withValues(alpha: 0.70))
+        : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC));
+    final cardBorderColor = enableGlass
+        ? (isDark ? const Color(0x33FFFFFF) : const Color(0x66FFFFFF))
+        : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -77,10 +87,10 @@ class ColorPickerSingleView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0x331E293B) : const Color(0xFFF8FAFC),
+            color: cardColor,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0),
+              color: cardBorderColor,
               width: 1,
             ),
           ),
@@ -199,10 +209,10 @@ class ColorPickerSingleView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0x331E293B) : const Color(0xFFF8FAFC),
+            color: cardColor,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0),
+              color: cardBorderColor,
             ),
           ),
           child: Column(
@@ -344,10 +354,10 @@ class ColorPickerSingleView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0x331E293B) : const Color(0xFFF8FAFC),
+            color: cardColor,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0),
+              color: cardBorderColor,
             ),
           ),
           child: Column(
@@ -558,7 +568,9 @@ class ColorPickerSingleView extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  color: enableGlass
+                      ? (isDark ? const Color(0x331E293B) : Colors.white.withValues(alpha: 0.85))
+                      : (isDark ? const Color(0xFF1E293B) : Colors.white),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFCBD5E1),

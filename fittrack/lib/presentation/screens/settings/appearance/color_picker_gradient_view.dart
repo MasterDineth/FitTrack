@@ -20,6 +20,8 @@ class ColorPickerGradientView extends StatelessWidget {
   final TextEditingController hexController;
   final ValueChanged<String> onHexSubmitted;
 
+  final bool enableGlass;
+
   const ColorPickerGradientView({
     super.key,
     required this.stop1,
@@ -34,6 +36,7 @@ class ColorPickerGradientView extends StatelessWidget {
     required this.onPresetSelected,
     required this.hexController,
     required this.onHexSubmitted,
+    this.enableGlass = true,
   });
 
   static const List<List<Color>> _presetGradients = [
@@ -57,6 +60,13 @@ class ColorPickerGradientView extends StatelessWidget {
     final textPrimary = theme.colorScheme.onSurface;
     final textMuted = theme.colorScheme.onSurface.withValues(alpha: 0.60);
 
+    final cardColor = enableGlass
+        ? (isDark ? const Color(0x331E293B) : Colors.white.withValues(alpha: 0.70))
+        : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC));
+    final cardBorderColor = enableGlass
+        ? (isDark ? const Color(0x33FFFFFF) : const Color(0x66FFFFFF))
+        : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0));
+
     final activeColor = activeStopIndex == 0 ? stop1 : stop2;
     final hsv = HSVColor.fromColor(activeColor);
     final activeHue = hsv.hue;
@@ -70,10 +80,10 @@ class ColorPickerGradientView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0x331E293B) : const Color(0xFFF8FAFC),
+            color: cardColor,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0),
+              color: cardBorderColor,
             ),
           ),
           child: Row(
@@ -227,10 +237,10 @@ class ColorPickerGradientView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0x331E293B) : const Color(0xFFF8FAFC),
+            color: cardColor,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0),
+              color: cardBorderColor,
             ),
           ),
           child: Column(
@@ -379,10 +389,10 @@ class ColorPickerGradientView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0x331E293B) : const Color(0xFFF8FAFC),
+            color: cardColor,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0),
+              color: cardBorderColor,
             ),
           ),
           child: Column(
@@ -529,7 +539,9 @@ class ColorPickerGradientView extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  color: enableGlass
+                      ? (isDark ? const Color(0x331E293B) : Colors.white.withValues(alpha: 0.85))
+                      : (isDark ? const Color(0xFF1E293B) : Colors.white),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFCBD5E1),

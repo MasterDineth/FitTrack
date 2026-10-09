@@ -99,23 +99,7 @@ class AppearanceErgonomicsSection extends ConsumerWidget {
 
               _buildDivider(isDark),
 
-              // 4. High Contrast Text
-              _buildSwitchRow(
-                icon: Icons.text_fields_rounded,
-                title: 'High Contrast Text',
-                subtitle:
-                    'Strengthen label contrast against subtle slate containers.',
-                value: themeSettings.useHighContrast,
-                accentColor: accentColor,
-                textPrimary: textPrimary,
-                textMuted: textMuted,
-                isDark: isDark,
-                onChanged: (val) => themeNotifier.toggleHighContrast(val),
-              ),
-
-              _buildDivider(isDark),
-
-              // 5. Auto-Dark During Workouts
+              // 4. Auto-Dark During Workouts
               _buildSwitchRow(
                 icon: Icons.bedtime_outlined,
                 title: 'Auto-Dark During Workouts',
