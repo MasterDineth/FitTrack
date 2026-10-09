@@ -5,7 +5,7 @@ import 'package:fittrack/presentation/screens/settings_screen.dart';
 import 'package:fittrack/presentation/screens/settings/settings_subscreens.dart';
 
 void main() {
-  testWidgets('SettingsScreen renders all sections, badges, and tiles correctly',
+  testWidgets('SettingsScreen renders all sections, Stitch preview badges, and tiles correctly',
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(400, 2000);
     tester.view.devicePixelRatio = 1.0;
@@ -21,14 +21,14 @@ void main() {
 
     // 1. Header & Search
     expect(find.text('Settings'), findsOneWidget);
+    expect(find.text('Manage your account, preferences & hardware'), findsOneWidget);
     expect(find.text('Search settings...'), findsOneWidget);
     expect(find.text('⌘K'), findsOneWidget);
 
-    // 2. Profile Card
+    // 2. Profile Card matching Stitch (MasterDineth / Dineth, @dineth.fit, Advanced Lifter)
     expect(find.text('Dineth'), findsOneWidget);
-    expect(find.text('PRO LIFTER'), findsOneWidget);
     expect(find.text('@dineth.fit'), findsOneWidget);
-    expect(find.text('Manage Account'), findsOneWidget);
+    expect(find.text('Advanced Lifter'), findsOneWidget);
 
     // 3. Section Headers
     expect(find.text('ACCOUNT & SECURITY'), findsOneWidget);
@@ -49,12 +49,48 @@ void main() {
     expect(find.text('Share & Rate FitTrack'), findsOneWidget);
     expect(find.text('About FitTrack'), findsOneWidget);
 
-    // 5. Badges
-    expect(find.text('Biometrics On'), findsOneWidget);
-    expect(find.text('Enabled'), findsOneWidget);
+    // 5. Quick Preview Badges matching Stitch design (On, 1:30, Metric, System, Synced, v1.4.2)
+    expect(find.text('On'), findsAtLeastNWidgets(1));
+    expect(find.text('1:30'), findsOneWidget);
+    expect(find.text('Metric'), findsOneWidget);
+    expect(find.text('System'), findsOneWidget);
+    expect(find.text('Synced'), findsOneWidget);
+    expect(find.text('v1.4.2'), findsOneWidget);
 
     // 6. Log Out Button
     expect(find.text('Log Out'), findsOneWidget);
+  });
+
+  testWidgets('Search query filters settings tiles dynamically',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(400, 2000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: SettingsScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Enter search text 'appearance'
+    await tester.enterText(find.byType(TextField), 'appearance');
+    await tester.pumpAndSettle();
+
+    // Matches Appearance & Display, while hiding other unrelated tiles
+    expect(find.text('Appearance & Display'), findsOneWidget);
+    expect(find.text('Account Details'), findsNothing);
+    expect(find.text('Workout Preferences'), findsNothing);
+
+    // Clear search
+    await tester.tap(find.byIcon(Icons.close_rounded));
+    await tester.pumpAndSettle();
+
+    // Restores all tiles
+    expect(find.text('Account Details'), findsOneWidget);
+    expect(find.text('Workout Preferences'), findsOneWidget);
   });
 
   testWidgets('Tapping Log Out displays confirmation dialog',
@@ -136,4 +172,3 @@ void main() {
     expect(find.text('Dineth'), findsAtLeastNWidgets(1));
   });
 }
-
