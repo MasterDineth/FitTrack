@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../../providers/theme_provider.dart';
 import '../../providers/user_profile_provider.dart';
+import '../../theme/ft_glass.dart';
 
 /// Account Details Screen matching Google Stitch specification (Project 12918880879747462056).
 ///
@@ -100,25 +102,15 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
     _initialized = true;
   }
 
-  BoxDecoration _buildCardDecoration(BuildContext context,
-      {double radius = 16}) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final colorScheme = theme.colorScheme;
-
-    return BoxDecoration(
-      color: colorScheme.surface,
-      borderRadius: BorderRadius.circular(radius),
-      boxShadow: isDark
-          ? null
-          : [
-              const BoxShadow(
-                color: Color(0x080F172A),
-                blurRadius: 16,
-                offset: Offset(0, 4),
-              ),
-            ],
-      border: isDark ? Border.all(color: colorScheme.outline) : null,
+  BoxDecoration _buildCardDecoration(
+    BuildContext context, {
+    double radius = 16,
+    ThemeSettings? settings,
+  }) {
+    return FtGlassTheme.cardDecoration(
+      context,
+      radius: radius,
+      settings: settings,
     );
   }
 
@@ -347,6 +339,7 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
+    final themeSettings = ref.watch(themeNotifierProvider);
 
     final profileImagePath = profile?.profileImagePath;
     final hasCustomImage = profileImagePath != null &&
@@ -476,7 +469,7 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
                   children: [
                     // ── Profile Summary Hero Card ─────────────────────────
                     Container(
-                      decoration: _buildCardDecoration(context, radius: 20),
+                      decoration: _buildCardDecoration(context, radius: 20, settings: themeSettings),
                       clipBehavior: Clip.antiAlias,
                       child: Stack(
                         children: [
@@ -1099,7 +1092,7 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
                         padding: const EdgeInsets.all(16),
-                        decoration: _buildCardDecoration(context, radius: 16),
+                        decoration: _buildCardDecoration(context, radius: 16, settings: themeSettings),
                         child: Row(
                           children: [
                             Container(

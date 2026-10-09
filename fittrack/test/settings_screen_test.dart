@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fittrack/presentation/providers/theme_provider.dart';
+import 'package:fittrack/presentation/screens/settings/widgets/ft_settings_card.dart';
 import 'package:fittrack/presentation/screens/settings_screen.dart';
 import 'package:fittrack/presentation/screens/settings/settings_subscreens.dart';
 
@@ -202,4 +204,98 @@ void main() {
     expect(find.text('Profile'), findsOneWidget);
     expect(find.text('Dineth'), findsAtLeastNWidgets(1));
   });
+
+  testWidgets(
+      'Settings cards follow on/off and intensity adjustments set by appearance',
+      (WidgetTester tester) async {
+    final container = ProviderContainer(
+      overrides: [
+        themeProvider.overrideWith(
+          () => _TestThemeNotifier(
+            const ThemeSettings(
+              enableGlassTransparency: true,
+              blurIntensity: 4.0, // Subtle
+            ),
+          ),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          home: Scaffold(
+            body: FtSettingsCard(
+              child: Text('Test Card Content'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 1. With glass transparency ON and Subtle blur (4.0):
+    // Card decoration should be translucent (alpha < 1.0)
+    final initialContainer = tester.widget<Container>(
+      find.descendant(
+        of: find.byType(FtSettingsCard),
+        matching: find.byType(Container),
+      ).first,
+    );
+    final initialDecoration = initialContainer.decoration as BoxDecoration;
+    final initialColor = initialDecoration.color!;
+    expect(initialColor.a, lessThan(1.0));
+    final subtleAlpha = initialColor.a;
+
+    // 2. Adjust blur intensity to Intense (32.0):
+    // Alpha should increase to provide a more milky/frosted appearance
+    await container.read(themeProvider.notifier).setBlurIntensity(32.0);
+    await tester.pumpAndSettle();
+
+    final intenseContainer = tester.widget<Container>(
+      find.descendant(
+        of: find.byType(FtSettingsCard),
+        matching: find.byType(Container),
+      ).first,
+    );
+    final intenseDecoration = intenseContainer.decoration as BoxDecoration;
+    final intenseColor = intenseDecoration.color!;
+    expect(intenseColor.a, greaterThan(subtleAlpha));
+
+    // 3. Toggle frosted glass transparency OFF:
+    // Card should become completely solid opaque (alpha == 1.0)
+    await container.read(themeProvider.notifier).toggleGlassTransparency(false);
+    await tester.pumpAndSettle();
+
+    final solidContainer = tester.widget<Container>(
+      find.descendant(
+        of: find.byType(FtSettingsCard),
+        matching: find.byType(Container),
+      ).first,
+    );
+    final solidDecoration = solidContainer.decoration as BoxDecoration;
+    final solidColor = solidDecoration.color!;
+    expect(solidColor.a, equals(1.0));
+  });
 }
+
+class _TestThemeNotifier extends ThemeNotifier {
+  final ThemeSettings _initial;
+  _TestThemeNotifier(this._initial);
+
+  @override
+  ThemeSettings build() => _initial;
+
+  @override
+  Future<void> setBlurIntensity(double value) async {
+    state = state.copyWith(blurIntensity: value);
+  }
+
+  @override
+  Future<void> toggleGlassTransparency(bool value) async {
+    state = state.copyWith(enableGlassTransparency: value);
+  }
+}
+

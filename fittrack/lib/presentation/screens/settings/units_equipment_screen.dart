@@ -1,7 +1,8 @@
-// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/theme_provider.dart';
 import '../../providers/workout_settings_provider.dart';
+import '../../theme/ft_glass.dart';
 
 /// Units & Equipment Screen for FitTrack.
 ///
@@ -14,35 +15,18 @@ import '../../providers/workout_settings_provider.dart';
 class UnitsEquipmentScreen extends ConsumerWidget {
   const UnitsEquipmentScreen({super.key});
 
-  /// Private card decoration helper strictly conforming to design system guardrails:
-  /// - Light mode: pure surface color with subtle ambient drop shadow, no border.
-  /// - Dark/OLED mode: pure surface color with crisp outline border, no shadow.
-  BoxDecoration _buildCardDecoration(BuildContext context, {double radius = 16}) {
-    final isLight = Theme.of(context).brightness == Brightness.light;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    if (isLight) {
-      return BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(radius),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x080F172A),
-            blurRadius: 16,
-            offset: Offset(0, 4),
-          ),
-        ],
-      );
-    } else {
-      return BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(radius),
-        border: Border.all(
-          color: colorScheme.outline,
-          width: 1,
-        ),
-      );
-    }
+  /// Card decoration helper dynamically adapting to [ThemeSettings]
+  /// for frosted glass transparency (on/off) and blur intensity.
+  BoxDecoration _buildCardDecoration(
+    BuildContext context, {
+    double radius = 16,
+    ThemeSettings? settings,
+  }) {
+    return FtGlassTheme.cardDecoration(
+      context,
+      radius: radius,
+      settings: settings,
+    );
   }
 
   void _showExitSnackBar(BuildContext context) {
@@ -70,6 +54,7 @@ class UnitsEquipmentScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isLight = theme.brightness == Brightness.light;
+    final themeSettings = ref.watch(themeNotifierProvider);
     final state = ref.watch(workoutSettingsNotifierProvider);
     final notifier = ref.read(workoutSettingsNotifierProvider.notifier);
 
@@ -119,7 +104,7 @@ class UnitsEquipmentScreen extends ConsumerWidget {
                 title: 'MEASUREMENTS',
               ),
               Container(
-                decoration: _buildCardDecoration(context),
+                decoration: _buildCardDecoration(context, settings: themeSettings),
                 child: Column(
                   children: [
                     // Weight Units
@@ -297,7 +282,7 @@ class UnitsEquipmentScreen extends ConsumerWidget {
                 title: 'HARDWARE DEFAULTS',
               ),
               Container(
-                decoration: _buildCardDecoration(context),
+                decoration: _buildCardDecoration(context, settings: themeSettings),
                 child: Column(
                   children: [
                     // Standard Barbell Weight
@@ -476,7 +461,7 @@ class UnitsEquipmentScreen extends ConsumerWidget {
                 ),
               ),
               Container(
-                decoration: _buildCardDecoration(context),
+                decoration: _buildCardDecoration(context, settings: themeSettings),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

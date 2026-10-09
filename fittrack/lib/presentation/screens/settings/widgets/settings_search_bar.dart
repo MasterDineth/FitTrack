@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../providers/theme_provider.dart';
 import '../../../theme/ft_glass.dart';
 
 /// Frosted glass search bar for filtering settings options in real-time.
 /// Features corner-following subtle glow when focused, vertically aligned layout,
-/// and instant clearing.
-class SettingsSearchBar extends StatefulWidget {
+/// and dynamically responds to [ThemeSettings.enableGlassTransparency] and [ThemeSettings.blurIntensity].
+class SettingsSearchBar extends ConsumerStatefulWidget {
   final TextEditingController controller;
   final FocusNode? focusNode;
   final ValueChanged<String>? onChanged;
@@ -19,10 +21,10 @@ class SettingsSearchBar extends StatefulWidget {
   });
 
   @override
-  State<SettingsSearchBar> createState() => _SettingsSearchBarState();
+  ConsumerState<SettingsSearchBar> createState() => _SettingsSearchBarState();
 }
 
-class _SettingsSearchBarState extends State<SettingsSearchBar> {
+class _SettingsSearchBarState extends ConsumerState<SettingsSearchBar> {
   FocusNode? _internalFocusNode;
   FocusNode get _effectiveFocusNode =>
       widget.focusNode ?? (_internalFocusNode ??= FocusNode());
@@ -59,10 +61,40 @@ class _SettingsSearchBarState extends State<SettingsSearchBar> {
 
   @override
   Widget build(BuildContext context) {
+    ThemeSettings? settings;
+    try {
+      settings = ref.watch(themeNotifierProvider);
+    } catch (_) {}
+
     final isFocused = _effectiveFocusNode.hasFocus;
     final isDark = context.isDark;
-    final spec = isDark ? FtGlassTheme.glass1Dark : FtGlassTheme.glass1;
+    final enableTransparency = settings?.enableGlassTransparency ?? true;
+    final blurIntensity = settings?.blurIntensity ?? 16.0;
+
+    final spec = FtGlassTheme.specFor(
+      FtGlassTier.glass1,
+      context,
+      enableTransparency,
+    );
     final borderRadius = BorderRadius.circular(16);
+
+    final double t = ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0);
+    final double baseAlpha = spec.fill.a;
+    final double effectiveAlpha;
+    if (!enableTransparency) {
+      effectiveAlpha = 1.0;
+    } else if (t <= 0.42857) {
+      final progress = t / 0.42857;
+      final minAlpha = (baseAlpha * 0.45).clamp(0.18, 0.32);
+      effectiveAlpha = minAlpha + (baseAlpha - minAlpha) * progress;
+    } else {
+      final progress = (t - 0.42857) / (1.0 - 0.42857);
+      final maxAlpha = (baseAlpha * 1.35).clamp(0.76, 0.88);
+      effectiveAlpha = baseAlpha + (maxAlpha - baseAlpha) * progress;
+    }
+    final Color effectiveFill = !enableTransparency
+        ? spec.fill
+        : spec.fill.withValues(alpha: effectiveAlpha);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -70,7 +102,7 @@ class _SettingsSearchBarState extends State<SettingsSearchBar> {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
-          color: spec.fill,
+          color: effectiveFill,
           borderRadius: borderRadius,
           border: Border.all(
             color: isFocused

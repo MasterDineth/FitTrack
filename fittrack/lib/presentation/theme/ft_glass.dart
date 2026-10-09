@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/theme_provider.dart';
 
 /// Tier definition for FitTrack glass surfaces.
 enum FtGlassTier {
@@ -325,6 +327,63 @@ class FtGlassTheme extends ThemeExtension<FtGlassTheme> {
       case FtGlassTier.glassFloating:
         return glassFloatingDark;
     }
+  }
+
+  /// Resolves the current [ThemeSettings] from [BuildContext] if inside a [ProviderScope].
+  /// Returns null if outside a Riverpod scope (e.g. headless widget tests).
+  static ThemeSettings? resolveThemeSettings(BuildContext context) {
+    try {
+      final container = ProviderScope.containerOf(context, listen: false);
+      return container.read(themeNotifierProvider);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Resolves the effective glass or solid card decoration for settings cards,
+  /// strictly honoring [ThemeSettings.enableGlassTransparency] (on/off) and
+  /// [ThemeSettings.blurIntensity] (intensity adjustments).
+  static BoxDecoration cardDecoration(
+    BuildContext context, {
+    double radius = 20,
+    ThemeSettings? settings,
+    FtGlassTier tier = FtGlassTier.glass1,
+    Color? customBorderColor,
+    List<BoxShadow>? customShadows,
+  }) {
+    final effectiveSettings = settings ?? resolveThemeSettings(context);
+    final enableTransparency = effectiveSettings?.enableGlassTransparency ?? true;
+    final blurIntensity = effectiveSettings?.blurIntensity ?? 16.0;
+    final spec = specFor(tier, context, enableTransparency);
+
+    final double t = ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0);
+    final double baseAlpha = spec.fill.a;
+    final double effectiveAlpha;
+    if (!enableTransparency) {
+      effectiveAlpha = 1.0;
+    } else if (t <= 0.42857) {
+      final progress = t / 0.42857;
+      final minAlpha = (baseAlpha * 0.45).clamp(0.18, 0.32);
+      effectiveAlpha = minAlpha + (baseAlpha - minAlpha) * progress;
+    } else {
+      final progress = (t - 0.42857) / (1.0 - 0.42857);
+      final maxAlpha = (baseAlpha * 1.35).clamp(0.76, 0.88);
+      effectiveAlpha = baseAlpha + (maxAlpha - baseAlpha) * progress;
+    }
+
+    final Color effectiveFill = !enableTransparency
+        ? spec.fill
+        : spec.fill.withValues(alpha: effectiveAlpha);
+
+    return BoxDecoration(
+      color: effectiveFill,
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(
+        color: customBorderColor ?? spec.border,
+        width: 1.0,
+      ),
+      boxShadow: customShadows ?? spec.shadows,
+    );
   }
 
   /// Theme-adaptive primary ink color for titles and strong text.

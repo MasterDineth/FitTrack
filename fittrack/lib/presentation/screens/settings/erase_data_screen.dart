@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/data_management_provider.dart';
+import '../../providers/theme_provider.dart';
+import '../../theme/ft_glass.dart';
 import '../../widgets/data_modals.dart';
 
 /// Erase Data settings screen for granular and master device purging.
@@ -13,56 +15,32 @@ import '../../widgets/data_modals.dart';
 class EraseDataScreen extends ConsumerWidget {
   const EraseDataScreen({super.key});
 
-  /// Private card decoration helper strictly conforming to FitTrack theme guidelines:
-  /// - Light mode: soft elevation shadow, transparent or faint-tinted border if danger.
-  /// - Dark/OLED mode: solid surface container, crisp outline border, zero shadows.
   BoxDecoration _buildCardDecoration(
     BuildContext context, {
     double radius = 16,
     bool isDanger = false,
+    ThemeSettings? settings,
   }) {
-    final theme = Theme.of(context);
-    final isLight = theme.brightness == Brightness.light;
-    final colorScheme = theme.colorScheme;
-
-    if (isLight) {
-      return BoxDecoration(
-        color: isDanger
-            ? colorScheme.error.withValues(alpha: 0.08)
-            : colorScheme.surface,
-        borderRadius: BorderRadius.circular(radius),
-        border: isDanger
-            ? Border.all(
-                color: colorScheme.error.withValues(alpha: 0.25),
-                width: 1,
-              )
-            : null,
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x080F172A),
-            blurRadius: 16,
-            offset: Offset(0, 4),
-          ),
-        ],
-      );
-    } else {
-      return BoxDecoration(
-        color: isDanger
-            ? colorScheme.error.withValues(alpha: 0.1)
-            : colorScheme.surface,
-        borderRadius: BorderRadius.circular(radius),
-        border: Border.all(
-          color: isDanger ? colorScheme.error : colorScheme.outline,
-          width: 1,
-        ),
+    if (isDanger) {
+      return FtGlassTheme.cardDecoration(
+        context,
+        radius: radius,
+        settings: settings,
+        customBorderColor: const Color(0xFFF43F5E).withValues(alpha: 0.35),
       );
     }
+    return FtGlassTheme.cardDecoration(
+      context,
+      radius: radius,
+      settings: settings,
+    );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isLight = theme.brightness == Brightness.light;
+    final themeSettings = ref.watch(themeNotifierProvider);
     final colorScheme = theme.colorScheme;
     final notifier = ref.read(dataManagementNotifierProvider.notifier);
 
@@ -99,7 +77,7 @@ class EraseDataScreen extends ConsumerWidget {
           children: [
             // ── 1. TOP WARNING CARD ─────────────────────────────────────────
             Container(
-              decoration: _buildCardDecoration(context, isDanger: true),
+              decoration: _buildCardDecoration(context, isDanger: true, settings: themeSettings),
               padding: const EdgeInsets.all(16),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
