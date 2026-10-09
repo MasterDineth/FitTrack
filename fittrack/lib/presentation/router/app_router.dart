@@ -244,11 +244,6 @@ GoRouter router(Ref ref) {
         builder: (context, state) => const PasswordSecurityScreen(),
       ),
       GoRoute(
-        path: '/settings/appearance',
-        parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const AppearanceSettingsScreen(),
-      ),
-      GoRoute(
         path: '/settings/notifications',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const NotificationsSettingsScreen(),
@@ -338,6 +333,12 @@ GoRouter router(Ref ref) {
               GoRoute(
                 path: '/settings',
                 builder: (context, state) => const SettingsScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'appearance',
+                    builder: (context, state) => const AppearanceSettingsScreen(),
+                  ),
+                ],
               ),
             ],
           ),

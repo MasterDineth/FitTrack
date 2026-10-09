@@ -771,6 +771,7 @@ class UnitsEquipmentScreen extends ConsumerWidget {
         ),
         child: RadioListTile<String>(
           value: value,
+          // ignore: deprecated_member_use
           groupValue: groupValue,
           activeColor: colorScheme.primary,
           contentPadding: const EdgeInsets.symmetric(
@@ -797,6 +798,7 @@ class UnitsEquipmentScreen extends ConsumerWidget {
               color: colorScheme.onSurfaceVariant,
             ),
           ),
+          // ignore: deprecated_member_use
           onChanged: (val) {
             if (val != null) {
               onChanged(val);

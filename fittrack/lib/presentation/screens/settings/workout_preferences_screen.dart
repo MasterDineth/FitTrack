@@ -200,7 +200,7 @@ class WorkoutPreferencesScreen extends ConsumerWidget {
                         const SizedBox(width: 12),
                         Switch(
                           value: state.autoStartRestTimer,
-                          activeColor: Theme.of(context).colorScheme.primary,
+                          activeThumbColor: Theme.of(context).colorScheme.primary,
                           onChanged: (val) =>
                               notifier.toggleAutoStartRestTimer(val),
                         ),
@@ -245,7 +245,7 @@ class WorkoutPreferencesScreen extends ConsumerWidget {
                         const SizedBox(width: 12),
                         Switch(
                           value: state.keepScreenAwake,
-                          activeColor: Theme.of(context).colorScheme.primary,
+                          activeThumbColor: Theme.of(context).colorScheme.primary,
                           onChanged: (val) =>
                               notifier.toggleKeepScreenAwake(val),
                         ),
@@ -303,7 +303,7 @@ class WorkoutPreferencesScreen extends ConsumerWidget {
                         const SizedBox(width: 12),
                         Switch(
                           value: state.enableRPE,
-                          activeColor: Theme.of(context).colorScheme.primary,
+                          activeThumbColor: Theme.of(context).colorScheme.primary,
                           onChanged: (val) =>
                               notifier.toggleEnableRPE(val),
                         ),
@@ -348,7 +348,7 @@ class WorkoutPreferencesScreen extends ConsumerWidget {
                         const SizedBox(width: 12),
                         Switch(
                           value: state.includeWarmups,
-                          activeColor: Theme.of(context).colorScheme.primary,
+                          activeThumbColor: Theme.of(context).colorScheme.primary,
                           onChanged: (val) =>
                               notifier.toggleIncludeWarmups(val),
                         ),
@@ -393,7 +393,7 @@ class WorkoutPreferencesScreen extends ConsumerWidget {
                         const SizedBox(width: 12),
                         Switch(
                           value: state.plateCalculator,
-                          activeColor: Theme.of(context).colorScheme.primary,
+                          activeThumbColor: Theme.of(context).colorScheme.primary,
                           onChanged: (val) =>
                               notifier.togglePlateCalculator(val),
                         ),

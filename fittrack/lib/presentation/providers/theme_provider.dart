@@ -85,6 +85,32 @@ class ThemeNotifier extends _$ThemeNotifier {
     state = updated;
     await ref.read(themeRepositoryProvider).saveThemeSettings(updated);
   }
+
+  /// Resets all theme settings to system defaults:
+  /// - Theme mode: System
+  /// - Accent color: Electric (#7C5CFA)
+  /// - Frosted glass transparency: Enabled
+  /// - Blur intensity: Standard (16.0 px)
+  /// - Dynamic accent: Disabled
+  /// - OLED black: Disabled
+  /// - High contrast: Disabled
+  /// - Auto dark during workouts: Enabled
+  /// - Keep screen awake: Enabled
+  Future<void> resetToDefaults() async {
+    final updated = const ThemeSettings(
+      themeMode: ThemeMode.system,
+      accentColorValue: 0xFF7C5CFA,
+      useDynamicAccent: false,
+      useOledBlack: false,
+      useHighContrast: false,
+      autoDarkWorkout: true,
+      keepScreenAwake: true,
+      enableGlassTransparency: true,
+      blurIntensity: 16.0,
+    );
+    state = updated;
+    await ref.read(themeRepositoryProvider).saveThemeSettings(updated);
+  }
 }
 
 /// Convenience alias matching user prompt naming.
