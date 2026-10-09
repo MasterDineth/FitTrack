@@ -28,9 +28,7 @@ class AppearanceSettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bottomPadding = (MediaQuery.paddingOf(context).bottom > 0)
-        ? MediaQuery.paddingOf(context).bottom + 28.0
-        : 104.0;
+    final bottomPadding = MediaQuery.paddingOf(context).bottom + 24.0;
 
     return Scaffold(
       backgroundColor: Colors.transparent,

@@ -144,6 +144,7 @@ class _ThemeModeCard extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Container(
+            width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
             decoration: BoxDecoration(
               color: isDark

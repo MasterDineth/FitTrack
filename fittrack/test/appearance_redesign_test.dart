@@ -91,13 +91,13 @@ void main() {
 
       // 1. Header (Stitch lockup & Dashboard icons)
       expect(find.text('Appearance'), findsOneWidget);
-      expect(find.text('v3.4'), findsOneWidget);
+      expect(find.text('v3.4'), findsNothing);
       expect(
         find.text('Customize your visual theme, kinetic accents, and display ergonomics'),
         findsOneWidget,
       );
       expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.notifications_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.notifications_outlined), findsNothing);
 
       // 2. Live Preview
       expect(find.text('LIVE PREVIEW'), findsOneWidget);

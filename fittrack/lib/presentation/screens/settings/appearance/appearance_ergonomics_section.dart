@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -578,29 +579,39 @@ class AppearanceErgonomicsSection extends ConsumerWidget {
               ),
             ),
 
-            // Foreground Diffusion Plate Overlaid
+            // Foreground Diffusion Plate Overlaid with Real-time BackdropFilter Blur
             Positioned(
               left: 10,
               right: 10,
               bottom: 10,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: plateAlpha * 0.22),
+              child: RepaintBoundary(
+                child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: (0.15 + plateAlpha * 0.25).clamp(0.2, 0.6)),
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.25),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(
+                      sigmaX: intensity,
+                      sigmaY: intensity,
                     ),
-                  ],
-                ),
-                child: Row(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: plateAlpha * 0.18),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withValues(
+                            alpha: (0.15 + plateAlpha * 0.25).clamp(0.2, 0.6),
+                          ),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.25),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
                   children: [
                     Container(
                       width: 32,
@@ -676,9 +687,12 @@ class AppearanceErgonomicsSection extends ConsumerWidget {
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
+    ],
+  ),
+),
     );
   }
 

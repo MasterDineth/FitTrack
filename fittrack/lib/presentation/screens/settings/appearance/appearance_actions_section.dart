@@ -30,16 +30,6 @@ class AppearanceActionsSection extends ConsumerWidget {
         FtPressable(
           onTap: () {
             HapticFeedback.lightImpact();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Appearance preferences saved successfully',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-                behavior: SnackBarBehavior.floating,
-                duration: Duration(seconds: 2),
-              ),
-            );
           },
           pressedScale: 0.98,
           child: Container(
@@ -92,18 +82,6 @@ class AppearanceActionsSection extends ConsumerWidget {
           onTap: () async {
             HapticFeedback.mediumImpact();
             await themeNotifier.resetToDefaults();
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Reset to system defaults: System theme, Electric accent, frosted glass enabled (16px standard).',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  behavior: SnackBarBehavior.floating,
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            }
           },
           pressedScale: 0.98,
           child: Container(

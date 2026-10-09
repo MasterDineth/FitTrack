@@ -2,25 +2,38 @@ import 'package:flutter/material.dart';
 
 import '../../../theme/ft_glass.dart';
 import '../../dashboard/widgets/ft_pressable.dart';
+import 'color_picker_single_view.dart';
 
-/// Gradient Studio preview mode showcasing dual-stop ribbon, angle selector,
-/// and preset gradient palettes.
+/// Gradient Studio preview mode showcasing dual-stop ribbon, tactile Hue & Saturation
+/// sliders for active stop customization, angle selector, and preset gradient palettes.
 class ColorPickerGradientView extends StatelessWidget {
   final Color stop1;
   final Color stop2;
+  final int activeStopIndex;
   final int angle;
+  final ValueChanged<int> onSelectStop;
+  final ValueChanged<double> onHueChanged;
+  final ValueChanged<double> onSaturationChanged;
   final VoidCallback onSwap;
   final ValueChanged<int> onAngleChanged;
   final void Function(Color s1, Color s2) onPresetSelected;
+  final TextEditingController hexController;
+  final ValueChanged<String> onHexSubmitted;
 
   const ColorPickerGradientView({
     super.key,
     required this.stop1,
     required this.stop2,
+    required this.activeStopIndex,
     required this.angle,
+    required this.onSelectStop,
+    required this.onHueChanged,
+    required this.onSaturationChanged,
     required this.onSwap,
     required this.onAngleChanged,
     required this.onPresetSelected,
+    required this.hexController,
+    required this.onHexSubmitted,
   });
 
   static const List<List<Color>> _presetGradients = [
@@ -44,39 +57,15 @@ class ColorPickerGradientView extends StatelessWidget {
     final textPrimary = theme.colorScheme.onSurface;
     final textMuted = theme.colorScheme.onSurface.withValues(alpha: 0.60);
 
+    final activeColor = activeStopIndex == 0 ? stop1 : stop2;
+    final hsv = HSVColor.fromColor(activeColor);
+    final activeHue = hsv.hue;
+    final activeSat = hsv.saturation;
+    final activeVal = hsv.value.clamp(0.2, 0.98);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Notice banner explaining single color support in current version
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: const Color(0xFF7C5CFA).withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: const Color(0xFF7C5CFA).withValues(alpha: 0.25),
-            ),
-          ),
-          child: const Row(
-            children: [
-              Icon(Icons.info_outline_rounded, size: 16, color: Color(0xFF7C5CFA)),
-              SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Gradient preview engine: FitTrack currently applies solid single accents. Selecting Stop 1 will set your primary accent.',
-                  style: TextStyle(
-                    fontFamily: FtText.fontFamily,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF7C5CFA),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-
         // ── Dual-Stop Color Ribbon Card ──────────────────────────────────────
         Container(
           padding: const EdgeInsets.all(12),
@@ -91,11 +80,17 @@ class ColorPickerGradientView extends StatelessWidget {
             children: [
               // Stop 1
               Flexible(
-                child: _buildGradientStopPill(
-                  stopNum: '1',
-                  label: 'STOP 1',
-                  color: stop1,
-                  textPrimary: textPrimary,
+                child: FtPressable(
+                  onTap: () => onSelectStop(0),
+                  pressedScale: 0.95,
+                  child: _buildGradientStopPill(
+                    stopNum: '1',
+                    label: 'STOP 1',
+                    color: stop1,
+                    isSelected: activeStopIndex == 0,
+                    textPrimary: textPrimary,
+                    isDark: isDark,
+                  ),
                 ),
               ),
               // Center Flow Ribbon & Swap Button
@@ -122,8 +117,10 @@ class ColorPickerGradientView extends StatelessWidget {
                           height: 28,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white,
-                            border: Border.all(color: const Color(0xFFCBD5E1)),
+                            color: isDark ? const Color(0xFF334155) : Colors.white,
+                            border: Border.all(
+                              color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFCBD5E1),
+                            ),
                             boxShadow: const [
                               BoxShadow(
                                 color: Color(0x1A000000),
@@ -132,10 +129,10 @@ class ColorPickerGradientView extends StatelessWidget {
                               ),
                             ],
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.swap_horiz_rounded,
                             size: 16,
-                            color: Color(0xFF64748B),
+                            color: isDark ? Colors.white : const Color(0xFF64748B),
                           ),
                         ),
                       ),
@@ -145,11 +142,17 @@ class ColorPickerGradientView extends StatelessWidget {
               ),
               // Stop 2
               Flexible(
-                child: _buildGradientStopPill(
-                  stopNum: '2',
-                  label: 'STOP 2',
-                  color: stop2,
-                  textPrimary: textPrimary,
+                child: FtPressable(
+                  onTap: () => onSelectStop(1),
+                  pressedScale: 0.95,
+                  child: _buildGradientStopPill(
+                    stopNum: '2',
+                    label: 'STOP 2',
+                    color: stop2,
+                    isSelected: activeStopIndex == 1,
+                    textPrimary: textPrimary,
+                    isDark: isDark,
+                  ),
                 ),
               ),
             ],
@@ -192,12 +195,12 @@ class ColorPickerGradientView extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? const Color(0xFF7C5CFA)
+                              ? activeColor
                               : (isDark ? const Color(0xFF334155) : Colors.white),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: isSelected
-                                ? const Color(0xFF7C5CFA)
+                                ? activeColor
                                 : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFCBD5E1)),
                           ),
                         ),
@@ -217,6 +220,373 @@ class ColorPickerGradientView extends StatelessWidget {
               ),
             ],
           ),
+        ),
+        const SizedBox(height: 12),
+
+        // ── Active Stop Hue Spectrum Slider ──────────────────────────────────
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0x331E293B) : const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0),
+            ),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.palette_outlined,
+                          size: 15,
+                          color: activeColor,
+                        ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            'Hue (Stop ${activeStopIndex + 1})',
+                            style: TextStyle(
+                              fontFamily: FtText.fontFamily,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: textPrimary,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: activeColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      '${activeHue.round()}° · ${ColorPickerSingleView.getHueFamily(activeHue)}',
+                      style: TextStyle(
+                        fontFamily: FtText.fontFamily,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: activeColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              // Rainbow Track Slider
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  return GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onHorizontalDragUpdate: (details) {
+                      final dx = details.localPosition.dx.clamp(0.0, constraints.maxWidth);
+                      final ratio = dx / constraints.maxWidth;
+                      onHueChanged((ratio * 360.0).clamp(0.0, 360.0));
+                    },
+                    onTapDown: (details) {
+                      final dx = details.localPosition.dx.clamp(0.0, constraints.maxWidth);
+                      final ratio = dx / constraints.maxWidth;
+                      onHueChanged((ratio * 360.0).clamp(0.0, 360.0));
+                    },
+                    child: SizedBox(
+                      height: 24,
+                      child: Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          Container(
+                            height: 12,
+                            width: constraints.maxWidth,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(999),
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color(0xFFFF0000),
+                                  Color(0xFFFFFF00),
+                                  Color(0xFF00FF00),
+                                  Color(0xFF00FFFF),
+                                  Color(0xFF0000FF),
+                                  Color(0xFFFF00FF),
+                                  Color(0xFFFF0000),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: ((activeHue / 360.0) * (constraints.maxWidth - 20))
+                                .clamp(0.0, constraints.maxWidth - 20),
+                            child: Container(
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                                border: Border.all(
+                                  color: activeColor,
+                                  width: 2,
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x33000000),
+                                    blurRadius: 4,
+                                    offset: Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                              alignment: Alignment.center,
+                              child: Container(
+                                width: 7,
+                                height: 7,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: activeColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildScaleLabel('0° Red'),
+                  _buildScaleLabel('120° Green'),
+                  _buildScaleLabel('240° Blue'),
+                  _buildScaleLabel('360°'),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // ── Active Stop Saturation & Vibrancy Slider ─────────────────────────
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0x331E293B) : const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0),
+            ),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.tune_rounded,
+                          size: 15,
+                          color: activeColor,
+                        ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            'Saturation (Stop ${activeStopIndex + 1})',
+                            style: TextStyle(
+                              fontFamily: FtText.fontFamily,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: textPrimary,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: activeColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      '${(activeSat * 100).round()}%',
+                      style: TextStyle(
+                        fontFamily: FtText.fontFamily,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: activeColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final fullySaturatedColor =
+                      HSVColor.fromAHSV(1.0, activeHue, 1.0, activeVal).toColor();
+                  return GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onHorizontalDragUpdate: (details) {
+                      final dx = details.localPosition.dx.clamp(0.0, constraints.maxWidth);
+                      final ratio = dx / constraints.maxWidth;
+                      onSaturationChanged(ratio.clamp(0.05, 1.0));
+                    },
+                    onTapDown: (details) {
+                      final dx = details.localPosition.dx.clamp(0.0, constraints.maxWidth);
+                      final ratio = dx / constraints.maxWidth;
+                      onSaturationChanged(ratio.clamp(0.05, 1.0));
+                    },
+                    child: SizedBox(
+                      height: 24,
+                      child: Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          Container(
+                            height: 12,
+                            width: constraints.maxWidth,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(999),
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF94A3B8),
+                                  fullySaturatedColor,
+                                ],
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: (activeSat * (constraints.maxWidth - 20))
+                                .clamp(0.0, constraints.maxWidth - 20),
+                            child: Container(
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                                border: Border.all(
+                                  color: activeColor,
+                                  width: 2,
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x33000000),
+                                    blurRadius: 4,
+                                    offset: Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                              alignment: Alignment.center,
+                              child: Container(
+                                width: 7,
+                                height: 7,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: activeColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildScaleLabel('0% Muted'),
+                  _buildScaleLabel('50%'),
+                  _buildScaleLabel('100% Kinetic'),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // ── Active Stop HEX Bar ──────────────────────────────────────────────
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFCBD5E1),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      'HEX',
+                      style: TextStyle(
+                        fontFamily: FtText.fontFamily,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        color: textMuted,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: hexController,
+                        onChanged: onHexSubmitted,
+                        style: TextStyle(
+                          fontFamily: FtText.fontFamily,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                          color: textPrimary,
+                        ),
+                        decoration: const InputDecoration(
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFCBD5E1),
+                ),
+              ),
+              child: Icon(
+                Icons.colorize_rounded,
+                size: 18,
+                color: textMuted,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
 
@@ -276,21 +646,34 @@ class ColorPickerGradientView extends StatelessWidget {
     required String stopNum,
     required String label,
     required Color color,
+    required bool isSelected,
     required Color textPrimary,
+    required bool isDark,
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 4,
-            offset: Offset(0, 1),
-          ),
-        ],
+        border: Border.all(
+          color: isSelected ? color : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0)),
+          width: isSelected ? 2 : 1,
+        ),
+        boxShadow: isSelected
+            ? [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.25),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : const [
+                BoxShadow(
+                  color: Color(0x0D000000),
+                  blurRadius: 4,
+                  offset: Offset(0, 1),
+                ),
+              ],
       ),
       child: FittedBox(
         fit: BoxFit.scaleDown,
@@ -321,11 +704,11 @@ class ColorPickerGradientView extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: FtText.fontFamily,
                     fontSize: 8,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF7C5CFA),
+                    color: isSelected ? color : const Color(0xFF7C5CFA),
                   ),
                 ),
                 Text(
@@ -341,6 +724,18 @@ class ColorPickerGradientView extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildScaleLabel(String text) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontFamily: FtText.fontFamily,
+        fontSize: 9,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF94A3B8),
       ),
     );
   }

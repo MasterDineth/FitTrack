@@ -279,6 +279,11 @@ GoRouter router(Ref ref) {
         builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(
+        path: '/settings/appearance',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AppearanceSettingsScreen(),
+      ),
+      GoRoute(
         path: '/settings/about',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const AboutScreen(),
@@ -333,12 +338,6 @@ GoRouter router(Ref ref) {
               GoRoute(
                 path: '/settings',
                 builder: (context, state) => const SettingsScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'appearance',
-                    builder: (context, state) => const AppearanceSettingsScreen(),
-                  ),
-                ],
               ),
             ],
           ),

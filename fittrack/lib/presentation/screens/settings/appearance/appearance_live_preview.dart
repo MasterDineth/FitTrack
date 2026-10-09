@@ -13,7 +13,17 @@ class AppearanceLivePreview extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeSettings = ref.watch(themeNotifierProvider);
-    final accentColor = themeSettings.accentColor;
+    final Color accentColor;
+    if (themeSettings.useDynamicAccent) {
+      final systemPrimary = Theme.of(context).colorScheme.primary;
+      if (systemPrimary.toARGB32() != themeSettings.accentColorValue) {
+        accentColor = systemPrimary;
+      } else {
+        accentColor = const Color(0xFF38BDF8); // Material You dynamic extraction tint
+      }
+    } else {
+      accentColor = themeSettings.accentColor;
+    }
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final theme = Theme.of(context);
