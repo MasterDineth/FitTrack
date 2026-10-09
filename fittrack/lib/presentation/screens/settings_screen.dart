@@ -24,16 +24,26 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late final TextEditingController _searchController;
+  late final FocusNode _searchFocusNode;
   String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController();
+    _searchFocusNode = FocusNode()..addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    _searchFocusNode.removeListener(_onFocusChange);
+    _searchFocusNode.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -46,6 +56,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         : 96.0;
 
     final isSearching = _searchQuery.trim().isNotEmpty;
+    final isSearchActive = _searchFocusNode.hasFocus || isSearching;
     final showProfileHero = !isSearching ||
         'profile'.contains(_searchQuery.trim().toLowerCase()) ||
         'account'.contains(_searchQuery.trim().toLowerCase());
@@ -53,57 +64,74 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'log out'.contains(_searchQuery.trim().toLowerCase()) ||
         'logout'.contains(_searchQuery.trim().toLowerCase());
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 430),
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              SliverSafeArea(
-                top: true,
-                bottom: false,
-                sliver: SliverPadding(
-                  padding: EdgeInsets.only(
-                    left: 20.0,
-                    right: 20.0,
-                    top: 6.0,
-                    bottom: bottomPadding,
-                  ),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      // 1. Top Header (Settings title + Notification bell + Avatar)
-                      const SettingsHeader(),
+    return PopScope(
+      canPop: !isSearchActive,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _searchFocusNode.unfocus();
+        if (_searchController.text.isNotEmpty) {
+          _searchController.clear();
+          setState(() {
+            _searchQuery = '';
+          });
+        } else {
+          setState(() {});
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 430),
+            child: CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              slivers: [
+                SliverSafeArea(
+                  top: true,
+                  bottom: false,
+                  sliver: SliverPadding(
+                    padding: EdgeInsets.only(
+                      left: 20.0,
+                      right: 20.0,
+                      top: 6.0,
+                      bottom: bottomPadding,
+                    ),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        // 1. Top Header (Settings title + Notification bell + Avatar)
+                        const SettingsHeader(),
 
-                      // 2. Search Bar
-                      SettingsSearchBar(
-                        controller: _searchController,
-                        onChanged: (val) {
-                          setState(() {
-                            _searchQuery = val;
-                          });
-                        },
-                        onClear: () {
-                          setState(() {
-                            _searchQuery = '';
-                          });
-                        },
-                      ),
+                        // 2. Search Bar with corner-following luminous glow & back exit
+                        SettingsSearchBar(
+                          controller: _searchController,
+                          focusNode: _searchFocusNode,
+                          onChanged: (val) {
+                            setState(() {
+                              _searchQuery = val;
+                            });
+                          },
+                          onClear: () {
+                            setState(() {
+                              _searchQuery = '';
+                            });
+                          },
+                        ),
 
-                      // 3. Athlete Profile Banner Card
-                      if (showProfileHero) const AthleteProfileHeroCard(),
+                        // 3. Athlete Profile Banner Card
+                        if (showProfileHero) const AthleteProfileHeroCard(),
 
-                      // 4. 4 Grouped Sections with live previews & search filter
-                      SettingsSectionsList(searchQuery: _searchQuery),
+                        // 4. 4 Grouped Sections with live previews & search filter
+                        SettingsSectionsList(searchQuery: _searchQuery),
 
-                      // 5. Destructive Log Out Action Button
-                      if (showLogout) const SettingsLogoutButton(),
-                    ]),
+                        // 5. Destructive Log Out Action Button
+                        if (showLogout) const SettingsLogoutButton(),
+                      ]),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

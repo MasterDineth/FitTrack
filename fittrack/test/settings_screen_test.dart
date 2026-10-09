@@ -23,7 +23,7 @@ void main() {
     expect(find.text('Settings'), findsOneWidget);
     expect(find.text('Manage your account, preferences & hardware'), findsOneWidget);
     expect(find.text('Search settings...'), findsOneWidget);
-    expect(find.text('⌘K'), findsOneWidget);
+    expect(find.text('⌘K'), findsNothing);
 
     // 2. Profile Card matching Stitch (MasterDineth / Dineth, @dineth.fit, Advanced Lifter)
     expect(find.text('Dineth'), findsOneWidget);
@@ -155,6 +155,37 @@ void main() {
     await tester.tap(find.text('Rate on App Store'));
     await tester.pumpAndSettle();
     expect(find.text('Enjoying FitTrack?'), findsNothing);
+  });
+
+  testWidgets('Back gesture exits from search and resets filtered tiles',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(400, 2000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: SettingsScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Type query to filter
+    await tester.enterText(find.byType(TextField), 'appearance');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Appearance & Display'), findsOneWidget);
+    expect(find.text('Account Details'), findsNothing);
+
+    // Simulate system back gesture
+    final dynamic widgetsAppState = tester.state(find.byType(WidgetsApp));
+    await widgetsAppState.didPopRoute();
+    await tester.pumpAndSettle();
+
+    // Verify search is exited and all items are restored
+    expect(find.text('Account Details'), findsOneWidget);
+    expect(find.text('Workout Preferences'), findsOneWidget);
   });
 
   testWidgets('Settings placeholder sub-screens render title and content',
