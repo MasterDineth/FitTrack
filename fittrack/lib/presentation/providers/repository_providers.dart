@@ -14,6 +14,7 @@ import '../../data/datasources/local/database_helper.dart';
 import '../../domain/repositories/i_security_repository.dart';
 import '../../data/repositories/security_repository_impl.dart';
 import '../../domain/repositories/i_theme_repository.dart';
+import '../../domain/entities/theme_settings.dart';
 import '../../data/repositories/theme_repository_impl.dart';
 import '../../domain/repositories/i_bio_metrics_repository.dart';
 import '../../data/repositories/bio_metrics_repository_impl.dart';
@@ -57,8 +58,24 @@ ISecurityRepository securityRepository(Ref ref) {
 
 @Riverpod(keepAlive: true)
 IThemeRepository themeRepository(Ref ref) {
-  final prefs = ref.watch(sharedPreferencesProvider);
-  return ThemeRepositoryImpl(prefs);
+  try {
+    final prefs = ref.watch(sharedPreferencesProvider);
+    return ThemeRepositoryImpl(prefs);
+  } catch (_) {
+    return _InMemoryThemeRepository();
+  }
+}
+
+class _InMemoryThemeRepository implements IThemeRepository {
+  ThemeSettings _settings = const ThemeSettings();
+
+  @override
+  ThemeSettings getThemeSettings() => _settings;
+
+  @override
+  Future<void> saveThemeSettings(ThemeSettings settings) async {
+    _settings = settings;
+  }
 }
 
 @Riverpod(keepAlive: true)

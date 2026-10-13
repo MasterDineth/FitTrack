@@ -156,11 +156,7 @@ GoRouter router(Ref ref) {
           scheduleId: state.pathParameters['scheduleId']!,
         ),
       ),
-      GoRoute(
-        path: '/workouts/create-schedule',
-        parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const CreateScheduleScreen(),
-      ),
+
       GoRoute(
         path: '/exercises/create-custom',
         parentNavigatorKey: rootNavigatorKey,
@@ -318,6 +314,11 @@ GoRouter router(Ref ref) {
                   GoRoute(
                     path: 'search',
                     builder: (context, state) => const WorkoutSearchScreen(),
+                  ),
+                  GoRoute(
+                    path: 'create-schedule',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const CreateScheduleScreen(),
                   ),
                 ],
               ),

@@ -60,8 +60,8 @@ class MuscleActivationDraft {
 class CustomExerciseState {
   const CustomExerciseState({
     this.title = '',
-    this.equipment = Equipment.other,
-    this.movementClassification = MovementClassification.other,
+    this.equipment = Equipment.dumbbell,
+    this.movementClassification = MovementClassification.compound,
     this.mediaPath,
     this.youtubeUrl,
     this.biomechanicsNotes,
@@ -85,6 +85,15 @@ class CustomExerciseState {
   final String? saveError;
 
   bool get isValid => title.trim().isNotEmpty;
+
+  bool get hasChanges =>
+      title.trim().isNotEmpty ||
+      mediaPath != null ||
+      (youtubeUrl != null && youtubeUrl!.trim().isNotEmpty) ||
+      (biomechanicsNotes != null && biomechanicsNotes!.trim().isNotEmpty) ||
+      executionSteps.isNotEmpty ||
+      formCues.isNotEmpty ||
+      muscleActivations.isNotEmpty;
 
   CustomExerciseState copyWith({
     String? title,
@@ -131,15 +140,21 @@ class CustomExerciseNotifier extends _$CustomExerciseNotifier {
   void setMovementClassification(MovementClassification value) =>
       state = state.copyWith(movementClassification: value);
 
-  void setYoutubeUrl(String value) =>
+  void setMediaPath(String? value) =>
+      state = state.copyWith(mediaPath: value);
+
+  void setYoutubeUrl(String? value) =>
       state = state.copyWith(youtubeUrl: value);
 
-  void setBiomechanicsNotes(String value) =>
+  void setBiomechanicsNotes(String? value) =>
       state = state.copyWith(biomechanicsNotes: value);
 
-  // ── Execution Steps ────────────────────────────────────────────────────
+  void reset() => state = const CustomExerciseState();
+
+  // ── Execution Steps (Max 3) ────────────────────────────────────────────
 
   void addExecutionStep() {
+    if (state.executionSteps.length >= 3) return;
     state = state.copyWith(
       executionSteps: [
         ...state.executionSteps,
@@ -149,43 +164,50 @@ class CustomExerciseNotifier extends _$CustomExerciseNotifier {
   }
 
   void updateExecutionStep(int index, {String? title, String? instructions}) {
+    if (index < 0 || index >= state.executionSteps.length) return;
     final list = List<ExecutionStepDraft>.from(state.executionSteps);
     list[index] = list[index].copyWith(title: title, instructions: instructions);
     state = state.copyWith(executionSteps: list);
   }
 
   void removeExecutionStep(int index) {
+    if (index < 0 || index >= state.executionSteps.length) return;
     final list = List<ExecutionStepDraft>.from(state.executionSteps)
       ..removeAt(index);
     state = state.copyWith(executionSteps: list);
   }
 
-  // ── Form Cues ──────────────────────────────────────────────────────────
+  // ── Form Cues (Max 3) ──────────────────────────────────────────────────
 
   void addFormCue(FormCueDraft cue) {
+    if (state.formCues.length >= 3) return;
     state = state.copyWith(formCues: [...state.formCues, cue]);
   }
 
   void removeFormCue(int index) {
+    if (index < 0 || index >= state.formCues.length) return;
     final list = List<FormCueDraft>.from(state.formCues)..removeAt(index);
     state = state.copyWith(formCues: list);
   }
 
-  // ── Muscle Activations ─────────────────────────────────────────────────
+  // ── Muscle Activations (Max 3) ─────────────────────────────────────────
 
   void addMuscleActivation(MuscleActivationDraft activation) {
+    if (state.muscleActivations.length >= 3) return;
     state = state.copyWith(
       muscleActivations: [...state.muscleActivations, activation],
     );
   }
 
   void updateMuscleActivationIntensity(int index, int intensity) {
+    if (index < 0 || index >= state.muscleActivations.length) return;
     final list = List<MuscleActivationDraft>.from(state.muscleActivations);
     list[index] = list[index].copyWith(intensityPercentage: intensity);
     state = state.copyWith(muscleActivations: list);
   }
 
   void removeMuscleActivation(int index) {
+    if (index < 0 || index >= state.muscleActivations.length) return;
     final list = List<MuscleActivationDraft>.from(state.muscleActivations)
       ..removeAt(index);
     state = state.copyWith(muscleActivations: list);
@@ -207,6 +229,7 @@ class CustomExerciseNotifier extends _$CustomExerciseNotifier {
         name: state.title.trim(),
         equipment: state.equipment,
         movementClassification: state.movementClassification,
+        mediaUrl: state.mediaPath,
         youtubeUrl: state.youtubeUrl?.trim().isNotEmpty == true
             ? state.youtubeUrl
             : null,
