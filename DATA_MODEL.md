@@ -103,4 +103,40 @@ Manages workout routines, training splits, and exercise definitions.
 *   **targetWeightKg** `REAL NOT NULL DEFAULT 0.0`: Prescribed weight in kilograms (0 = bodyweight)
 *   **restSeconds** `INTEGER NOT NULL DEFAULT 90`: Rest time between sets in seconds
 
+## 6. Exercises & Biomechanical Anatomy (`exercises`, `muscle_activations`, `execution_steps`, `form_cues`)
+Manages standard and user-defined custom exercises, step-by-step execution guides, form cues, and muscle activation ratios.
+
+### `exercises` Table
+*   **id** `TEXT PRIMARY KEY`: Unique exercise UUID (e.g. `ex-bench-press`)
+*   **name** `TEXT NOT NULL`: Exercise name (e.g. `Barbell Flat Bench Press`)
+*   **equipment** `TEXT NOT NULL`: Required equipment type (`barbell`, `dumbbell`, `cable`, `machine`, `bodyweight`, `other`)
+*   **movementClassification** `TEXT NOT NULL`: Biomechanical movement type (`compound`, `isolation`, `unilateral`, `isometric`, `other`)
+*   **mediaUrl** `TEXT`: Local file path or asset URI to cover demonstration image
+*   **youtubeUrl** `TEXT`: Optional YouTube tutorial or demonstration URL
+*   **biomechanicsNotes** `TEXT`: Biomechanical movement commentary or tips
+*   **isCustom** `INTEGER NOT NULL DEFAULT 0`: Flag distinguishing user-created exercises (1) from system exercises (0)
+
+### `muscle_activations` Table
+Maps muscle involvement, role, and activation percentage for each exercise (up to 3 target muscles).
+*   **id** `TEXT PRIMARY KEY`: Unique activation UUID
+*   **exerciseId** `TEXT NOT NULL`: Foreign key referencing `exercises` (ON DELETE CASCADE)
+*   **muscleName** `TEXT NOT NULL`: Muscle group name (e.g. `Pectoralis Major`, `Triceps Brachii`)
+*   **role** `TEXT NOT NULL`: Biomechanical role (`primeMover`, `synergist`, `stabilizer`)
+*   **intensityPercentage** `INTEGER NOT NULL`: Activation intensity share percentage (5% - 100%)
+
+### `execution_steps` Table
+Sequential, ordered instructions for proper exercise execution (up to 3 steps).
+*   **id** `TEXT PRIMARY KEY`: Unique step UUID
+*   **exerciseId** `TEXT NOT NULL`: Foreign key referencing `exercises` (ON DELETE CASCADE)
+*   **stepNumber** `INTEGER NOT NULL`: 1-indexed execution sequence number
+*   **title** `TEXT NOT NULL`: Short phase title (e.g. `Set Up & Grip`, `Eccentric Descent`, `Drive`)
+*   **instructions** `TEXT NOT NULL`: Detailed biomechanical instruction paragraph
+
+### `form_cues` Table
+Technique tips and execution rules classified as positive DOs or negative DON'Ts (up to 3 cues).
+*   **id** `TEXT PRIMARY KEY`: Unique cue UUID
+*   **exerciseId** `TEXT NOT NULL`: Foreign key referencing `exercises` (ON DELETE CASCADE)
+*   **isPositive** `INTEGER NOT NULL`: Boolean flag (1 for DO technique check, 0 for DON'T error warning)
+*   **description** `TEXT NOT NULL`: Concise actionable technique cue string (up to 120 chars)
+
 
