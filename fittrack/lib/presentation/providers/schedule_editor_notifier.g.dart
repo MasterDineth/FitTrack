@@ -42,7 +42,7 @@ final class ScheduleEditorNotifierProvider
 }
 
 String _$scheduleEditorNotifierHash() =>
-    r'f23643847e653b6f10058ca6e4ee5b21059da9a9';
+    r'60a134a73151bee9bc0c39f5aee04fb6e8e90007';
 
 abstract class _$ScheduleEditorNotifier extends $Notifier<ScheduleEditorState> {
   ScheduleEditorState build();

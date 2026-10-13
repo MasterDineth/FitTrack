@@ -80,3 +80,27 @@ Contains set-by-set weight, repetitions, and performance milestones.
 *   **Version 1-11:** User authentication, body telemetry, fitness goals, routines, and initial workout logging.
 *   **Version 12:** Added `intensity`, `totalSets`, `totalReps`, `totalVolumeKg` columns to `workout_sessions`, created composite indexes `idx_exercise_logs_session_id`, `idx_set_logs_exercise_log_id`, and `idx_workout_sessions_start_time`, and seeded initial September 2026 workout history records for Stitch compliance.
 
+## 5. Schedules & Schedule Exercises (`schedules`, `schedule_exercises`)
+Manages workout routines, training splits, and exercise definitions.
+
+### `schedules` Table
+*   **id** `TEXT PRIMARY KEY`: Schedule UUID (e.g. `sched-push-a`)
+*   **name** `TEXT NOT NULL`: Schedule title (e.g. `Push Hypertrophy A`)
+*   **description** `TEXT`: Optional description
+*   **targetMuscles** `TEXT`: Comma-separated list of target muscles (up to 3, e.g. `Chest,Shoulders,Triceps`)
+*   **weeklyDays** `TEXT`: Comma-separated list of days of week (up to 3, e.g. `Tuesday,Friday`)
+*   **coverImagePath** `TEXT`: Optional file path or bundled asset URL
+*   **isFavorite** `INTEGER DEFAULT 0`: Favorite/bookmark toggle flag
+*   **createdAt** `TEXT NOT NULL`: ISO-8601 UTC timestamp
+
+### `schedule_exercises` Table
+*   **id** `TEXT PRIMARY KEY`: Association entry UUID
+*   **scheduleId** `TEXT NOT NULL`: Foreign key referencing `schedules`
+*   **exerciseId** `TEXT NOT NULL`: Foreign key referencing `exercises`
+*   **orderIndex** `INTEGER NOT NULL`: 0-indexed order of execution (reorderable via drag)
+*   **targetSets** `INTEGER NOT NULL DEFAULT 3`: Prescribed sets
+*   **targetReps** `INTEGER NOT NULL DEFAULT 10`: Prescribed reps
+*   **targetWeightKg** `REAL NOT NULL DEFAULT 0.0`: Prescribed weight in kilograms (0 = bodyweight)
+*   **restSeconds** `INTEGER NOT NULL DEFAULT 90`: Rest time between sets in seconds
+
+
