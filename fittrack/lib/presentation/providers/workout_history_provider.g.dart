@@ -199,7 +199,7 @@ final class WorkoutSessionDetailProvider
 }
 
 String _$workoutSessionDetailHash() =>
-    r'02fdf3a21dbefd1da41b1889c6f22a123f0f988e';
+    r'98d893414b36b77f57f6c2997c1d76f1ef013861';
 
 final class WorkoutSessionDetailFamily extends $Family
     with

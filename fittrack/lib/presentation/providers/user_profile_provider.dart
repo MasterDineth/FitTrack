@@ -65,17 +65,22 @@ class UserProfileNotifier extends _$UserProfileNotifier {
     String? email,
     String? username,
   }) async {
-    final current = state.value ??
-        const UserProfile(
-          id: '1',
-          name: '',
-          age: 24,
-          weightKg: 0.0,
-          heightCm: 0.0,
-          experienceLevel: '',
-          primaryGoal: '',
-          weeklyTargetDays: 0,
-        );
+    UserProfile? current = state.hasValue ? state.value : null;
+    if (current == null) {
+      try {
+        current = await future;
+      } catch (_) {}
+    }
+    current ??= const UserProfile(
+      id: '1',
+      name: '',
+      age: 24,
+      weightKg: 0.0,
+      heightCm: 0.0,
+      experienceLevel: '',
+      primaryGoal: '',
+      weeklyTargetDays: 0,
+    );
 
     final updated = current.copyWith(
       name: name ?? current.name,

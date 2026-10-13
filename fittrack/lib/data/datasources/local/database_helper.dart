@@ -11,11 +11,24 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
 
   static Database? _database;
+  static Completer<Database>? _initCompleter;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDatabase();
-    return _database!;
+    if (_initCompleter != null) return _initCompleter!.future;
+
+    final completer = Completer<Database>();
+    _initCompleter = completer;
+    try {
+      final db = await _initDatabase();
+      _database = db;
+      completer.complete(db);
+      return db;
+    } catch (e, st) {
+      _initCompleter = null;
+      completer.completeError(e, st);
+      rethrow;
+    }
   }
 
   Future<Database> _initDatabase() async {
@@ -307,7 +320,7 @@ class DatabaseHelper {
 
   Future _onCreate(Database db, int version) async {
     await db.execute('''
-      CREATE TABLE exercises (
+      CREATE TABLE IF NOT EXISTS exercises (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         equipment TEXT NOT NULL,
@@ -320,7 +333,7 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
-      CREATE TABLE muscle_activations (
+      CREATE TABLE IF NOT EXISTS muscle_activations (
         id TEXT PRIMARY KEY,
         exerciseId TEXT NOT NULL,
         muscleName TEXT NOT NULL,
@@ -331,7 +344,7 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
-      CREATE TABLE execution_steps (
+      CREATE TABLE IF NOT EXISTS execution_steps (
         id TEXT PRIMARY KEY,
         exerciseId TEXT NOT NULL,
         stepNumber INTEGER NOT NULL,
@@ -342,7 +355,7 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
-      CREATE TABLE form_cues (
+      CREATE TABLE IF NOT EXISTS form_cues (
         id TEXT PRIMARY KEY,
         exerciseId TEXT NOT NULL,
         isPositive INTEGER NOT NULL,
@@ -352,7 +365,7 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
-      CREATE TABLE schedules (
+      CREATE TABLE IF NOT EXISTS schedules (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         description TEXT NOT NULL,
@@ -379,7 +392,7 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
-      CREATE TABLE schedule_exercises (
+      CREATE TABLE IF NOT EXISTS schedule_exercises (
         id TEXT PRIMARY KEY,
         scheduleId TEXT NOT NULL,
         exerciseId TEXT NOT NULL,
@@ -394,7 +407,7 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
-      CREATE TABLE workout_sessions (
+      CREATE TABLE IF NOT EXISTS workout_sessions (
         id TEXT PRIMARY KEY,
         scheduleId TEXT NOT NULL,
         startTime TEXT NOT NULL,
@@ -413,15 +426,9 @@ class DatabaseHelper {
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_workout_sessions_start_time ON workout_sessions(startTime)',
     );
-    await db.execute(
-      'CREATE INDEX IF NOT EXISTS idx_exercise_logs_session_id ON exercise_logs(sessionId)',
-    );
-    await db.execute(
-      'CREATE INDEX IF NOT EXISTS idx_set_logs_exercise_log_id ON set_logs(exerciseLogId)',
-    );
 
     await db.execute('''
-      CREATE TABLE exercise_logs (
+      CREATE TABLE IF NOT EXISTS exercise_logs (
         id TEXT PRIMARY KEY,
         sessionId TEXT NOT NULL,
         exerciseId TEXT NOT NULL,
@@ -434,7 +441,7 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
-      CREATE TABLE set_logs (
+      CREATE TABLE IF NOT EXISTS set_logs (
         id TEXT PRIMARY KEY,
         exerciseLogId TEXT NOT NULL,
         setNumber INTEGER NOT NULL,
@@ -448,8 +455,15 @@ class DatabaseHelper {
       )
     ''');
 
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_exercise_logs_session_id ON exercise_logs(sessionId)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_set_logs_exercise_log_id ON set_logs(exerciseLogId)',
+    );
+
     await db.execute('''
-      CREATE TABLE user_profile (
+      CREATE TABLE IF NOT EXISTS user_profile (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         age INTEGER NOT NULL,

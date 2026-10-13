@@ -78,26 +78,38 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
 
   Future<void> _continue() async {
     setState(() => _isSaving = true);
-    final userAsync = ref.read(authProvider);
-    final userId = userAsync.value?.id ?? 'local';
+    try {
+      final userAsync = ref.read(authProvider);
+      final userId = userAsync.value?.id ?? 'local';
 
-    final telemetry = BodyTelemetry(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      userId: userId,
-      unitSystem: _isMetric ? UnitSystem.metric : UnitSystem.imperial,
-      biologicalSex: _sex,
-      age: _age,
-      weight: _weight,
-      height: _height,
-      recordedAt: DateTime.now(),
-    );
+      final telemetry = BodyTelemetry(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        userId: userId,
+        unitSystem: _isMetric ? UnitSystem.metric : UnitSystem.imperial,
+        biologicalSex: _sex,
+        age: _age,
+        weight: _weight,
+        height: _height,
+        recordedAt: DateTime.now(),
+      );
 
-    await ref
-        .read(userProfileProvider.notifier)
-        .saveTelemetry(telemetry);
+      await ref
+          .read(userProfileProvider.notifier)
+          .saveTelemetry(telemetry);
 
-    setState(() => _isSaving = false);
-    if (mounted) context.go('/onboarding/fitness');
+      if (mounted) context.go('/onboarding/fitness');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save profile: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
@@ -651,7 +663,13 @@ class _TelemetrySetupScreenState extends ConsumerState<TelemetrySetupScreen> {
                   Row(
                     children: [
                       TextButton(
-                        onPressed: () => context.pop(),
+                        onPressed: () {
+                          if (context.canPop()) {
+                            context.pop();
+                          } else {
+                            context.go('/welcome');
+                          }
+                        },
                         child: Text(
                           'Back',
                           style: TextStyle(
