@@ -33,45 +33,7 @@ class AboutScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Icon(
-                Icons.fitness_center_rounded,
-                color: colorScheme.onPrimaryContainer,
-                size: 32,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'FitTrack',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Version 1.4.2 (Latest)',
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: 14,
-                color: colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
-            ),
-          ],
-        ),
-      ),
+      body: const SizedBox.shrink(),
     );
   }
 }

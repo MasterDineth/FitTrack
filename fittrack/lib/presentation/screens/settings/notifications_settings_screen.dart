@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/notification_settings_provider.dart';
+import '../../providers/theme_provider.dart';
+import '../../theme/ft_glass.dart';
 
 /// Notifications & Alerts Settings Screen for FitTrack.
 ///
@@ -14,41 +16,25 @@ import '../../providers/notification_settings_provider.dart';
 class NotificationsSettingsScreen extends ConsumerWidget {
   const NotificationsSettingsScreen({super.key});
 
-  /// Private card decoration helper strictly conforming to design system guardrails:
-  /// - Light mode: pure surface color with subtle ambient drop shadow, no border.
-  /// - Dark/OLED mode: pure surface color with crisp outline border, no shadow.
-  BoxDecoration _buildCardDecoration(BuildContext context, {double radius = 16}) {
-    final isLight = Theme.of(context).brightness == Brightness.light;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    if (isLight) {
-      return BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(radius),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x080F172A),
-            blurRadius: 16,
-            offset: Offset(0, 4),
-          ),
-        ],
-      );
-    } else {
-      return BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(radius),
-        border: Border.all(
-          color: colorScheme.outline,
-          width: 1,
-        ),
-      );
-    }
+  /// Card decoration helper dynamically adapting to [ThemeSettings]
+  /// for frosted glass transparency (on/off) and blur intensity.
+  BoxDecoration _buildCardDecoration(
+    BuildContext context, {
+    double radius = 16,
+    ThemeSettings? settings,
+  }) {
+    return FtGlassTheme.cardDecoration(
+      context,
+      radius: radius,
+      settings: settings,
+    );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final themeSettings = ref.watch(themeNotifierProvider);
     final state = ref.watch(notificationSettingsNotifierProvider);
     final notifier = ref.read(notificationSettingsNotifierProvider.notifier);
 
@@ -89,6 +75,7 @@ class NotificationsSettingsScreen extends ConsumerWidget {
               context: context,
               theme: theme,
               colorScheme: colorScheme,
+              themeSettings: themeSettings,
               state: state,
               notifier: notifier,
             ),
@@ -105,6 +92,7 @@ class NotificationsSettingsScreen extends ConsumerWidget {
               context: context,
               theme: theme,
               colorScheme: colorScheme,
+              themeSettings: themeSettings,
               state: state,
               notifier: notifier,
             ),
@@ -120,6 +108,7 @@ class NotificationsSettingsScreen extends ConsumerWidget {
               context: context,
               theme: theme,
               colorScheme: colorScheme,
+              themeSettings: themeSettings,
               state: state,
               notifier: notifier,
             ),
@@ -140,6 +129,7 @@ class NotificationsSettingsScreen extends ConsumerWidget {
               context: context,
               theme: theme,
               colorScheme: colorScheme,
+              themeSettings: themeSettings,
               state: state,
               notifier: notifier,
             ),
@@ -160,6 +150,7 @@ class NotificationsSettingsScreen extends ConsumerWidget {
               context: context,
               theme: theme,
               colorScheme: colorScheme,
+              themeSettings: themeSettings,
               state: state,
               notifier: notifier,
             ),
@@ -265,11 +256,12 @@ class NotificationsSettingsScreen extends ConsumerWidget {
     required BuildContext context,
     required ThemeData theme,
     required ColorScheme colorScheme,
+    required ThemeSettings themeSettings,
     required NotificationSettingsState state,
     required NotificationSettingsNotifier notifier,
   }) {
     return Container(
-      decoration: _buildCardDecoration(context, radius: 20),
+      decoration: _buildCardDecoration(context, radius: 20, settings: themeSettings),
       padding: const EdgeInsets.all(20),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -326,11 +318,12 @@ class NotificationsSettingsScreen extends ConsumerWidget {
     required BuildContext context,
     required ThemeData theme,
     required ColorScheme colorScheme,
+    required ThemeSettings themeSettings,
     required NotificationSettingsState state,
     required NotificationSettingsNotifier notifier,
   }) {
     return Container(
-      decoration: _buildCardDecoration(context, radius: 20),
+      decoration: _buildCardDecoration(context, radius: 20, settings: themeSettings),
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -715,11 +708,12 @@ class NotificationsSettingsScreen extends ConsumerWidget {
     required BuildContext context,
     required ThemeData theme,
     required ColorScheme colorScheme,
+    required ThemeSettings themeSettings,
     required NotificationSettingsState state,
     required NotificationSettingsNotifier notifier,
   }) {
     return Container(
-      decoration: _buildCardDecoration(context, radius: 20),
+      decoration: _buildCardDecoration(context, radius: 20, settings: themeSettings),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Column(
         children: [
@@ -901,11 +895,12 @@ class NotificationsSettingsScreen extends ConsumerWidget {
     required BuildContext context,
     required ThemeData theme,
     required ColorScheme colorScheme,
+    required ThemeSettings themeSettings,
     required NotificationSettingsState state,
     required NotificationSettingsNotifier notifier,
   }) {
     return Container(
-      decoration: _buildCardDecoration(context, radius: 20),
+      decoration: _buildCardDecoration(context, radius: 20, settings: themeSettings),
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1046,11 +1041,12 @@ class NotificationsSettingsScreen extends ConsumerWidget {
     required BuildContext context,
     required ThemeData theme,
     required ColorScheme colorScheme,
+    required ThemeSettings themeSettings,
     required NotificationSettingsState state,
     required NotificationSettingsNotifier notifier,
   }) {
     return Container(
-      decoration: _buildCardDecoration(context, radius: 20),
+      decoration: _buildCardDecoration(context, radius: 20, settings: themeSettings),
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

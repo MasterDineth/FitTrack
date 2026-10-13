@@ -27,25 +27,37 @@ class _FitnessProfileSetupScreenState
 
   Future<void> _complete() async {
     setState(() => _isSaving = true);
-    final userAsync = ref.read(authProvider);
-    final userId = userAsync.value?.id ?? 'local';
+    try {
+      final userAsync = ref.read(authProvider);
+      final userId = userAsync.value?.id ?? 'local';
 
-    final profile = FitnessProfile(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      userId: userId,
-      primaryFocus: _focus,
-      liftingExperience: _experience,
-      weeklyFrequency: _weeklyFrequency,
-      availableEquipment: _equipment,
-      updatedAt: DateTime.now(),
-    );
+      final profile = FitnessProfile(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        userId: userId,
+        primaryFocus: _focus,
+        liftingExperience: _experience,
+        weeklyFrequency: _weeklyFrequency,
+        availableEquipment: _equipment,
+        updatedAt: DateTime.now(),
+      );
 
-    await ref
-        .read(userProfileProvider.notifier)
-        .saveFitnessProfile(profile);
+      await ref
+          .read(userProfileProvider.notifier)
+          .saveFitnessProfile(profile);
 
-    setState(() => _isSaving = false);
-    if (mounted) context.go('/dashboard');
+      if (mounted) context.go('/dashboard');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to complete setup: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override

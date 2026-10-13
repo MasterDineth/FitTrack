@@ -1,10 +1,45 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/schedule.dart';
 import '../../domain/entities/schedule_exercise.dart';
+import '../../domain/entities/workout_session.dart';
 import '../../domain/repositories/i_schedule_repository.dart';
 import '../../domain/repositories/i_workout_session_repository.dart';
 
 part 'workout_logic_providers.g.dart';
+
+/// Single keepAlive revision tracker that is bumped whenever a session is
+/// saved, finished, or discarded so derived providers only re-evaluate then.
+@Riverpod(keepAlive: true)
+class SessionsRevisionNotifier extends _$SessionsRevisionNotifier {
+  @override
+  int build() => 0;
+
+  void bump() {
+    state = state + 1;
+  }
+}
+
+/// Normalised selected month for the activity calendar (always Year, Month, 1).
+@Riverpod(keepAlive: true)
+class SelectedMonthNotifier extends _$SelectedMonthNotifier {
+  @override
+  DateTime build() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, 1);
+  }
+
+  void setMonth(DateTime month) {
+    state = DateTime(month.year, month.month, 1);
+  }
+
+  void nextMonth() {
+    state = DateTime(state.year, state.month + 1, 1);
+  }
+
+  void prevMonth() {
+    state = DateTime(state.year, state.month - 1, 1);
+  }
+}
 
 /// Estimates the total duration (in seconds) for a workout given its exercises.
 ///
@@ -33,15 +68,15 @@ Future<Schedule?> splitRecommendation(
   IScheduleRepository scheduleRepo,
   IWorkoutSessionRepository sessionRepo,
 ) async {
-  final sessions = await sessionRepo.getAllSessions();
-  final now = DateTime.now();
-  final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+  ref.watch(sessionsRevisionProvider);
 
-  final weekSessions = sessions.where((s) {
-    final sessionStart = s.startTime;
-    return sessionStart.isAfter(startOfWeek) ||
-        sessionStart.isAtSameMomentAs(startOfWeek);
-  }).toList();
+  final now = DateTime.now();
+  // Midnight Monday of the current week (fixing time-of-day exclusions)
+  final startOfWeek = DateTime(now.year, now.month, now.day - (now.weekday - 1));
+
+  // Shared recents query: reads up to 5 recent sessions from recentWorkoutSessionsProvider
+  final recentSessions = await ref.watch(recentWorkoutSessionsProvider(sessionRepo).future);
+  final weekSessions = recentSessions.where((s) => !s.startTime.isBefore(startOfWeek)).toList();
 
   final schedules = await scheduleRepo.getAllSchedules();
   final unarchivedSchedules =
@@ -69,59 +104,72 @@ Future<Schedule?> splitRecommendation(
   return nextSchedule; // null → rest state
 }
 
-/// Aggregates dashboard metrics for the current week and all-time.
+/// Aggregates dashboard metrics for the current week and all-time
+/// using indexed SQL aggregate queries.
 ///
 /// Returns a map with keys:
 /// - `daysTrainedThisWeek` ([int])
 /// - `totalWorkoutsCompleted` ([int])
 /// - `totalCaloriesBurned` ([int])
+/// - `activeDatesThisMonth` ([List<DateTime>])
 @riverpod
 Future<Map<String, dynamic>> dashboardMetrics(
   Ref ref,
   IWorkoutSessionRepository sessionRepo,
 ) async {
-  final sessions = await sessionRepo.getAllSessions();
+  ref.watch(sessionsRevisionProvider);
+
   final now = DateTime.now();
-  final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+  // Midnight Monday of current week (correctly includes all Monday sessions)
+  final startOfWeek = DateTime(now.year, now.month, now.day - (now.weekday - 1));
+  final endOfWeek = startOfWeek.add(const Duration(days: 7));
+  final startOfMonth = DateTime(now.year, now.month, 1);
+  final endOfMonth = DateTime(now.year, now.month + 1, 1);
 
-  final weekSessions = sessions.where((s) {
-    final sessionStart = s.startTime;
-    return sessionStart.isAfter(startOfWeek) ||
-        sessionStart.isAtSameMomentAs(startOfWeek);
-  }).toList();
+  final metrics = await sessionRepo.getDashboardMetrics(
+    startOfWeek: startOfWeek,
+    endOfWeek: endOfWeek,
+    startOfMonth: startOfMonth,
+    endOfMonth: endOfMonth,
+  );
 
-  final daysTrained = weekSessions.map((s) => s.startTime.weekday).toSet().length;
-  final workoutsCompleted = sessions.where((s) => s.endTime != null).length;
-
-  int totalCalories = 0;
-  for (final s in sessions) {
-    totalCalories += (s.totalCalories ?? 0);
-  }
-
-  return {
-    'daysTrainedThisWeek': daysTrained,
-    'totalWorkoutsCompleted': workoutsCompleted,
-    'totalCaloriesBurned': totalCalories,
-  };
+  return metrics;
 }
 
-/// Returns the set of [DateTime]s in [month] on which a workout session
-/// was started, for rendering the monthly activity calendar.
+/// Returns the set of [DateTime]s in the currently selected month on which
+/// a workout session was started, for rendering the monthly activity calendar.
+///
+/// Keyed only by normalized month via [selectedMonthNotifierProvider].
+/// Reuses the dashboard aggregates query for the current month.
 @riverpod
 Future<List<DateTime>> calendarActivity(
   Ref ref,
   IWorkoutSessionRepository sessionRepo,
-  DateTime month,
 ) async {
-  final sessions = await sessionRepo.getAllSessions();
+  ref.watch(sessionsRevisionProvider);
+  final month = ref.watch(selectedMonthProvider);
 
-  final activeDates = sessions
-      .where((s) =>
-          s.startTime.year == month.year && s.startTime.month == month.month)
-      .map((s) =>
-          DateTime(s.startTime.year, s.startTime.month, s.startTime.day))
-      .toSet()
-      .toList();
+  final now = DateTime.now();
+  if (month.year == now.year && month.month == now.month) {
+    final metrics = await ref.watch(dashboardMetricsProvider(sessionRepo).future);
+    return (metrics['activeDatesThisMonth'] as List<DateTime>?) ?? const [];
+  }
 
-  return activeDates;
+  final startOfMonth = DateTime(month.year, month.month, 1);
+  final endOfMonth = DateTime(month.year, month.month + 1, 1);
+
+  return await sessionRepo.getSessionStartDatesInRange(
+    startInclusive: startOfMonth,
+    endExclusive: endOfMonth,
+  );
+}
+
+/// Returns up to 5 most recent workout sessions using an indexed LIMIT query.
+@riverpod
+Future<List<WorkoutSession>> recentWorkoutSessions(
+  Ref ref,
+  IWorkoutSessionRepository sessionRepo,
+) async {
+  ref.watch(sessionsRevisionProvider);
+  return await sessionRepo.getRecentSessions(limit: 5);
 }

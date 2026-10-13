@@ -1,34 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/security_provider.dart';
+import '../../providers/theme_provider.dart';
+import '../../theme/ft_glass.dart';
 import '../../widgets/security_modals.dart';
 
-/// Local private card decoration helper matching Stitch specifications.
-BoxDecoration _buildCardDecoration(BuildContext context, {double radius = 16}) {
-  final isLight = Theme.of(context).brightness == Brightness.light;
-  final colorScheme = Theme.of(context).colorScheme;
-
-  if (isLight) {
-    return BoxDecoration(
-      color: colorScheme.surface,
-      borderRadius: BorderRadius.circular(radius),
-      boxShadow: const [
-        BoxShadow(
-          color: Color(0x080F172A),
-          blurRadius: 16,
-          offset: Offset(0, 4),
-        ),
-      ],
-    );
-  } else {
-    return BoxDecoration(
-      color: colorScheme.surface,
-      borderRadius: BorderRadius.circular(radius),
-      border: Border.all(
-        color: colorScheme.outline,
-      ),
-    );
-  }
+/// Local card decoration helper dynamically adapting to [ThemeSettings]
+/// for frosted glass transparency (on/off) and blur intensity.
+BoxDecoration _buildCardDecoration(
+  BuildContext context, {
+  double radius = 16,
+  ThemeSettings? settings,
+}) {
+  return FtGlassTheme.cardDecoration(
+    context,
+    radius: radius,
+    settings: settings,
+  );
 }
 
 /// Change Password & Security History screen matching Stitch specifications.
@@ -124,6 +112,7 @@ class _PasswordSecurityScreenState
     final theme = Theme.of(context);
     final isLight = theme.brightness == Brightness.light;
     final colorScheme = theme.colorScheme;
+    final themeSettings = ref.watch(themeNotifierProvider);
     final state = ref.watch(securityNotifierProvider);
     final notifier = ref.read(securityNotifierProvider.notifier);
 
@@ -197,7 +186,7 @@ class _PasswordSecurityScreenState
           children: [
             // ── Hero Card: "Strengthen Your Defense" ─────────────────────────
             Container(
-              decoration: _buildCardDecoration(context, radius: 16),
+              decoration: _buildCardDecoration(context, radius: 16, settings: themeSettings),
               padding: const EdgeInsets.all(16),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -615,7 +604,7 @@ class _PasswordSecurityScreenState
 
             // ── Live Security Standard Checklist Card ───────────────────────
             Container(
-              decoration: _buildCardDecoration(context, radius: 16),
+              decoration: _buildCardDecoration(context, radius: 16, settings: themeSettings),
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

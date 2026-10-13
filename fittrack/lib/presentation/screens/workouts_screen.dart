@@ -1,27 +1,32 @@
-import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../providers/dashboard_providers.dart';
 import '../providers/schedules_provider.dart';
 import '../providers/user_profile_provider.dart';
+import '../theme/ft_glass.dart';
+import '../widgets/ft_background_painter.dart';
+import '../widgets/glass_surface.dart';
+import 'dashboard/widgets/ft_pressable.dart';
 
-/// Redesigned Workouts & Schedules Screen adhering strictly to Stitch MCP specifications.
+/// Completely redesigned FitTrack Workout Library screen adhering strictly to
+/// Stitch Screen `96ee402291a749399d62ddb8e047db55` and AGENTS.md.
 ///
 /// Features:
-/// - Sticky `SliverAppBar` (`pinned: true`) with search input and header matching `dashboard_screen.dart`.
-/// - Filter chips rendered as the first sliver in the scroll view:
-///   * Horizontal scrolling row in Default Browse mode.
-///   * Multiline `Wrap` layout in Search Active mode.
-/// - Conditional rendering:
-///   * Default Browse layout when search is inactive.
-///   * Search Active layout when search input is focused or a category filter is selected.
-/// - Expandable bookmarks with "See All" / "Collapse" toggle (horizontal list vs 2-column grid).
-/// - Full bookmark toggling and routing to `/workouts/detail` with deep extra data.
-/// - 120px bottom padding to clear the floating FAB and persistent dock.
+/// - Exact Dashboard header alignment (Title, Subtitle, 40x40 circle glass2 notification bell, 36x36 avatar).
+/// - Dynamic mesh background and frosted glass design system (`FtGlassTier`).
+/// - Search input pill and filter sliders button routing to `/workouts/search`.
+/// - Horizontally scrolling filter chips (`All Goals`, `Hypertrophy`, `Strength Peak`, etc.).
+/// - Trending Programs carousel with athlete badges, ratings, tags, and bookmark toggle.
+/// - Today's Routine Spotlight card featuring top 3 exercises from SQLite database,
+///   stats columns (Time, Burn, 5-bar Intensity meter), and circular play button.
+/// - My Saved & Custom routines section with progress bars, badges, and overflow menu.
+/// - Browse All Schedules section loading up to 5 schedules from SQLite database with
+///   tags, cadence, duration, and `View Split >` actions.
+/// - Full bookmarking system integrated with SQLite persistence.
+/// - Dock clearance padding for floating bottom navigation.
 class WorkoutsScreen extends ConsumerStatefulWidget {
   const WorkoutsScreen({super.key});
 
@@ -30,2199 +35,1821 @@ class WorkoutsScreen extends ConsumerStatefulWidget {
 }
 
 class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
-  late final TextEditingController _searchController;
-  late final FocusNode _searchFocusNode;
-  late final ScrollController _scrollController;
-
-  bool _isSearchActive = false;
-  bool _expandBookmarks = false;
-  bool _isFabExtended = false;
-  Timer? _fabCollapseTimer;
-
-  static const _filterOptions = <String>[
-    'All',
+  static const _filterChips = <String>[
+    'All Goals',
     'Hypertrophy',
-    'Strength',
-    'Beginner',
-    'Advanced',
-    'Full Gym',
-    'Dumbbells',
+    'Strength Peak',
+    'Agility & Core',
+    'Endurance',
     'Bodyweight',
+    'Full Gym',
   ];
 
   @override
   void initState() {
     super.initState();
-    _searchController = TextEditingController();
-    _searchFocusNode = FocusNode();
-    _scrollController = ScrollController();
-
-    _searchFocusNode.addListener(() {
-      if (_searchFocusNode.hasFocus && !_isSearchActive) {
-        setState(() {
-          _isSearchActive = true;
-        });
-      } else {
-        setState(() {});
-      }
+    // Synchronize schedules with local SQLite database on load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(schedulesNotifierProvider.notifier).loadFromDatabase();
     });
   }
 
-  @override
-  void dispose() {
-    _fabCollapseTimer?.cancel();
-    _searchController.dispose();
-    _searchFocusNode.dispose();
-    _scrollController.dispose();
-    super.dispose();
+  void _onSearchTap() {
+    context.push('/workouts/search');
   }
 
-  void _exitSearch() {
-    _searchController.clear();
-    _searchFocusNode.unfocus();
-    ref.read(schedulesNotifierProvider.notifier).updateSearchQuery('');
-    ref.read(schedulesNotifierProvider.notifier).updateCategoryFilter('All');
-    ref.read(schedulesNotifierProvider.notifier).updateSort(SortOption.relevant);
-    setState(() {
-      _isSearchActive = false;
-    });
+  void _onCategoryTap(String category) {
+    final queryCategory = category == 'All Goals' ? 'All' : category;
+    ref.read(schedulesNotifierProvider.notifier).updateCategoryFilter(queryCategory);
+    context.push('/workouts/search');
   }
 
-  void _expandFab() {
-    _fabCollapseTimer?.cancel();
-    setState(() => _isFabExtended = true);
-    _fabCollapseTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted && _isFabExtended) {
-        setState(() => _isFabExtended = false);
-      }
-    });
-  }
-
-  void _collapseFab() {
-    _fabCollapseTimer?.cancel();
-    if (_isFabExtended) {
-      setState(() => _isFabExtended = false);
-    }
-  }
-
-  void _handleFabTap() {
-    HapticFeedback.lightImpact();
-    if (_isFabExtended) {
-      _collapseFab();
-      context.push('/workouts/create-schedule');
-    } else {
-      _expandFab();
-    }
-  }
-
-  Widget _buildFAB(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-
-    return TapRegion(
-      onTapOutside: (_) => _collapseFab(),
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 2.0),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.fastOutSlowIn,
-          height: 56,
-          decoration: BoxDecoration(
-            color: colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.shadow.withValues(alpha: isDark ? 0.35 : 0.15),
-                blurRadius: 16,
-                spreadRadius: -2,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(28),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(28),
-              onTap: _handleFabTap,
-              child: AnimatedSize(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.fastOutSlowIn,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.add_rounded,
-                        size: 24,
-                        color: colorScheme.onPrimaryContainer,
-                      ),
-                      if (_isFabExtended) ...[
-                        const SizedBox(width: 8),
-                        Text(
-                          'Create Schedule',
-                          maxLines: 1,
-                          softWrap: false,
-                          overflow: TextOverflow.clip,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.2,
-                            color: colorScheme.onPrimaryContainer,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+  void _cycleSort(SortOption current) {
+    final next = switch (current) {
+      SortOption.relevant => SortOption.duration,
+      SortOption.duration => SortOption.title,
+      SortOption.title => SortOption.relevant,
+    };
+    ref.read(schedulesNotifierProvider.notifier).updateSort(next);
   }
 
   String _sortLabel(SortOption sort) {
-    switch (sort) {
-      case SortOption.relevant:
-        return 'Sort';
-      case SortOption.duration:
-        return 'Duration';
-      case SortOption.title:
-        return 'Title';
-    }
+    return switch (sort) {
+      SortOption.relevant => 'Sort',
+      SortOption.duration => 'Duration',
+      SortOption.title => 'Title',
+    };
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isLight = theme.brightness == Brightness.light;
-    final colorScheme = theme.colorScheme;
-    final state = ref.watch(schedulesNotifierProvider);
-    final notifier = ref.read(schedulesNotifierProvider.notifier);
-    final userProfileAsync = ref.watch(userProfileProvider);
+    final schedulesState = ref.watch(schedulesNotifierProvider);
+    final trending = ref.watch(trendingProgramsProvider);
+    final spotlightAsync = ref.watch(routineSpotlightProvider);
+    final customRoutines = ref.watch(customRoutinesProvider);
+    final dbSchedulesAsync = ref.watch(dbBrowseSchedulesProvider);
 
-    final isSearchActive = _isSearchActive;
-    final recommended = state.recommendedSchedules;
-    final bookmarked = state.bookmarkedSchedules;
-    final custom = state.customSchedules;
-    final filtered = state.filteredSchedules;
+    final bottomPadding = (MediaQuery.paddingOf(context).bottom > 0)
+        ? MediaQuery.paddingOf(context).bottom + 16.0
+        : 90.0;
 
-    final isSearching = isSearchActive ||
-        _searchController.text.isNotEmpty ||
-        _searchFocusNode.hasFocus ||
-        state.searchQuery.isNotEmpty ||
-        state.selectedCategoryFilter != 'All';
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          // 1. Dynamic Mesh Gradient Background
+          const Positioned.fill(
+            child: FtMeshBackground(),
+          ),
 
-    return PopScope(
-      canPop: !isSearching,
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) return;
-        if (isSearching) {
-          _exitSearch();
-        }
-      },
-      child: Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      floatingActionButton: _buildFAB(context),
-      body: SafeArea(
-        bottom: false,
-        child: NotificationListener<ScrollNotification>(
-          onNotification: (notification) {
-            if (_isFabExtended &&
-                notification is UserScrollNotification &&
-                notification.direction != ScrollDirection.idle) {
-              _collapseFab();
-            }
-            return false;
-          },
-          child: CustomScrollView(
-            controller: _scrollController,
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            slivers: [
-              // ── TOP APP HEADER (EXACTLY MATCHING DASHBOARD SCREEN) ─────────
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF00D68F),
-                          shape: BoxShape.circle,
-                        ),
+          // 2. Centered Content Viewport
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 393),
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  SliverSafeArea(
+                    top: true,
+                    bottom: false,
+                    sliver: SliverPadding(
+                      padding: EdgeInsets.only(
+                        left: 20.0,
+                        right: 20.0,
+                        bottom: bottomPadding,
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Workout Library',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                      ),
-                      const Spacer(),
-                      // Notification bell matching dashboard_screen.dart
-                      Stack(
-                        children: [
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: colorScheme.surface,
-                              borderRadius: BorderRadius.circular(18),
-                              border: isLight
-                                  ? Border.all(color: colorScheme.outlineVariant)
-                                  : Border.all(color: colorScheme.outline),
-                            ),
-                            child: Icon(
-                              Icons.notifications_none_rounded,
-                              color: colorScheme.onSurface.withValues(alpha: 0.7),
-                              size: 18,
-                            ),
-                          ),
-                          Positioned(
-                            top: 7,
-                            right: 7,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: colorScheme.primary,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: colorScheme.surface,
-                                  width: 1.5,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 10),
-                      // Profile avatar matching dashboard_screen.dart
-                      InkWell(
-                        onTap: () => context.push('/settings/profile'),
-                        borderRadius: BorderRadius.circular(18),
-                        child: Stack(
-                          children: [
-                            Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: colorScheme.primary,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: colorScheme.surface, width: 2),
-                              ),
-                              child: ClipOval(
-                                child: (userProfileAsync.value?.profileImagePath != null &&
-                                        File(userProfileAsync.value!.profileImagePath!)
-                                            .existsSync())
-                                    ? Image.file(
-                                        File(userProfileAsync.value!.profileImagePath!),
-                                        width: 36,
-                                        height: 36,
-                                        fit: BoxFit.cover,
-                                      )
-                                    : Center(
-                                        child: Text(
-                                          (userProfileAsync.value?.name.trim().isNotEmpty ==
-                                                  true)
-                                              ? userProfileAsync.value!.name
-                                                  .trim()[0]
-                                                  .toUpperCase()
-                                              : 'D',
-                                          style: TextStyle(
-                                            fontFamily: 'Plus Jakarta Sans',
-                                            color: colorScheme.onPrimary,
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ),
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: Container(
-                                width: 10,
-                                height: 10,
-                                decoration: BoxDecoration(
-                                  color: colorScheme.primary,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: colorScheme.surface,
-                                    width: 1.5,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+                      sliver: SliverList(
+                        delegate: SliverChildListDelegate([
+                          // Header (Uniform with Dashboard)
+                          const _WorkoutsHeader(),
+                          const SizedBox(height: 16),
 
-              // ── PINNED SEARCH BAR (ONLY CONTAINS SEARCH INPUT & FILTER) ───
-              SliverAppBar(
-                pinned: true,
-                floating: false,
-                elevation: 0,
-                toolbarHeight: 70,
-                backgroundColor: theme.scaffoldBackgroundColor,
-                surfaceTintColor: Colors.transparent,
-                automaticallyImplyLeading: false,
-                titleSpacing: 0,
-                title: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          height: 46,
-                          decoration: BoxDecoration(
-                            color: isLight
-                                ? const Color(0xFFF2F4F6)
-                                : theme.colorScheme.surfaceContainer,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: theme.colorScheme.primary.withValues(
-                                alpha: _searchFocusNode.hasFocus ? 0.6 : 0.35,
-                              ),
-                              width: _searchFocusNode.hasFocus ? 1.5 : 1.2,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: theme.colorScheme.primary.withValues(
-                                  alpha: _searchFocusNode.hasFocus ? 0.25 : 0.12,
-                                ),
-                                blurRadius: 10,
-                                spreadRadius: 0,
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(15),
-                            child: TextField(
-                              controller: _searchController,
-                              focusNode: _searchFocusNode,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.onSurface,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              onChanged: (val) {
-                                notifier.updateSearchQuery(val);
-                                if (val.trim().isNotEmpty && !_isSearchActive) {
-                                  setState(() {
-                                    _isSearchActive = true;
-                                  });
-                                }
-                              },
-                              decoration: InputDecoration(
-                                isDense: true,
-                                hintText: 'Search splits, goals, or equipment...',
-                                hintStyle: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant
-                                      .withValues(alpha: 0.7),
-                                ),
-                                prefixIcon: _isSearchActive
-                                    ? IconButton(
-                                        icon: const Icon(Icons.arrow_back, size: 20),
-                                        color: theme.colorScheme.primary,
-                                        tooltip: 'Exit search',
-                                        onPressed: _exitSearch,
-                                      )
-                                    : Icon(
-                                        Icons.search,
-                                        size: 20,
-                                        color: _searchFocusNode.hasFocus
-                                            ? theme.colorScheme.primary
-                                            : theme.colorScheme.onSurfaceVariant,
-                                      ),
-                                suffixIcon: _searchController.text.isNotEmpty
-                                    ? IconButton(
-                                        icon: const Icon(Icons.close, size: 18),
-                                        color: theme.colorScheme.onSurfaceVariant,
-                                        onPressed: () {
-                                          _searchController.clear();
-                                          notifier.updateSearchQuery('');
-                                          setState(() {});
-                                        },
-                                      )
-                                    : null,
-                                border: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                errorBorder: InputBorder.none,
-                                disabledBorder: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                  horizontal: 4,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        width: 46,
-                        height: 46,
-                        decoration: BoxDecoration(
-                          color: isLight
-                              ? const Color(0xFFF2F4F6)
-                              : theme.colorScheme.surfaceContainer,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isLight
-                                ? const Color(0xFFE2E8F0)
-                                : theme.colorScheme.outline,
-                            width: 1,
-                          ),
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.tune,
-                            size: 20,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                          onPressed: () {
-                            if (_searchFocusNode.hasFocus) {
-                              _searchFocusNode.unfocus();
-                            } else {
-                              _searchFocusNode.requestFocus();
-                            }
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+                          // Search Bar & Filter Button
+                          _buildSearchBar(),
+                          const SizedBox(height: 14),
 
-              // ── 1. FILTER CHIPS (FIRST SLIVER AFTER SEARCH BAR) ─────────────
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 2, 20, 8),
-                  child: _isSearchActive
-                      ? Wrap(
-                          spacing: 8,
-                          runSpacing: 6,
-                          children: _filterOptions.map((filter) {
-                            final isSelected =
-                                state.selectedCategoryFilter == filter;
-                            return FilterChip(
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                              visualDensity: const VisualDensity(
-                                horizontal: -2,
-                                vertical: -2,
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4,
-                                vertical: 2,
-                              ),
-                              label: Text(filter),
-                              selected: isSelected,
-                              showCheckmark: isSelected,
-                              checkmarkColor:
-                                  theme.colorScheme.onPrimaryContainer,
-                              backgroundColor: isLight
-                                  ? const Color(0xFFECEEF0)
-                                  : theme.colorScheme.surfaceContainer,
-                              selectedColor: theme.colorScheme.primaryContainer,
-                              labelStyle: theme.textTheme.labelMedium?.copyWith(
-                                color: isSelected
-                                    ? theme.colorScheme.onPrimaryContainer
-                                    : theme.colorScheme.onSurfaceVariant,
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.w600,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                side: BorderSide(
-                                  color: isSelected
-                                      ? Colors.transparent
-                                      : (isLight
-                                          ? const Color(0xFFE2E8F0)
-                                          : theme.colorScheme.outline),
-                                ),
-                              ),
-                              onSelected: (_) {
-                                notifier.updateCategoryFilter(filter);
-                                if (filter != 'All') {
-                                  setState(() {
-                                    _isSearchActive = true;
-                                  });
-                                } else if (_searchController.text.trim().isEmpty &&
-                                    !_searchFocusNode.hasFocus) {
-                                  setState(() {
-                                    _isSearchActive = false;
-                                  });
-                                }
-                              },
-                            );
-                          }).toList(),
-                        )
-                      : SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: _filterOptions.map((filter) {
-                              final isSelected =
-                                  state.selectedCategoryFilter == filter;
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: FilterChip(
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                  visualDensity: const VisualDensity(
-                                    horizontal: -2,
-                                    vertical: -2,
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 4,
-                                    vertical: 2,
-                                  ),
-                                  label: Text(filter),
-                                  selected: isSelected,
-                                  showCheckmark: isSelected,
-                                  checkmarkColor:
-                                      theme.colorScheme.onPrimaryContainer,
-                                  backgroundColor: isLight
-                                      ? const Color(0xFFECEEF0)
-                                      : theme.colorScheme.surfaceContainer,
-                                  selectedColor:
-                                      theme.colorScheme.primaryContainer,
-                                  labelStyle:
-                                      theme.textTheme.labelMedium?.copyWith(
-                                    color: isSelected
-                                        ? theme.colorScheme.onPrimaryContainer
-                                        : theme.colorScheme.onSurfaceVariant,
-                                    fontWeight: isSelected
-                                        ? FontWeight.bold
-                                        : FontWeight.w600,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                    side: BorderSide(
-                                      color: isSelected
-                                          ? Colors.transparent
-                                          : (isLight
-                                              ? const Color(0xFFE2E8F0)
-                                              : theme.colorScheme.outline),
-                                    ),
-                                  ),
-                                  onSelected: (_) {
-                                    notifier.updateCategoryFilter(filter);
-                                    if (filter != 'All') {
-                                      setState(() {
-                                        _isSearchActive = true;
-                                      });
-                                    }
-                                  },
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                ),
-              ),
+                          // Filter Chips Row
+                          _buildFilterChips(schedulesState.selectedCategoryFilter),
+                          const SizedBox(height: 24),
 
-            // ── CONDITIONAL LAYOUTS ────────────────────────────────────────
-            if (!isSearchActive) ...[
-              // ── 1. Recommended for You Carousel ─────────────────────────
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                  child: Row(
-                    children: [
-                      Icon(Icons.bolt, color: theme.colorScheme.primary, size: 22),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Recommended for You',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                      ),
-                      const Spacer(),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.secondaryContainer,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          'BASED ON PROFILE',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSecondaryContainer,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.6,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 255,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: recommended.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 14),
-                    itemBuilder: (context, index) {
-                      final schedule = recommended[index];
-                      return _RecommendedCarouselCard(
-                        schedule: schedule,
-                        onBookmarkTap: () =>
-                            notifier.toggleBookmark(schedule.id),
-                        onViewTap: () => context.push(
-                          '/workouts/detail',
-                          extra: schedule,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
+                          // Trending Programs Carousel
+                          _buildTrendingSection(trending),
+                          const SizedBox(height: 28),
 
-              // ── 2. Bookmarked Schedules (Favorites) ─────────────────────
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-                  child: Row(
-                    children: [
-                      Icon(Icons.star, color: theme.colorScheme.primary, size: 20),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Bookmarked Schedules',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 7,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceContainer,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '${bookmarked.length}',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                      const Spacer(),
-                      if (bookmarked.isNotEmpty)
-                        TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _expandBookmarks = !_expandBookmarks;
-                            });
-                          },
-                          child: Text(
-                            _expandBookmarks ? 'Collapse' : 'See All',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: theme.colorScheme.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: bookmarked.isEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: _EmptyBookmarkPlaceholder(
-                          theme: theme,
-                          isLight: isLight,
-                        ),
-                      )
-                    : _expandBookmarks
-                        ? Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: GridView.builder(
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 12,
-                                mainAxisSpacing: 12,
-                                childAspectRatio: 0.82,
-                              ),
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: bookmarked.length,
-                              itemBuilder: (context, index) {
-                                final schedule = bookmarked[index];
-                                return _BookmarkedCard(
-                                  schedule: schedule,
-                                  onTap: () => context.push(
-                                    '/workouts/detail',
-                                    extra: schedule,
-                                  ),
-                                );
-                              },
-                            ),
-                          )
-                        : SizedBox(
-                            height: 220,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              itemCount: bookmarked.length,
-                              separatorBuilder: (_, _) =>
-                                  const SizedBox(width: 12),
-                              itemBuilder: (context, index) {
-                                final schedule = bookmarked[index];
-                                return SizedBox(
-                                  width: 180,
-                                  child: _BookmarkedCard(
-                                    schedule: schedule,
-                                    onTap: () => context.push(
-                                      '/workouts/detail',
-                                      extra: schedule,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-              ),
+                          // Today's Routine Spotlight
+                          _buildSpotlightSection(spotlightAsync),
+                          const SizedBox(height: 28),
 
-              // ── 3. My Custom Routines (Accordion) ───────────────────────
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-                  child: _CustomRoutinesAccordion(
-                    customSchedules: custom,
-                    theme: theme,
-                    isLight: isLight,
-                    onScheduleTap: (s) => context.push(
-                      '/workouts/detail',
-                      extra: s,
+                          // My Saved & Custom Section
+                          _buildSavedCustomSection(customRoutines),
+                          const SizedBox(height: 28),
+
+                          // Browse All Schedules Section (Loaded from DB up to 5)
+                          _buildBrowseSchedulesSection(
+                            dbSchedulesAsync,
+                            schedulesState.selectedSort,
+                          ),
+                          const SizedBox(height: 20),
+                        ]),
+                      ),
                     ),
-                    onEditTap: (s) => context.push('/workouts/create-schedule'),
                   ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Search & Filter Row ───────────────────────────────────────────────────
+  Widget _buildSearchBar() {
+    return Row(
+      children: [
+        Expanded(
+          child: FtPressable(
+            onTap: _onSearchTap,
+            pressedScale: 0.98,
+            child: GlassSurface(
+              tier: FtGlassTier.glass2,
+              radius: 18,
+              height: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              alignment: Alignment.centerLeft,
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.search_rounded,
+                    size: 20,
+                    color: context.ftPrimary,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Search splits, goals or equipment...',
+                      style: TextStyle(
+                        fontFamily: FtText.fontFamily,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: context.ftMuted.withValues(alpha: 0.85),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        FtPressable(
+          onTap: _onSearchTap,
+          pressedScale: 0.95,
+          child: GlassSurface(
+            tier: FtGlassTier.glass2,
+            radius: 18,
+            width: 50,
+            height: 50,
+            alignment: Alignment.center,
+            child: Icon(
+              Icons.tune_rounded,
+              size: 22,
+              color: context.ftInk,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Horizontally Scrolling Filter Chips ───────────────────────────────────
+  Widget _buildFilterChips(String selectedCategory) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      clipBehavior: Clip.none,
+      child: Row(
+        children: _filterChips.map((chip) {
+          final isSelected = (chip == 'All Goals' &&
+                  (selectedCategory == 'All' || selectedCategory == 'All Goals')) ||
+              chip.toLowerCase() == selectedCategory.toLowerCase();
+
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: FtPressable(
+              onTap: () => _onCategoryTap(chip),
+              pressedScale: 0.95,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? context.ftPrimary
+                      : context.isDark
+                          ? const Color(0x33251E3E)
+                          : const Color(0x66FFFFFF),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isSelected
+                        ? context.ftPrimary
+                        : context.isDark
+                            ? const Color(0x2EFFFFFF)
+                            : const Color(0x80FFFFFF),
+                    width: 1,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: context.ftPrimary.withValues(alpha: 0.35),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isSelected) ...[
+                      const Icon(
+                        Icons.check_rounded,
+                        size: 14,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 5),
+                    ],
+                    Text(
+                      chip,
+                      style: TextStyle(
+                        fontFamily: FtText.fontFamily,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isSelected ? Colors.white : context.ftInk,
+                      ),
+                    ),
+                  ],
                 ),
               ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
 
-              // ── 4. Browse All Schedules ─────────────────────────────────
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
-                  child: Row(
+  // ── Trending Programs Section ─────────────────────────────────────────────
+  Widget _buildTrendingSection(List<TrendingProgram> trending) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Section Header Row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        'Browse All Schedules',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 7,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceContainer,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                      Flexible(
                         child: Text(
-                          '${state.filteredSchedules.length} Programs',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                            fontWeight: FontWeight.bold,
+                          'Trending Programs',
+                          style: TextStyle(
+                            fontFamily: FtText.fontFamily,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.3,
+                            color: context.ftInk,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const Spacer(),
-                      PopupMenuButton<SortOption>(
-                        initialValue: state.selectedSort,
-                        onSelected: (sort) => notifier.updateSort(sort),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6),
                         ),
-                        itemBuilder: (context) => [
-                          const PopupMenuItem(
-                            value: SortOption.relevant,
-                            child: Text('Most Relevant'),
+                        child: const Text(
+                          'HOT',
+                          style: TextStyle(
+                            fontFamily: FtText.fontFamily,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                            color: Color(0xFFEF4444),
                           ),
-                          const PopupMenuItem(
-                            value: SortOption.duration,
-                            child: Text('Duration (Weeks)'),
-                          ),
-                          const PopupMenuItem(
-                            value: SortOption.title,
-                            child: Text('Title (A-Z)'),
-                          ),
-                        ],
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              _sortLabel(state.selectedSort),
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: theme.colorScheme.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(width: 2),
-                            Icon(
-                              Icons.filter_list,
-                              size: 16,
-                              color: theme.colorScheme.primary,
-                            ),
-                          ],
                         ),
                       ),
                     ],
                   ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Top-tier verified athlete protocols',
+                    style: TextStyle(
+                      fontFamily: FtText.fontFamily,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: context.ftMuted,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            FtPressable(
+              onTap: () => context.push('/workouts/search'),
+              pressedScale: 0.95,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Explore',
+                    style: TextStyle(
+                      fontFamily: FtText.fontFamily,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: context.ftPrimary,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 16,
+                    color: context.ftPrimary,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // Horizontal Carousel
+        SizedBox(
+          height: 335,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            clipBehavior: Clip.none,
+            itemCount: trending.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 14),
+            itemBuilder: (context, index) {
+              final program = trending[index];
+              return _TrendingProgramCard(
+                program: program,
+                onBookmarkTap: () {
+                  ref
+                      .read(schedulesNotifierProvider.notifier)
+                      .toggleBookmark(program.id);
+                },
+                onStartTap: () {
+                  context.push('/workouts/active/sch1');
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Today's Routine Spotlight Section ─────────────────────────────────────
+  Widget _buildSpotlightSection(AsyncValue<RoutineSpotlight> spotlightAsync) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Section Header Row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF43F5E),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      "Today's Routine Spotlight",
+                      style: TextStyle(
+                        fontFamily: FtText.fontFamily,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.3,
+                        color: context.ftInk,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: context.ftPrimary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: context.ftPrimary.withValues(alpha: 0.25),
+                  width: 1,
                 ),
               ),
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final schedule = state.filteredSchedules[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12.0),
-                        child: _BrowseScheduleCard(
-                          schedule: schedule,
-                          theme: theme,
-                          isLight: isLight,
-                          onBookmarkTap: () =>
-                              notifier.toggleBookmark(schedule.id),
-                          onTap: () => context.push(
-                            '/workouts/detail',
-                            extra: schedule,
+              child: Text(
+                'Day 14',
+                style: TextStyle(
+                  fontFamily: FtText.fontFamily,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: context.ftPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: Text(
+            'Follow 3 explosive conditioning circuits',
+            style: TextStyle(
+              fontFamily: FtText.fontFamily,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: context.ftMuted,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Spotlight Card
+        spotlightAsync.when(
+          data: (spotlight) => _SpotlightCard(
+            spotlight: spotlight,
+            onPlayTap: () => context.push('/workouts/active/${spotlight.scheduleId}'),
+          ),
+          loading: () => GlassSurface(
+            tier: FtGlassTier.glass1,
+            radius: 24,
+            height: 200,
+            alignment: Alignment.center,
+            child: Text(
+              'Loading Spotlight...',
+              style: TextStyle(
+                fontFamily: FtText.fontFamily,
+                fontSize: 12,
+                color: context.ftMuted,
+              ),
+            ),
+          ),
+          error: (error, stack) => const SizedBox.shrink(),
+        ),
+      ],
+    );
+  }
+
+  // ── My Saved & Custom Section ─────────────────────────────────────────────
+  Widget _buildSavedCustomSection(List<CustomWorkoutRoutine> customRoutines) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Section Header Row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      'My Saved & Custom',
+                      style: TextStyle(
+                        fontFamily: FtText.fontFamily,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.3,
+                        color: context.ftInk,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: context.ftPrimary.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '${customRoutines.length}',
+                      style: TextStyle(
+                        fontFamily: FtText.fontFamily,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: context.ftPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            FtPressable(
+              onTap: () => context.push('/workouts/create-schedule'),
+              pressedScale: 0.95,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.add_rounded,
+                    size: 16,
+                    color: context.ftPrimary,
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    'New routine',
+                    style: TextStyle(
+                      fontFamily: FtText.fontFamily,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: context.ftPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // List of Custom Cards
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: customRoutines.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 10),
+          itemBuilder: (context, index) {
+            final routine = customRoutines[index];
+            return _CustomRoutineCard(
+              routine: routine,
+              onTap: () => context.push('/workouts/detail/sch1'),
+              onBookmarkToggle: () {
+                ref
+                    .read(schedulesNotifierProvider.notifier)
+                    .toggleBookmark(routine.id);
+              },
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  // ── Browse All Schedules Section (Loaded from DB) ─────────────────────────
+  Widget _buildBrowseSchedulesSection(
+    AsyncValue<List<WorkoutSchedule>> schedulesAsync,
+    SortOption sort,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Section Header Row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      'Browse All Schedules',
+                      style: TextStyle(
+                        fontFamily: FtText.fontFamily,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.3,
+                        color: context.ftInk,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  schedulesAsync.when(
+                    data: (schedules) => Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: context.ftPrimary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '${schedules.length} Programs',
+                        style: TextStyle(
+                          fontFamily: FtText.fontFamily,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: context.ftPrimary,
+                        ),
+                      ),
+                    ),
+                    loading: () => const SizedBox.shrink(),
+                    error: (error, stack) => const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            FtPressable(
+              onTap: () => _cycleSort(sort),
+              pressedScale: 0.95,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 16,
+                    color: context.ftMuted,
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    _sortLabel(sort),
+                    style: TextStyle(
+                      fontFamily: FtText.fontFamily,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: context.ftMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // List of DB Schedules (up to 5)
+        schedulesAsync.when(
+          data: (schedules) {
+            final displaySchedules = schedules.take(5).toList();
+            return Stack(
+              children: [
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: displaySchedules.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    final schedule = displaySchedules[index];
+                    return _BrowseScheduleCard(
+                      schedule: schedule,
+                      onTap: () => context.push('/workouts/detail/${schedule.id}'),
+                    );
+                  },
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 4,
+                  child: FtPressable(
+                    onTap: () => context.push('/workouts/create-schedule'),
+                    pressedScale: 0.95,
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: context.ftPrimary,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: context.ftPrimary.withValues(alpha: 0.4),
+                            blurRadius: 14,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.add_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+          loading: () => GlassSurface(
+            tier: FtGlassTier.glass1,
+            radius: 20,
+            height: 120,
+            alignment: Alignment.center,
+            child: Text(
+              'Loading Schedules...',
+              style: TextStyle(
+                fontFamily: FtText.fontFamily,
+                fontSize: 12,
+                color: context.ftMuted,
+              ),
+            ),
+          ),
+          error: (e, _) => Center(
+            child: Text(
+              'Failed to load schedules: $e',
+              style: TextStyle(color: context.ftMuted),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Uniform Header Widget matching DashboardHeader ─────────────────────────
+class _WorkoutsHeader extends ConsumerWidget {
+  const _WorkoutsHeader();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unreadCount = ref.watch(unreadNotificationCountProvider);
+    final profileAsync = ref.watch(userProfileProvider);
+    final profile = profileAsync.value;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Left: Screen Title & Subtitle
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Workouts',
+                  style: TextStyle(
+                    fontFamily: FtText.fontFamily,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.55,
+                    color: context.ftInk,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Explore splits, routines & programs',
+                  style: TextStyle(
+                    fontFamily: FtText.fontFamily,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: context.ftMuted,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // Right: Notification Bell (40x40) + Avatar (36x36)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FtPressable(
+                onTap: () {},
+                pressedScale: 0.95,
+                child: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      GlassSurface(
+                        tier: FtGlassTier.glass2,
+                        radius: 20,
+                        width: 40,
+                        height: 40,
+                        shadow: false,
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.notifications_outlined,
+                          size: 20,
+                          color: context.ftInk,
+                        ),
+                      ),
+                      if (unreadCount > 0)
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF43F5E),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 2,
+                              ),
+                            ),
                           ),
                         ),
-                      );
-                    },
-                    childCount: state.filteredSchedules.length,
+                    ],
                   ),
                 ),
               ),
-            ] else ...[
-              // ── SEARCH ACTIVE LAYOUT ─────────────────────────────────────
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Search Results',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurface,
-                        ),
+              const SizedBox(width: 8),
+              FtPressable(
+                onTap: () => context.push('/settings/profile'),
+                pressedScale: 0.95,
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 2,
+                    ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x1A000000),
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
                       ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primaryContainer
-                              .withValues(alpha: 0.4),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '${filtered.length}',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      const Spacer(),
-                      PopupMenuButton<SortOption>(
-                        initialValue: state.selectedSort,
-                        onSelected: (sort) => notifier.updateSort(sort),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        itemBuilder: (context) => [
-                          const PopupMenuItem(
-                            value: SortOption.relevant,
-                            child: Text('Most Relevant'),
-                          ),
-                          const PopupMenuItem(
-                            value: SortOption.duration,
-                            child: Text('Duration (Weeks)'),
-                          ),
-                          const PopupMenuItem(
-                            value: SortOption.title,
-                            child: Text('Title (A-Z)'),
-                          ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: _buildAvatarImage(
+                      profile?.profileImagePath,
+                      profile?.name,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAvatarImage(String? path, String? name) {
+    if (path != null && path.isNotEmpty) {
+      return Image.file(
+        File(path),
+        width: 36,
+        height: 36,
+        fit: BoxFit.cover,
+        cacheWidth: 72,
+        errorBuilder: (context, error, stackTrace) => _buildFallbackAvatar(),
+      );
+    }
+    return _buildFallbackAvatar();
+  }
+
+  Widget _buildFallbackAvatar() {
+    return Image.asset(
+      'assets/images/dashboard/sample_avatar.webp',
+      width: 36,
+      height: 36,
+      fit: BoxFit.cover,
+      cacheWidth: 72,
+    );
+  }
+}
+
+// ── Trending Program Carousel Card ──────────────────────────────────────────
+class _TrendingProgramCard extends StatelessWidget {
+  final TrendingProgram program;
+  final VoidCallback onBookmarkTap;
+  final VoidCallback onStartTap;
+
+  const _TrendingProgramCard({
+    required this.program,
+    required this.onBookmarkTap,
+    required this.onStartTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 290,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: GlassSurface(
+        tier: FtGlassTier.glass1,
+        radius: 24,
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Top Athlete Banner Image with Dark Scrim
+            Container(
+              height: 125,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                image: const DecorationImage(
+                  image: AssetImage('assets/images/dashboard/hero_workout.webp'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: Stack(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.4),
+                          Colors.black.withValues(alpha: 0.7),
                         ],
-                        child: Container(
+                      ),
+                    ),
+                  ),
+                  // Top Row: Category Tag & Bookmark
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    right: 10,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
+                            horizontal: 8,
+                            vertical: 3.5,
                           ),
                           decoration: BoxDecoration(
-                            color: isLight
-                                ? const Color(0xFFF2F4F6)
-                                : theme.colorScheme.surfaceContainer,
-                            borderRadius: BorderRadius.circular(16),
+                            color: Colors.black.withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: isLight
-                                  ? const Color(0xFFE2E8F0)
-                                  : theme.colorScheme.outline,
+                              color: Colors.white.withValues(alpha: 0.2),
+                              width: 1,
                             ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                state.selectedSort == SortOption.duration
-                                    ? 'Duration'
-                                    : state.selectedSort == SortOption.title
-                                        ? 'Title'
-                                        : 'Most Relevant',
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.onSurface,
+                              Container(
+                                width: 5,
+                                height: 5,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF10B981),
+                                  shape: BoxShape.circle,
                                 ),
                               ),
-                              const SizedBox(width: 4),
-                              Icon(
-                                Icons.expand_more,
-                                size: 16,
-                                color: theme.colorScheme.onSurfaceVariant,
+                              const SizedBox(width: 5),
+                              Text(
+                                program.categoryTag,
+                                style: const TextStyle(
+                                  fontFamily: FtText.fontFamily,
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.4,
+                                  color: Colors.white,
+                                ),
                               ),
                             ],
                           ),
                         ),
-                      ),
-                    ],
+                        FtPressable(
+                          onTap: onBookmarkTap,
+                          pressedScale: 0.90,
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.45),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                width: 1,
+                              ),
+                            ),
+                            child: Icon(
+                              program.isBookmarked
+                                  ? Icons.bookmark_rounded
+                                  : Icons.bookmark_border_rounded,
+                              size: 16,
+                              color: program.isBookmarked
+                                  ? const Color(0xFFFBBF24)
+                                  : Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+
+                  // Bottom Overlay Row: Rating & Duration
+                  Positioned(
+                    bottom: 8,
+                    left: 10,
+                    right: 10,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.star_rounded,
+                                size: 14,
+                                color: Color(0xFFFBBF24),
+                              ),
+                              const SizedBox(width: 3),
+                              Flexible(
+                                child: Text(
+                                  '${program.rating} (${program.reviewCount})',
+                                  style: const TextStyle(
+                                    fontFamily: FtText.fontFamily,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.6),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '${program.durationWeeks} Weeks · ${program.daysPerWeek}d/wk',
+                            style: const TextStyle(
+                              fontFamily: FtText.fontFamily,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              if (filtered.isEmpty)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 40, 16, 0),
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.search_off,
-                            size: 56,
-                            color: theme.colorScheme.onSurfaceVariant
-                                .withValues(alpha: 0.5),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'No schedules found',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            state.searchQuery.isNotEmpty
-                                ? 'No workouts matching "${state.searchQuery}".\nTry adjusting filters or search terms.'
-                                : 'No workouts matching active filter: "${state.selectedCategoryFilter}".',
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          OutlinedButton(
-                            onPressed: _exitSearch,
-                            child: const Text('Reset Search & Filters'),
-                          ),
-                        ],
+            ),
+            const SizedBox(height: 10),
+
+            // Title & Description
+            Text(
+              program.title,
+              style: TextStyle(
+                fontFamily: FtText.fontFamily,
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.2,
+                color: context.ftInk,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 3),
+            Text(
+              program.description,
+              style: TextStyle(
+                fontFamily: FtText.fontFamily,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: context.ftMuted,
+                height: 1.3,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 10),
+
+            // Tags Row
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              child: Row(
+                children: program.tags.map((tag) {
+                  return Container(
+                    margin: const EdgeInsets.only(right: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: context.isDark
+                          ? const Color(0x33251E3E)
+                          : const Color(0x66FFFFFF),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: context.isDark
+                            ? const Color(0x2EFFFFFF)
+                            : const Color(0x80FFFFFF),
+                        width: 1,
                       ),
                     ),
-                  ),
-                )
-              else
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final schedule = filtered[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 14.0),
-                          child: _SearchResultCard(
-                            schedule: schedule,
-                            searchQuery: state.searchQuery,
-                            theme: theme,
-                            isLight: isLight,
-                            onBookmarkTap: () =>
-                                notifier.toggleBookmark(schedule.id),
-                            onTap: () => context.push(
-                              '/workouts/detail',
-                              extra: schedule,
-                            ),
-                          ),
-                        );
-                      },
-                      childCount: filtered.length,
+                    child: Text(
+                      tag,
+                      style: TextStyle(
+                        fontFamily: FtText.fontFamily,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: context.ftInk,
+                      ),
                     ),
-                  ),
-                ),
-            ],
+                  );
+                }).toList(),
+              ),
+            ),
+            const Spacer(),
 
-            // ── BOTTOM PADDING (CLEAR FLOATING FAB & BOTTOM DOCK) ───────────
-            const SliverPadding(padding: EdgeInsets.only(bottom: 120.0)),
-          ],
-        ),
-      ),
-    ),
-  ),
-);
-}
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// COMPONENT WIDGETS
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// Recommended Carousel Card with Top Gradient Accent Line and responsive sizing.
-class _RecommendedCarouselCard extends StatelessWidget {
-  const _RecommendedCarouselCard({
-    required this.schedule,
-    required this.onBookmarkTap,
-    required this.onViewTap,
-  });
-
-  final WorkoutSchedule schedule;
-  final VoidCallback onBookmarkTap;
-  final VoidCallback onViewTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isLight = theme.brightness == Brightness.light;
-
-    return Container(
-      width: 290,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isLight
-              ? const Color(0xFFE2E8F0)
-              : theme.colorScheme.outline,
-          width: 1,
-        ),
-        boxShadow: isLight
-            ? [
-                BoxShadow(
-                  color: const Color(0xFF00D68F).withValues(alpha: 0.12),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-                const BoxShadow(
-                  color: Color(0x080F172A),
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
-                ),
-              ]
-            : null,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: InkWell(
-          onTap: onViewTap,
-          child: IntrinsicHeight(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            // Bottom CTA Row
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Top decorative gradient bar
-                    Container(
-                      height: 4,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            theme.colorScheme.primary,
-                            theme.colorScheme.secondary,
-                            theme.colorScheme.tertiary,
-                          ],
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Badge & Bookmark Row
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 3,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primaryContainer
-                                      .withValues(alpha: 0.3),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  schedule.focus == 'Hypertrophy'
-                                      ? 'HYPERTROPHY HERO'
-                                      : 'STRENGTH FOCUS',
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    color: theme.colorScheme.primary,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.6,
-                                  ),
-                                ),
-                              ),
-                              IconButton(
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(
-                                  minWidth: 32,
-                                  minHeight: 32,
-                                ),
-                                icon: Icon(
-                                  schedule.isFavorite
-                                      ? Icons.bookmark
-                                      : Icons.bookmark_border,
-                                  size: 22,
-                                  color: theme.colorScheme.primary,
-                                ),
-                                onPressed: onBookmarkTap,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          // Title
-                          Text(
-                            schedule.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          // Subtitle with 2-line clamp to prevent overflows
-                          Text(
-                            schedule.description,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              height: 1.3,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          // Stats pills
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            children: [
-                              _StatPill(
-                                dotColor: const Color(0xFF00D68F),
-                                text: '${schedule.daysPerWeek}d / wk',
-                                theme: theme,
-                              ),
-                              _StatPill(
-                                dotColor: theme.colorScheme.tertiary,
-                                text: '${schedule.durationWeeks} Weeks',
-                                theme: theme,
-                              ),
-                              if (schedule.targetMuscles.isNotEmpty)
-                                _StatPill(
-                                  text: schedule.targetMuscles.take(2).join(', '),
-                                  theme: theme,
-                                ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                // Bottom Bar
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: isLight
-                        ? const Color(0xFFF8FAFC)
-                        : theme.colorScheme.surfaceContainer.withValues(alpha: 0.5),
-                    border: Border(
-                      top: BorderSide(
-                        color: isLight
-                            ? const Color(0xFFE2E8F0)
-                            : theme.colorScheme.outline,
-                      ),
-                    ),
-                  ),
+                Expanded(
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.fitness_center,
-                        size: 16,
-                        color: theme.colorScheme.primary,
+                        Icons.auto_awesome_rounded,
+                        size: 14,
+                        color: context.ftPrimary,
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        schedule.equipment,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const Spacer(),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'View',
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: theme.colorScheme.onPrimary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              Icons.arrow_forward,
-                              size: 14,
-                              color: theme.colorScheme.onPrimary,
-                            ),
-                          ],
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          program.intensityLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: FtText.fontFamily,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: context.ftPrimary,
+                          ),
                         ),
                       ),
                     ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                FtPressable(
+                  onTap: onStartTap,
+                  pressedScale: 0.95,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: context.ftPrimary,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: context.ftPrimary.withValues(alpha: 0.35),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Start Split',
+                          style: TextStyle(
+                            fontFamily: FtText.fontFamily,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(width: 3),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          size: 15,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 }
 
-/// Reusable card component for Bookmarked Favorites (horizontal carousel & 2-column grid).
-class _BookmarkedCard extends StatelessWidget {
-  const _BookmarkedCard({
-    required this.schedule,
-    required this.onTap,
-  });
+// ── Today's Routine Spotlight Card with top 3 exercises ────────────────────
+class _SpotlightCard extends StatelessWidget {
+  final RoutineSpotlight spotlight;
+  final VoidCallback onPlayTap;
 
-  final WorkoutSchedule schedule;
-  final VoidCallback onTap;
+  const _SpotlightCard({
+    required this.spotlight,
+    required this.onPlayTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isLight = theme.brightness == Brightness.light;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: isLight
-              ? const Color(0xFFE2E8F0)
-              : theme.colorScheme.outline,
-        ),
-        boxShadow: isLight
-            ? const [
-                BoxShadow(
-                  color: Color(0x080F172A),
-                  blurRadius: 10,
-                  offset: Offset(0, 3),
-                ),
-              ]
-            : null,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(18),
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primaryContainer
-                              .withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          Icons.star,
-                          size: 16,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isLight
-                              ? const Color(0xFFF1F5F9)
-                              : theme.colorScheme.surfaceContainer,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          schedule.experience.toUpperCase(),
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.primary,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 9,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          schedule.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.onSurface,
-                            height: 1.2,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          schedule.description,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                            fontSize: 11,
-                            height: 1.3,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          '${schedule.daysPerWeek}d/wk • ${schedule.exerciseCount} ex',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      Icon(
-                        Icons.chevron_right,
-                        size: 16,
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Placeholder when no bookmarks exist.
-class _EmptyBookmarkPlaceholder extends StatelessWidget {
-  const _EmptyBookmarkPlaceholder({
-    required this.theme,
-    required this.isLight,
-  });
-
-  final ThemeData theme;
-  final bool isLight;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
+    return GlassSurface(
+      tier: FtGlassTier.glass1,
+      radius: 24,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isLight ? const Color(0xFFE2E8F0) : theme.colorScheme.outline,
-        ),
-      ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Icon(
-            Icons.bookmark_border,
-            color: theme.colorScheme.onSurfaceVariant,
-            size: 24,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'No bookmarked routines yet. Tap bookmark on any schedule to pin it here!',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+          // Hero Image with Title & Play Button
+          Container(
+            height: 140,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              image: const DecorationImage(
+                image: AssetImage('assets/images/dashboard/coaching_bench.webp'),
+                fit: BoxFit.cover,
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Accordion container for Custom Routines with safe overflow protection.
-class _CustomRoutinesAccordion extends StatelessWidget {
-  const _CustomRoutinesAccordion({
-    required this.customSchedules,
-    required this.theme,
-    required this.isLight,
-    required this.onScheduleTap,
-    required this.onEditTap,
-  });
-
-  final List<WorkoutSchedule> customSchedules;
-  final ThemeData theme;
-  final bool isLight;
-  final ValueChanged<WorkoutSchedule> onScheduleTap;
-  final ValueChanged<WorkoutSchedule> onEditTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isLight ? const Color(0xFFE2E8F0) : theme.colorScheme.outline,
-        ),
-        boxShadow: isLight
-            ? const [
-                BoxShadow(
-                  color: Color(0x080F172A),
-                  blurRadius: 12,
-                  offset: Offset(0, 4),
-                ),
-              ]
-            : null,
-      ),
-      child: Theme(
-        data: theme.copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          initiallyExpanded: true,
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          leading: Icon(
-            Icons.folder_special,
-            color: theme.colorScheme.primary,
-            size: 22,
-          ),
-          title: Row(
-            children: [
-              Text(
-                'My Custom Routines',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '${customSchedules.length}',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          children: customSchedules.map((schedule) {
-            return Container(
-              margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isLight
-                    ? const Color(0xFFF8FAFC)
-                    : theme.colorScheme.surfaceContainer,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: isLight
-                      ? const Color(0xFFE2E8F0)
-                      : theme.colorScheme.outline,
-                ),
-              ),
-              child: Row(
-                children: [
-                  // Wrapped in Expanded to prevent right overflow and push actions to edge
-                  Expanded(
-                    child: InkWell(
-                      onTap: () => onScheduleTap(schedule),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  schedule.title,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: theme.colorScheme.onSurface,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 5,
-                                  vertical: 1,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.secondaryContainer,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  'CUSTOM',
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    color: theme.colorScheme.onSecondaryContainer,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${schedule.exerciseCount} exercises • ${schedule.estimatedMinutes} min • ${schedule.targetMuscles.take(2).join(', ')}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      minimumSize: const Size(48, 30),
-                      side: BorderSide(
-                        color: isLight
-                            ? const Color(0xFFE2E8F0)
-                            : theme.colorScheme.outline,
-                      ),
-                    ),
-                    onPressed: () => onEditTap(schedule),
-                    child: Text(
-                      'Edit',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.more_vert,
-                      size: 18,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-}
-
-/// Standard Routine Card in Browse All section.
-class _BrowseScheduleCard extends StatelessWidget {
-  const _BrowseScheduleCard({
-    required this.schedule,
-    required this.theme,
-    required this.isLight,
-    required this.onBookmarkTap,
-    required this.onTap,
-  });
-
-  final WorkoutSchedule schedule;
-  final ThemeData theme;
-  final bool isLight;
-  final VoidCallback onBookmarkTap;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isLight ? const Color(0xFFE2E8F0) : theme.colorScheme.outline,
-        ),
-        boxShadow: isLight
-            ? const [
-                BoxShadow(
-                  color: Color(0x080F172A),
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
-                ),
-              ]
-            : null,
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          schedule.title,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          schedule.description,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                            height: 1.3,
-                          ),
-                        ),
+            child: Stack(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.2),
+                        Colors.black.withValues(alpha: 0.8),
                       ],
                     ),
                   ),
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 32,
-                    ),
-                    icon: Icon(
-                      schedule.isFavorite
-                          ? Icons.bookmark
-                          : Icons.bookmark_border,
-                      size: 22,
-                      color: schedule.isFavorite
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.onSurfaceVariant,
-                    ),
-                    onPressed: onBookmarkTap,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Divider(
-                height: 1,
-                color: isLight
-                    ? const Color(0xFFF1F5F9)
-                    : theme.colorScheme.outline.withValues(alpha: 0.5),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Container(
+                ),
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
                       vertical: 3,
                     ),
                     decoration: BoxDecoration(
-                      color: isLight
-                          ? const Color(0xFFF1F5F9)
-                          : theme.colorScheme.surfaceContainer,
-                      borderRadius: BorderRadius.circular(6),
+                      color: const Color(0xFFF43F5E),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      schedule.experience,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onSurface,
+                      spotlight.categoryTag,
+                      style: const TextStyle(
+                        fontFamily: FtText.fontFamily,
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.4,
+                        color: Colors.white,
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    schedule.equipment,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '•  ${schedule.estimatedMinutes > 0 ? schedule.estimatedMinutes : 50} min',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const Spacer(),
-                  Icon(
-                    Icons.chevron_right,
-                    size: 20,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Search Result Card with query highlighting and detailed tags.
-class _SearchResultCard extends StatelessWidget {
-  const _SearchResultCard({
-    required this.schedule,
-    required this.searchQuery,
-    required this.theme,
-    required this.isLight,
-    required this.onBookmarkTap,
-    required this.onTap,
-  });
-
-  final WorkoutSchedule schedule;
-  final String searchQuery;
-  final ThemeData theme;
-  final bool isLight;
-  final VoidCallback onBookmarkTap;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: theme.colorScheme.primaryContainer.withValues(alpha: 0.6),
-          width: 1.2,
-        ),
-        boxShadow: isLight
-            ? const [
-                BoxShadow(
-                  color: Color(0x080F172A),
-                  blurRadius: 10,
-                  offset: Offset(0, 3),
-                ),
-              ]
-            : null,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: InkWell(
-          onTap: onTap,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Badge row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 7,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: schedule.isCustom
-                                    ? theme.colorScheme.primaryContainer
-                                        .withValues(alpha: 0.3)
-                                    : theme.colorScheme.secondaryContainer,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                schedule.isCustom ? 'CUSTOM ROUTINE' : 'PROGRAM',
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.6,
-                                  color: schedule.isCustom
-                                      ? theme.colorScheme.primary
-                                      : theme.colorScheme.onSecondaryContainer,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 7,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.surfaceContainer,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                schedule.focus,
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.primary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        IconButton(
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(
-                            minWidth: 32,
-                            minHeight: 32,
-                          ),
-                          icon: Icon(
-                            schedule.isFavorite
-                                ? Icons.bookmark
-                                : Icons.bookmark_border,
-                            size: 22,
-                            color: schedule.isFavorite
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.onSurfaceVariant,
-                          ),
-                          onPressed: onBookmarkTap,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    // Title with highlighted text
-                    _buildHighlightedTitle(
-                      schedule.title,
-                      searchQuery,
-                      theme,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      schedule.description,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        height: 1.3,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    // Metrics pills
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
-                      children: [
-                        _StatPill(
-                          dotColor: const Color(0xFF00D68F),
-                          text: '${schedule.daysPerWeek}d / wk',
-                          theme: theme,
-                        ),
-                        _StatPill(
-                          dotColor: theme.colorScheme.tertiary,
-                          text: '${schedule.durationWeeks} Weeks',
-                          theme: theme,
-                        ),
-                        _StatPill(text: schedule.equipment, theme: theme),
-                        if (schedule.targetMuscles.isNotEmpty)
-                          _StatPill(
-                            text: schedule.targetMuscles.join(', '),
-                            theme: theme,
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              // Footer Action
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: isLight
-                      ? const Color(0xFFF8FAFC)
-                      : theme.colorScheme.surfaceContainer.withValues(alpha: 0.5),
-                  border: Border(
-                    top: BorderSide(
-                      color: isLight
-                          ? const Color(0xFFE2E8F0)
-                          : theme.colorScheme.outline,
                     ),
                   ),
                 ),
-                child: Row(
-                  children: [
-                    Icon(
-                      schedule.isCustom ? Icons.schedule : Icons.verified,
-                      size: 16,
-                      color: schedule.isCustom
-                          ? theme.colorScheme.secondary
-                          : theme.colorScheme.primary,
+                Positioned(
+                  bottom: 12,
+                  left: 12,
+                  right: 60,
+                  child: Text(
+                    spotlight.title,
+                    style: const TextStyle(
+                      fontFamily: FtText.fontFamily,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      schedule.isCustom
-                          ? 'Active Routine'
-                          : 'Featured Routine',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 6,
-                      ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 10,
+                  right: 12,
+                  child: FtPressable(
+                    onTap: onPlayTap,
+                    pressedScale: 0.90,
+                    child: Container(
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.primary,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'View',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: theme.colorScheme.onPrimary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Icon(
-                            Icons.arrow_forward,
-                            size: 14,
-                            color: theme.colorScheme.onPrimary,
+                        color: context.ftPrimary,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: context.ftPrimary.withValues(alpha: 0.5),
+                            blurRadius: 12,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
+                      child: const Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
-                  ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // 3 Stats Columns Row
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatColumn(
+                  context,
+                  label: 'TIME',
+                  value: '${spotlight.durationMinutes} min',
+                ),
+              ),
+              Expanded(
+                child: _buildStatColumn(
+                  context,
+                  label: 'BURN',
+                  value: '~${spotlight.estimatedCalories} kcal',
+                  valueColor: const Color(0xFFF97316),
+                ),
+              ),
+              Expanded(
+                child: _buildIntensityColumn(
+                  context,
+                  level: spotlight.intensityLevel,
                 ),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: 14),
+
+          // Hairline Divider
+          Container(
+            height: 1,
+            color: context.isDark
+                ? const Color(0x2EFFFFFF)
+                : const Color(0x33CAC4D7),
+          ),
+          const SizedBox(height: 12),
+
+          // DRILL CIRCUIT PREVIEW Header
+          Text(
+            'DRILL CIRCUIT PREVIEW',
+            style: TextStyle(
+              fontFamily: FtText.fontFamily,
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.6,
+              color: context.ftMuted,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Top 3 Drill Exercises from Schedule
+          ...spotlight.drills.map((drill) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6.0),
+              child: Row(
+                children: [
+                  Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: context.ftPrimary.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '${drill.stepNumber}',
+                      style: TextStyle(
+                        fontFamily: FtText.fontFamily,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        color: context.ftPrimary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      drill.exerciseName,
+                      style: TextStyle(
+                        fontFamily: FtText.fontFamily,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: context.ftInk,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Text(
+                    drill.prescription,
+                    style: TextStyle(
+                      fontFamily: FtText.fontFamily,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: context.ftMuted,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
       ),
     );
   }
 
-  Widget _buildHighlightedTitle(
-    String fullText,
-    String query,
-    ThemeData theme,
-  ) {
-    if (query.trim().isEmpty) {
-      return Text(
-        fullText,
-        style: theme.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.bold,
-          color: theme.colorScheme.onSurface,
+  Widget _buildStatColumn(
+    BuildContext context, {
+    required String label,
+    required String value,
+    Color? valueColor,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontFamily: FtText.fontFamily,
+            fontSize: 9.5,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.5,
+            color: context.ftMuted,
+          ),
         ),
-      );
-    }
-
-    final queryLower = query.toLowerCase().trim();
-    final textLower = fullText.toLowerCase();
-    final matchIndex = textLower.indexOf(queryLower);
-
-    if (matchIndex == -1) {
-      return Text(
-        fullText,
-        style: theme.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.bold,
-          color: theme.colorScheme.onSurface,
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: TextStyle(
+            fontFamily: FtText.fontFamily,
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
+            color: valueColor ?? context.ftInk,
+          ),
         ),
-      );
-    }
+      ],
+    );
+  }
 
-    final before = fullText.substring(0, matchIndex);
-    final match = fullText.substring(matchIndex, matchIndex + queryLower.length);
-    final after = fullText.substring(matchIndex + queryLower.length);
-
-    return RichText(
-      text: TextSpan(
-        style: theme.textTheme.titleMedium?.copyWith(
-          color: theme.colorScheme.onSurface,
-          fontWeight: FontWeight.bold,
+  Widget _buildIntensityColumn(BuildContext context, {required int level}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          'INTENSITY',
+          style: TextStyle(
+            fontFamily: FtText.fontFamily,
+            fontSize: 9.5,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.5,
+            color: context.ftMuted,
+          ),
         ),
-        children: [
-          TextSpan(text: before),
-          WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+        const SizedBox(height: 4),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(5, (index) {
+            final isFilled = index < level;
+            return Container(
+              width: 3.5,
+              height: 10 + (index * 1.5),
+              margin: const EdgeInsets.symmetric(horizontal: 1.5),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(4),
+                color: isFilled
+                    ? context.ftPrimary
+                    : context.ftMuted.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
               ),
-              child: Text(
-                match,
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  color: theme.colorScheme.onSurface,
-                  fontSize: 16,
+            );
+          }),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Custom Workout Routine Card ─────────────────────────────────────────────
+class _CustomRoutineCard extends StatelessWidget {
+  final CustomWorkoutRoutine routine;
+  final VoidCallback onTap;
+  final VoidCallback onBookmarkToggle;
+
+  const _CustomRoutineCard({
+    required this.routine,
+    required this.onTap,
+    required this.onBookmarkToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FtPressable(
+      onTap: onTap,
+      pressedScale: 0.98,
+      child: GlassSurface(
+        tier: FtGlassTier.glass1,
+        radius: 20,
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            // Thumbnail
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                image: const DecorationImage(
+                  image: AssetImage('assets/images/dashboard/hero_workout.webp'),
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
-          ),
-          TextSpan(text: after),
-        ],
+            const SizedBox(width: 12),
+
+            // Content Column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          routine.title,
+                          style: TextStyle(
+                            fontFamily: FtText.fontFamily,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: context.ftInk,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 1.5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: (routine.badgeColor ?? context.ftPrimary)
+                              .withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          routine.badgeText,
+                          style: TextStyle(
+                            fontFamily: FtText.fontFamily,
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.4,
+                            color: routine.badgeColor ?? context.ftPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    routine.subtitle,
+                    style: TextStyle(
+                      fontFamily: FtText.fontFamily,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w500,
+                      color: context.ftMuted,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Progress Bar & Label
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(3),
+                          child: LinearProgressIndicator(
+                            value: routine.progressPercent,
+                            backgroundColor: context.isDark
+                                ? const Color(0x33FFFFFF)
+                                : const Color(0x225F3BDC),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              routine.badgeColor ?? context.ftPrimary,
+                            ),
+                            minHeight: 4,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        routine.progressLabel,
+                        style: TextStyle(
+                          fontFamily: FtText.fontFamily,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w600,
+                          color: context.ftMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // Trailing Kebab Menu
+            PopupMenuButton<String>(
+              icon: Icon(
+                Icons.more_vert_rounded,
+                size: 18,
+                color: context.ftMuted,
+              ),
+              onSelected: (value) {
+                if (value == 'bookmark') onBookmarkToggle();
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'bookmark',
+                  child: Text(routine.isBookmarked ? 'Unbookmark' : 'Bookmark'),
+                ),
+                const PopupMenuItem(
+                  value: 'edit',
+                  child: Text('Edit Routine'),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-/// Generic Stat Pill used inside schedule cards.
-class _StatPill extends StatelessWidget {
-  const _StatPill({
-    this.dotColor,
-    required this.text,
-    required this.theme,
-  });
+// ── Browse All Schedules Card (Loaded from DB) ──────────────────────────────
+class _BrowseScheduleCard extends StatelessWidget {
+  final WorkoutSchedule schedule;
+  final VoidCallback onTap;
 
-  final Color? dotColor;
-  final String text;
-  final ThemeData theme;
+  const _BrowseScheduleCard({
+    required this.schedule,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final isLight = theme.brightness == Brightness.light;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: isLight
-            ? const Color(0xFFF1F5F9)
-            : theme.colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (dotColor != null) ...[
-            Container(
-              width: 5,
-              height: 5,
-              decoration: BoxDecoration(
-                color: dotColor,
-                shape: BoxShape.circle,
+    return FtPressable(
+      onTap: onTap,
+      pressedScale: 0.98,
+      child: GlassSurface(
+        tier: FtGlassTier.glass1,
+        radius: 20,
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Row: Title + Focus Badge
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    schedule.title,
+                    style: TextStyle(
+                      fontFamily: FtText.fontFamily,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: context.ftInk,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                  decoration: BoxDecoration(
+                    color: _focusColor(schedule.focus).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: _focusColor(schedule.focus).withValues(alpha: 0.25),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    schedule.focus.toUpperCase(),
+                    style: TextStyle(
+                      fontFamily: FtText.fontFamily,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.4,
+                      color: _focusColor(schedule.focus),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+
+            // Metadata Row: Cadence · Weeks · Gear
+            Text(
+              '${schedule.daysPerWeek}d/wk · ${schedule.durationWeeks} Weeks · ${schedule.equipment}',
+              style: TextStyle(
+                fontFamily: FtText.fontFamily,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: context.ftMuted,
               ),
             ),
-            const SizedBox(width: 5),
-          ],
-          Text(
-            text,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
+            const SizedBox(height: 8),
+
+            // Bottom Row: Program Type / View Split > Action
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  schedule.experience,
+                  style: TextStyle(
+                    fontFamily: FtText.fontFamily,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: context.ftMuted,
+                  ),
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'View Split',
+                      style: TextStyle(
+                        fontFamily: FtText.fontFamily,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: context.ftPrimary,
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 16,
+                      color: context.ftPrimary,
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  Color _focusColor(String focus) {
+    switch (focus.toLowerCase()) {
+      case 'hypertrophy':
+        return const Color(0xFF7C5CFA);
+      case 'strength':
+        return const Color(0xFF0284C7);
+      case 'advanced':
+        return const Color(0xFFE11D48);
+      default:
+        return const Color(0xFF059669);
+    }
   }
 }

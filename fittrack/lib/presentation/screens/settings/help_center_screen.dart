@@ -33,17 +33,7 @@ class HelpCenterScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: Center(
-        child: Text(
-          'Help Center & FAQs',
-          style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-            color: colorScheme.onSurface.withValues(alpha: 0.6),
-          ),
-        ),
-      ),
+      body: const SizedBox.shrink(),
     );
   }
 }

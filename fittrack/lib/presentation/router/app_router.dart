@@ -14,8 +14,9 @@ import '../screens/reset_verification_screen.dart';
 import '../screens/set_new_password_screen.dart';
 import '../screens/telemetry_setup_screen.dart';
 import '../screens/fitness_profile_setup_screen.dart';
-import '../screens/dashboard_screen.dart';
+import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/workouts_screen.dart';
+import '../screens/workout_search_screen.dart';
 import '../screens/workout_detail_screen.dart';
 import '../screens/create_schedule_screen.dart';
 import '../../domain/entities/workout_schedule.dart';
@@ -28,6 +29,7 @@ import '../screens/workout_history_detail_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/settings/settings_subscreens.dart';
 import '../widgets/bottom_nav_shell.dart';
+import '../widgets/branch_transition_container.dart';
 
 part 'app_router.g.dart';
 
@@ -193,9 +195,38 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/history/detail/:sessionId',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => WorkoutHistoryDetailScreen(
-          sessionId: state.pathParameters['sessionId']!,
-        ),
+        pageBuilder: (context, state) {
+          final disableAnimations = MediaQuery.disableAnimationsOf(context);
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: WorkoutHistoryDetailScreen(
+              sessionId: state.pathParameters['sessionId']!,
+            ),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              if (disableAnimations) return child;
+              const begin = Offset(0.08, 0.0);
+              const end = Offset.zero;
+              final curve = CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+                reverseCurve: Curves.easeInCubic,
+              );
+              return SlideTransition(
+                position: Tween<Offset>(begin: begin, end: end).animate(curve),
+                child: FadeTransition(
+                  opacity: curve,
+                  child: child,
+                ),
+              );
+            },
+            transitionDuration: disableAnimations
+                ? Duration.zero
+                : const Duration(milliseconds: 320),
+            reverseTransitionDuration: disableAnimations
+                ? Duration.zero
+                : const Duration(milliseconds: 280),
+          );
+        },
       ),
       GoRoute(
         path: '/settings/account',
@@ -211,11 +242,6 @@ GoRouter router(Ref ref) {
         path: '/settings/password',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const PasswordSecurityScreen(),
-      ),
-      GoRoute(
-        path: '/settings/appearance',
-        parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const AppearanceSettingsScreen(),
       ),
       GoRoute(
         path: '/settings/notifications',
@@ -253,13 +279,24 @@ GoRouter router(Ref ref) {
         builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(
+        path: '/settings/appearance',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AppearanceSettingsScreen(),
+      ),
+      GoRoute(
         path: '/settings/about',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const AboutScreen(),
       ),
-      StatefulShellRoute.indexedStack(
+      StatefulShellRoute(
         builder: (context, state, navigationShell) {
           return BottomNavShell(navigationShell: navigationShell);
+        },
+        navigatorContainerBuilder: (context, navigationShell, children) {
+          return BranchTransitionContainer(
+            currentIndex: navigationShell.currentIndex,
+            children: children,
+          );
         },
         branches: [
           StatefulShellBranch(
@@ -277,6 +314,12 @@ GoRouter router(Ref ref) {
               GoRoute(
                 path: '/workouts',
                 builder: (context, state) => const WorkoutsScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'search',
+                    builder: (context, state) => const WorkoutSearchScreen(),
+                  ),
+                ],
               ),
             ],
           ),

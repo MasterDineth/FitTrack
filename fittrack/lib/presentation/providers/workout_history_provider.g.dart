@@ -42,7 +42,7 @@ final class WorkoutHistoryNotifierProvider
 }
 
 String _$workoutHistoryNotifierHash() =>
-    r'ce6e54cf8c9006bfc2fec2c57fe80b7265c48ccd';
+    r'b8f3ef717a83e73a0ea8cce3430882755c68e632';
 
 abstract class _$WorkoutHistoryNotifier extends $Notifier<WorkoutHistoryState> {
   WorkoutHistoryState build();
@@ -121,7 +121,7 @@ final class WorkoutSessionByIdProvider
 }
 
 String _$workoutSessionByIdHash() =>
-    r'c10780d84c1834ce044e556c6259a0a36660b6eb';
+    r'175e31dcb2e05cf9687826ffc0fe04369024a636';
 
 final class WorkoutSessionByIdFamily extends $Family
     with $FunctionalFamilyOverride<WorkoutSession?, String> {
@@ -139,4 +139,83 @@ final class WorkoutSessionByIdFamily extends $Family
 
   @override
   String toString() => r'workoutSessionByIdProvider';
+}
+
+@ProviderFor(workoutSessionDetail)
+final workoutSessionDetailProvider = WorkoutSessionDetailFamily._();
+
+final class WorkoutSessionDetailProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<WorkoutSessionDetailData?>,
+          WorkoutSessionDetailData?,
+          FutureOr<WorkoutSessionDetailData?>
+        >
+    with
+        $FutureModifier<WorkoutSessionDetailData?>,
+        $FutureProvider<WorkoutSessionDetailData?> {
+  WorkoutSessionDetailProvider._({
+    required WorkoutSessionDetailFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'workoutSessionDetailProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$workoutSessionDetailHash();
+
+  @override
+  String toString() {
+    return r'workoutSessionDetailProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<WorkoutSessionDetailData?> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<WorkoutSessionDetailData?> create(Ref ref) {
+    final argument = this.argument as String;
+    return workoutSessionDetail(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is WorkoutSessionDetailProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$workoutSessionDetailHash() =>
+    r'98d893414b36b77f57f6c2997c1d76f1ef013861';
+
+final class WorkoutSessionDetailFamily extends $Family
+    with
+        $FunctionalFamilyOverride<FutureOr<WorkoutSessionDetailData?>, String> {
+  WorkoutSessionDetailFamily._()
+    : super(
+        retry: null,
+        name: r'workoutSessionDetailProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  WorkoutSessionDetailProvider call(String sessionId) =>
+      WorkoutSessionDetailProvider._(argument: sessionId, from: this);
+
+  @override
+  String toString() => r'workoutSessionDetailProvider';
 }

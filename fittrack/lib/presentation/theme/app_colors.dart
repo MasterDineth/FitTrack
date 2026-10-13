@@ -8,6 +8,19 @@ abstract final class AppColors {
   static const kineticMintLight = Color(0xFFE6FAF3);
   static const kineticMintGlow = Color(0x4700D68F); // 28% opacity
 
+  // ── Luminous Frosted Kinetic Tokens ─────────────────────────────────────────
+  static const electricViolet = Color(0xFF7C5CFA);
+  static const violetLight = Color(0xFF9B7BFF);
+  static const brandTeal = Color(0xFF2DD4BF);
+  static const brandTealDark = Color(0xFF14B8A6);
+  static const brandPeach = Color(0xFFFFB88C);
+  static const brandOrange = Color(0xFFF97316);
+  static const brandRose = Color(0xFFF43F5E);
+  static const canvasBaseLight = Color(0xFFF6F4FF);
+  static const darkNavy = Color(0xFF0C0F17);
+  static const textDark = Color(0xFF1B1533);
+  static const textMuted = Color(0xFF6B6785);
+
   // ── Surface / Background Palettes ─────────────────────────────────────────
   static const surface = Color(0xFFF7F9FB);
   static const cardWhite = Color(0xFFFFFFFF);

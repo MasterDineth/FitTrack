@@ -18,6 +18,8 @@ _ThemeSettings _$ThemeSettingsFromJson(Map<String, dynamic> json) =>
       useHighContrast: json['useHighContrast'] as bool? ?? false,
       autoDarkWorkout: json['autoDarkWorkout'] as bool? ?? true,
       keepScreenAwake: json['keepScreenAwake'] as bool? ?? true,
+      enableGlassTransparency: json['enableGlassTransparency'] as bool? ?? true,
+      blurIntensity: (json['blurIntensity'] as num?)?.toDouble() ?? 16.0,
     );
 
 Map<String, dynamic> _$ThemeSettingsToJson(_ThemeSettings instance) =>
@@ -29,4 +31,6 @@ Map<String, dynamic> _$ThemeSettingsToJson(_ThemeSettings instance) =>
       'useHighContrast': instance.useHighContrast,
       'autoDarkWorkout': instance.autoDarkWorkout,
       'keepScreenAwake': instance.keepScreenAwake,
+      'enableGlassTransparency': instance.enableGlassTransparency,
+      'blurIntensity': instance.blurIntensity,
     };

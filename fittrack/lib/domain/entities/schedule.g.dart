@@ -18,6 +18,14 @@ _Schedule _$ScheduleFromJson(Map<String, dynamic> json) => _Schedule(
       .toList(),
   orderIndex: (json['orderIndex'] as num).toInt(),
   isArchived: json['isArchived'] as bool? ?? false,
+  isFavorite: json['isFavorite'] as bool? ?? false,
+  focus: json['focus'] as String? ?? 'Hypertrophy',
+  experience: json['experience'] as String? ?? 'Intermediate',
+  equipment: json['equipment'] as String? ?? 'Full Gym',
+  durationWeeks: (json['durationWeeks'] as num?)?.toInt() ?? 8,
+  daysPerWeek: (json['daysPerWeek'] as num?)?.toInt() ?? 4,
+  estimatedMinutes: (json['estimatedMinutes'] as num?)?.toInt() ?? 45,
+  isCustom: json['isCustom'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$ScheduleToJson(_Schedule instance) => <String, dynamic>{
@@ -28,4 +36,12 @@ Map<String, dynamic> _$ScheduleToJson(_Schedule instance) => <String, dynamic>{
   'assignedWeekdays': instance.assignedWeekdays,
   'orderIndex': instance.orderIndex,
   'isArchived': instance.isArchived,
+  'isFavorite': instance.isFavorite,
+  'focus': instance.focus,
+  'experience': instance.experience,
+  'equipment': instance.equipment,
+  'durationWeeks': instance.durationWeeks,
+  'daysPerWeek': instance.daysPerWeek,
+  'estimatedMinutes': instance.estimatedMinutes,
+  'isCustom': instance.isCustom,
 };

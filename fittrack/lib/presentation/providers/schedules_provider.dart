@@ -1,10 +1,18 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/schedule_exercise.dart';
 import '../../domain/entities/workout_schedule.dart';
+import '../../domain/entities/trending_program.dart';
+import '../../domain/entities/routine_spotlight.dart';
+import '../../domain/entities/custom_workout_routine.dart';
+import 'repository_providers.dart';
 
 export '../../domain/entities/schedule_exercise.dart';
 export '../../domain/entities/workout_schedule.dart';
+export '../../domain/entities/trending_program.dart';
+export '../../domain/entities/routine_spotlight.dart';
+export '../../domain/entities/custom_workout_routine.dart';
 
 part 'schedules_provider.g.dart';
 
@@ -23,12 +31,28 @@ class SchedulesState {
     this.searchQuery = '',
     this.selectedCategoryFilter = 'All',
     this.selectedSort = SortOption.relevant,
+    this.expandedScheduleIds = const {'sch1'},
+    this.bookmarkedIds = const {'sch1', 'sch2', 'sched_ppl_hypertrophy', 'trend_1'},
+    this.isLoading = false,
   });
 
   final List<WorkoutSchedule> allSchedules;
   final String searchQuery;
   final String selectedCategoryFilter;
   final SortOption selectedSort;
+  final Set<String> expandedScheduleIds;
+  final Set<String> bookmarkedIds;
+  final bool isLoading;
+
+  /// Whether a specific schedule card is expanded in search/library view.
+  bool isExpanded(String id) => expandedScheduleIds.contains(id);
+
+  /// Whether all current filtered schedules are expanded.
+  bool get allExpanded {
+    final list = filteredSchedules;
+    if (list.isEmpty) return false;
+    return list.every((s) => expandedScheduleIds.contains(s.id));
+  }
 
   /// Returns recommended programs focused on Advanced Hypertrophy & Strength Plateau Breakers.
   List<WorkoutSchedule> get recommendedSchedules => allSchedules
@@ -42,7 +66,7 @@ class SchedulesState {
 
   /// Returns schedules marked as favorite/bookmarked.
   List<WorkoutSchedule> get bookmarkedSchedules =>
-      allSchedules.where((s) => s.isFavorite).toList();
+      allSchedules.where((s) => s.isFavorite || bookmarkedIds.contains(s.id)).toList();
 
   /// Returns user-created custom schedules.
   List<WorkoutSchedule> get customSchedules =>
@@ -53,7 +77,7 @@ class SchedulesState {
   List<WorkoutSchedule> get filteredSchedules {
     final list = allSchedules.where((schedule) {
       // 1. Category / Filter Chip matching
-      if (selectedCategoryFilter != 'All') {
+      if (selectedCategoryFilter != 'All' && selectedCategoryFilter != 'All Goals') {
         final filter = selectedCategoryFilter.toLowerCase();
         final matchesFocus = schedule.focus.toLowerCase() == filter;
         final matchesExperience = schedule.experience.toLowerCase() == filter;
@@ -110,6 +134,9 @@ class SchedulesState {
     String? searchQuery,
     String? selectedCategoryFilter,
     SortOption? selectedSort,
+    Set<String>? expandedScheduleIds,
+    Set<String>? bookmarkedIds,
+    bool? isLoading,
   }) {
     return SchedulesState(
       allSchedules: allSchedules ?? this.allSchedules,
@@ -117,6 +144,9 @@ class SchedulesState {
       selectedCategoryFilter:
           selectedCategoryFilter ?? this.selectedCategoryFilter,
       selectedSort: selectedSort ?? this.selectedSort,
+      expandedScheduleIds: expandedScheduleIds ?? this.expandedScheduleIds,
+      bookmarkedIds: bookmarkedIds ?? this.bookmarkedIds,
+      isLoading: isLoading ?? this.isLoading,
     );
   }
 
@@ -128,7 +158,10 @@ class SchedulesState {
           listEquals(allSchedules, other.allSchedules) &&
           searchQuery == other.searchQuery &&
           selectedCategoryFilter == other.selectedCategoryFilter &&
-          selectedSort == other.selectedSort;
+          selectedSort == other.selectedSort &&
+          setEquals(expandedScheduleIds, other.expandedScheduleIds) &&
+          setEquals(bookmarkedIds, other.bookmarkedIds) &&
+          isLoading == other.isLoading;
 
   @override
   int get hashCode => Object.hash(
@@ -136,12 +169,127 @@ class SchedulesState {
         searchQuery,
         selectedCategoryFilter,
         selectedSort,
+        Object.hashAll(expandedScheduleIds),
+        Object.hashAll(bookmarkedIds),
+        isLoading,
       );
 }
 
 /// Initial robust mock seed data covering Hypertrophy, Strength, Custom, and Bookmarks,
 /// equipped with complete deep exercises and routine breakdowns.
 const _initialSeedSchedules = <WorkoutSchedule>[
+  WorkoutSchedule(
+    id: 'sch1',
+    title: 'Push-Pull-Legs Split',
+    description:
+        'High mechanical tension for progressive muscular overload across push and pull days.',
+    focus: 'Hypertrophy',
+    experience: 'Intermediate',
+    equipment: 'Full Gym',
+    durationWeeks: 8,
+    daysPerWeek: 4,
+    isFavorite: true,
+    isCustom: false,
+    targetMuscles: ['Chest', 'Back', 'Legs'],
+    exerciseCount: 3,
+    estimatedMinutes: 60,
+    exercises: [
+      ScheduleExercise(
+        id: 'sch1_ex1',
+        scheduleId: 'sch1',
+        exerciseId: 'ex1',
+        sortOrder: 1,
+        targetSets: 4,
+        targetReps: 8,
+        targetWeightKg: 85.0,
+        restDurationSeconds: 120,
+      ),
+      ScheduleExercise(
+        id: 'sch1_ex2',
+        scheduleId: 'sch1',
+        exerciseId: 'ex2',
+        sortOrder: 2,
+        targetSets: 3,
+        targetReps: 10,
+        targetWeightKg: 30.0,
+        restDurationSeconds: 90,
+      ),
+      ScheduleExercise(
+        id: 'sch1_ex3',
+        scheduleId: 'sch1',
+        exerciseId: 'ex3',
+        sortOrder: 3,
+        targetSets: 3,
+        targetReps: 12,
+        targetWeightKg: 15.0,
+        restDurationSeconds: 60,
+      ),
+    ],
+  ),
+  WorkoutSchedule(
+    id: 'sch2',
+    title: 'Strength Plateau Breaker',
+    description:
+        'Periodized heavy triples and submaximal recovery designed to break squat and bench plateaus.',
+    focus: 'Strength',
+    experience: 'Advanced',
+    equipment: 'Full Gym',
+    durationWeeks: 6,
+    daysPerWeek: 5,
+    isFavorite: true,
+    isCustom: false,
+    targetMuscles: ['Back', 'Core', 'Quads'],
+    exerciseCount: 5,
+    estimatedMinutes: 55,
+  ),
+  WorkoutSchedule(
+    id: 'sch3',
+    title: 'Arnold Split Classic',
+    description:
+        'Antagonistic supersets pairing chest with back, shoulders with arms, and dedicated leg blast.',
+    focus: 'Hypertrophy',
+    experience: 'Advanced',
+    equipment: 'Full Gym',
+    durationWeeks: 10,
+    daysPerWeek: 6,
+    isFavorite: true,
+    isCustom: false,
+    targetMuscles: ['Chest', 'Back', 'Arms'],
+    exerciseCount: 6,
+    estimatedMinutes: 70,
+  ),
+  WorkoutSchedule(
+    id: 'sch4',
+    title: 'German Volume Training (GVT)',
+    description:
+        '10×10 volume protocol for high neuromuscular exhaustion and extreme hypertrophy adaptation.',
+    focus: 'Hypertrophy',
+    experience: 'Advanced',
+    equipment: 'Full Gym',
+    durationWeeks: 6,
+    daysPerWeek: 3,
+    isFavorite: false,
+    isCustom: false,
+    targetMuscles: ['Quads', 'Chest', 'Lats'],
+    exerciseCount: 3,
+    estimatedMinutes: 60,
+  ),
+  WorkoutSchedule(
+    id: 'sch5',
+    title: 'Torso & Limb Split',
+    description:
+        'Separates chest and back days from arm and quad isolation for maximal joint recovery.',
+    focus: 'Hypertrophy',
+    experience: 'Intermediate',
+    equipment: 'Barbell & Cable',
+    durationWeeks: 8,
+    daysPerWeek: 4,
+    isFavorite: false,
+    isCustom: false,
+    targetMuscles: ['Upper Body', 'Arms'],
+    exerciseCount: 4,
+    estimatedMinutes: 45,
+  ),
   WorkoutSchedule(
     id: 'sched_ppl_hypertrophy',
     title: 'Push-Pull-Legs Split',
@@ -774,6 +922,8 @@ class SchedulesNotifier extends _$SchedulesNotifier {
       searchQuery: '',
       selectedCategoryFilter: 'All',
       selectedSort: SortOption.relevant,
+      expandedScheduleIds: {'sch1'},
+      bookmarkedIds: {'sch1', 'sch2', 'sched_ppl_hypertrophy', 'trend_1'},
     );
   }
 
@@ -782,17 +932,99 @@ class SchedulesNotifier extends _$SchedulesNotifier {
   List<WorkoutSchedule> get bookmarkedSchedules => state.bookmarkedSchedules;
   List<WorkoutSchedule> get customSchedules => state.customSchedules;
   List<WorkoutSchedule> get filteredSchedules => state.filteredSchedules;
+  bool isExpanded(String id) => state.isExpanded(id);
+  bool get allExpanded => state.allExpanded;
 
-  /// Toggles favorite/bookmark status for a given schedule [id].
+  /// Toggles expansion for an individual result card.
+  void toggleExpand(String id) {
+    final next = Set<String>.from(state.expandedScheduleIds);
+    if (next.contains(id)) {
+      next.remove(id);
+    } else {
+      next.add(id);
+    }
+    state = state.copyWith(expandedScheduleIds: next);
+  }
+
+  /// Expands all filtered schedules if not all are expanded, else collapses all.
+  void toggleExpandAll() {
+    if (state.allExpanded) {
+      collapseAll();
+    } else {
+      expandAll();
+    }
+  }
+
+  /// Expands all visible results.
+  void expandAll() {
+    final ids = state.filteredSchedules.map((s) => s.id).toSet();
+    state = state.copyWith(expandedScheduleIds: ids);
+  }
+
+  /// Collapses all visible results.
+  void collapseAll() {
+    state = state.copyWith(expandedScheduleIds: {});
+  }
+
+  /// Toggles favorite/bookmark status for a given schedule [id] and persists to SQLite.
   void toggleBookmark(String id) {
+    final isNowBookmarked = !state.bookmarkedIds.contains(id);
+    final newBookmarks = Set<String>.from(state.bookmarkedIds);
+    if (isNowBookmarked) {
+      newBookmarks.add(id);
+    } else {
+      newBookmarks.remove(id);
+    }
+
+    final updatedSchedules = state.allSchedules.map((schedule) {
+      if (schedule.id == id) {
+        return schedule.copyWith(isFavorite: isNowBookmarked);
+      }
+      return schedule;
+    }).toList();
+
     state = state.copyWith(
-      allSchedules: state.allSchedules.map((schedule) {
-        if (schedule.id == id) {
-          return schedule.copyWith(isFavorite: !schedule.isFavorite);
-        }
-        return schedule;
-      }).toList(),
+      allSchedules: updatedSchedules,
+      bookmarkedIds: newBookmarks,
     );
+
+    // Persist to local database
+    try {
+      ref.read(scheduleRepositoryProvider).toggleBookmark(id, isNowBookmarked);
+    } catch (e) {
+      debugPrint('Error syncing bookmark with repository: $e');
+    }
+  }
+
+  /// Loads schedules from SQLite database and merges with memory seeds.
+  Future<void> loadFromDatabase() async {
+    try {
+      final repo = ref.read(scheduleRepositoryProvider);
+      final dbSchedules = await repo.getAllSchedules();
+      if (dbSchedules.isNotEmpty) {
+        final dbWorkoutSchedules =
+            dbSchedules.map(WorkoutSchedule.fromSchedule).toList();
+        final map = <String, WorkoutSchedule>{};
+        for (final s in dbWorkoutSchedules) {
+          map[s.id] = s;
+        }
+        for (final s in state.allSchedules) {
+          if (!map.containsKey(s.id)) {
+            map[s.id] = s;
+          }
+        }
+        final bookmarks = await repo.getBookmarkedSchedules();
+        final bookmarkIds = bookmarks.map((b) => b.id).toSet();
+        final mergedBookmarks = {...state.bookmarkedIds, ...bookmarkIds};
+
+        state = state.copyWith(
+          allSchedules: map.values.toList(),
+          bookmarkedIds: mergedBookmarks,
+        );
+      }
+    } catch (e) {
+      debugPrint('Could not load schedules from database: $e');
+    }
   }
 
   /// Updates active search query and triggers reactive filtering.
@@ -813,3 +1045,172 @@ class SchedulesNotifier extends _$SchedulesNotifier {
 
 /// Backward compatibility and convenient provider alias.
 final schedulesNotifierProvider = schedulesProvider;
+
+/// Provider that loads up to 5 workout schedules directly from SQLite database.
+@riverpod
+Future<List<WorkoutSchedule>> dbBrowseSchedules(Ref ref) async {
+  final scheduleRepo = ref.watch(scheduleRepositoryProvider);
+  try {
+    final list = await scheduleRepo.getAllSchedules();
+    if (list.isNotEmpty) {
+      return list.take(5).map(WorkoutSchedule.fromSchedule).toList();
+    }
+  } catch (e) {
+    debugPrint('Error fetching dbBrowseSchedules: $e');
+  }
+  final all = ref.watch(schedulesProvider).allSchedules;
+  return all.take(5).toList();
+}
+
+/// Provider that loads Today's Routine Spotlight with top 3 exercises from DB.
+@riverpod
+Future<RoutineSpotlight> routineSpotlight(Ref ref) async {
+  final scheduleRepo = ref.watch(scheduleRepositoryProvider);
+  final exerciseRepo = ref.watch(exerciseRepositoryProvider);
+
+  List<SpotlightDrill> drills = [];
+  try {
+    final scheduleExercises = await scheduleRepo.getScheduleExercises('sch1');
+    if (scheduleExercises.isNotEmpty) {
+      final top3 = scheduleExercises.take(3).toList();
+      for (int i = 0; i < top3.length; i++) {
+        final se = top3[i];
+        final ex = await exerciseRepo.getExerciseById(se.exerciseId);
+        final name = ex?.name ?? 'Exercise ${i + 1}';
+        final prescription = '${se.targetSets} × ${se.targetReps} reps';
+        drills.add(SpotlightDrill(
+          stepNumber: i + 1,
+          exerciseName: name,
+          prescription: prescription,
+        ));
+      }
+    }
+  } catch (e) {
+    debugPrint('Error loading spotlight drills from DB: $e');
+  }
+
+  if (drills.isEmpty) {
+    drills = const [
+      SpotlightDrill(
+        stepNumber: 1,
+        exerciseName: 'Russian Kettlebell Swings',
+        prescription: '4 × 20 reps',
+      ),
+      SpotlightDrill(
+        stepNumber: 2,
+        exerciseName: 'Goblet Squats + Press',
+        prescription: '4 × 12 reps',
+      ),
+      SpotlightDrill(
+        stepNumber: 3,
+        exerciseName: 'Alternating Snatch Burpees',
+        prescription: '3 × 45 sec',
+      ),
+    ];
+  }
+
+  return RoutineSpotlight(
+    id: 'spotlight_today',
+    scheduleId: 'sch1',
+    title: 'Kettlebell Power Flow',
+    subtitle: 'Follow 3 explosive conditioning circuits',
+    categoryTag: 'METABOLIC HIIT',
+    dayNumber: 14,
+    durationMinutes: 32,
+    estimatedCalories: 460,
+    intensityLevel: 4,
+    drills: drills,
+  );
+}
+
+/// Provider providing Trending Programs for the Workout Library carousel.
+@riverpod
+List<TrendingProgram> trendingPrograms(Ref ref) {
+  final schedulesState = ref.watch(schedulesProvider);
+  final bookmarkedIds = schedulesState.bookmarkedIds;
+
+  return [
+    TrendingProgram(
+      id: 'trend_1',
+      title: 'Posterior Chain & Pull Focus',
+      description:
+          'Engineered for structural density, hinge power, and progressive trap & lat hypertrophy.',
+      categoryTag: 'HYPERTROPHY PRO',
+      rating: 4.9,
+      reviewCount: '1.4k',
+      durationWeeks: 4,
+      daysPerWeek: 4,
+      equipment: 'Full Gym',
+      tags: const ['Full Gym', 'Barbell', 'Deadlift Wave'],
+      intensityLabel: 'High Intensity',
+      isBookmarked: bookmarkedIds.contains('trend_1'),
+    ),
+    TrendingProgram(
+      id: 'trend_2',
+      title: 'Upper Body Power / Tension',
+      description:
+          'Explosive bench speed sets paired with heavy horizontal pulls and rotator cuff resilience.',
+      categoryTag: 'STRENGTH PEAK',
+      rating: 4.8,
+      reviewCount: '980',
+      durationWeeks: 6,
+      daysPerWeek: 3,
+      equipment: 'Full Gym',
+      tags: const ['Full Gym', 'Barbell & Dumbbells', 'Power Cleans'],
+      intensityLabel: 'Maximum Power',
+      isBookmarked: bookmarkedIds.contains('trend_2'),
+    ),
+    TrendingProgram(
+      id: 'trend_3',
+      title: 'High Intensity Wave (HIW)',
+      description:
+          'Rapid neurological adaptation with descending rest periods and cluster set finishers.',
+      categoryTag: 'AGILITY & SPEED',
+      rating: 4.9,
+      reviewCount: '2.1k',
+      durationWeeks: 4,
+      daysPerWeek: 5,
+      equipment: 'Kettlebells & Bodyweight',
+      tags: const ['Kettlebells', 'Plyo', 'Cardio Waves'],
+      intensityLabel: 'Peak Conditioning',
+      isBookmarked: bookmarkedIds.contains('trend_3'),
+    ),
+  ];
+}
+
+/// Provider providing user saved/custom routines for the "My Saved & Custom" section.
+@riverpod
+List<CustomWorkoutRoutine> customRoutines(Ref ref) {
+  final schedulesState = ref.watch(schedulesProvider);
+  final bookmarkedIds = schedulesState.bookmarkedIds;
+
+  return [
+    CustomWorkoutRoutine(
+      id: 'custom_push_hypertrophy',
+      title: 'Push Hypertrophy Custom',
+      subtitle: '4 drills · 45 min · Chest & Shoulders',
+      badgeText: 'ACTIVE',
+      badgeColor: const Color(0xFF7C5CFA),
+      progressPercent: 0.70,
+      progressLabel: '70% done',
+      drillCount: 4,
+      durationMinutes: 45,
+      muscleFocus: 'Chest & Shoulders',
+      isBookmarked: bookmarkedIds.contains('custom_push_hypertrophy'),
+    ),
+    CustomWorkoutRoutine(
+      id: 'custom_heavy_posterior',
+      title: 'Heavy Posterior Overload',
+      subtitle: '6 drills · 60 min · Hamstrings & Back',
+      badgeText: 'SAVED',
+      badgeColor: const Color(0xFF10B981),
+      progressPercent: 0.33,
+      progressLabel: 'Week 2/6',
+      drillCount: 6,
+      durationMinutes: 60,
+      muscleFocus: 'Hamstrings & Back',
+      isBookmarked: bookmarkedIds.contains('custom_heavy_posterior'),
+    ),
+  ];
+}
+

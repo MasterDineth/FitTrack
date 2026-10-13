@@ -1,0 +1,24 @@
+[
+  {
+    "id": "nutrition-1",
+    "category": "Nutrition",
+    "tagColor": "ink",
+    "duration": "4 min read",
+    "title": "Optimizing Post-Workout Glycogen & Protein Synthesis",
+    "description": "Evidence-based meal timing strategies to maximize muscle recovery within 90 minutes post-session.",
+    "actionLabel": "Read Guide",
+    "imagePath": "assets/images/dashboard/nutrition_bowl.webp",
+    "isVideo": false
+  },
+  {
+    "id": "coaching-1",
+    "category": "Coaching",
+    "tagColor": "primary",
+    "duration": "7 min video",
+    "title": "Hypertrophy Masterclass: Progressive Overload Mechanics",
+    "description": "Deep-dive session on RPE tracking, mechanical tension, and periodized volume loading.",
+    "actionLabel": "Watch Video",
+    "imagePath": "assets/images/dashboard/coaching_bench.webp",
+    "isVideo": true
+  }
+]

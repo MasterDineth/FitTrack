@@ -44,7 +44,7 @@ final class ThemeNotifierProvider
   }
 }
 
-String _$themeNotifierHash() => r'0a9c56287a9860ba9115b5820cbc1816765c26ac';
+String _$themeNotifierHash() => r'106cd21af020da59980f622978ec4f3963b29db9';
 
 /// Riverpod notifier managing [ThemeSettings] state and persistence.
 
