@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../../providers/theme_provider.dart';
 import '../../../theme/ft_glass.dart';
 import '../../dashboard/widgets/ft_pressable.dart';
 
@@ -11,11 +12,13 @@ class ExerciseSaveBar extends StatelessWidget {
     required this.isValid,
     required this.isSaving,
     required this.onSave,
+    this.settings,
   });
 
   final bool isValid;
   final bool isSaving;
   final VoidCallback onSave;
+  final ThemeSettings? settings;
 
   void _handleTap(BuildContext context) {
     if (isSaving) return;
@@ -49,7 +52,7 @@ class ExerciseSaveBar extends StatelessWidget {
     final isDark = context.isDark;
     final primary = context.ftPrimary;
 
-    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final settings = this.settings ?? FtGlassTheme.resolveThemeSettings(context);
     final enableTransparency = settings?.enableGlassTransparency ?? true;
     final blurIntensity = settings?.blurIntensity ?? 16.0;
 
@@ -71,13 +74,13 @@ class ExerciseSaveBar extends StatelessWidget {
         ),
       ];
     } else {
-      final double fillAlpha = isDark ? (0.75 + 0.15 * t) : (0.72 + 0.14 * t);
+      final double fillAlpha = isDark ? (0.55 + 0.20 * t) : (0.50 + 0.22 * t);
       dockFill = isDark
           ? const Color(0xFF1E1838).withValues(alpha: fillAlpha)
           : Colors.white.withValues(alpha: fillAlpha);
       dockBorder = isDark
           ? const Color(0x3DFFFFFF)
-          : Colors.white.withValues(alpha: 0.95);
+          : Colors.white.withValues(alpha: 0.55 + 0.35 * t);
       dockShadow = [
         BoxShadow(
           color: primary.withValues(alpha: isDark ? 0.28 : 0.14),

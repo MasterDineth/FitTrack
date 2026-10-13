@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../providers/theme_provider.dart';
 import '../../../theme/ft_glass.dart';
 import '../../dashboard/widgets/ft_pressable.dart';
 
@@ -65,11 +66,13 @@ class ScheduleCoverImageCard extends StatelessWidget {
     required this.coverImagePath,
     required this.onImageSelected,
     required this.onImageRemoved,
+    this.settings,
   });
 
   final String? coverImagePath;
   final ValueChanged<String?> onImageSelected;
   final VoidCallback onImageRemoved;
+  final ThemeSettings? settings;
 
   Future<void> _pickImage(BuildContext context) async {
     try {
@@ -106,7 +109,7 @@ class ScheduleCoverImageCard extends StatelessWidget {
         coverImagePath!.isNotEmpty &&
         File(coverImagePath!).existsSync();
 
-    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final settings = this.settings ?? FtGlassTheme.resolveThemeSettings(context);
 
     return Container(
       width: double.infinity,

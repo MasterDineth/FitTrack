@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../providers/schedule_editor_notifier.dart';
+import '../../../providers/theme_provider.dart';
 import '../../../theme/ft_glass.dart';
 import 'schedule_exercise_card.dart';
 
@@ -20,6 +21,7 @@ class ScheduleExerciseDismissible extends StatefulWidget {
     required this.onUpdateReps,
     required this.onUpdateWeight,
     required this.onUpdateRest,
+    this.settings,
   });
 
   final int index;
@@ -31,6 +33,7 @@ class ScheduleExerciseDismissible extends StatefulWidget {
   final ValueChanged<int> onUpdateReps;
   final ValueChanged<double> onUpdateWeight;
   final ValueChanged<int> onUpdateRest;
+  final ThemeSettings? settings;
 
   @override
   State<ScheduleExerciseDismissible> createState() =>
@@ -166,6 +169,7 @@ class _ScheduleExerciseDismissibleState
               index: widget.index,
               entry: widget.entry,
               isExpanded: widget.isExpanded,
+              settings: widget.settings,
               onToggleExpand: widget.onToggleExpand,
               onRemove: widget.onRemove,
               onUpdateSets: widget.onUpdateSets,

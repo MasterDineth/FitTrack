@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../providers/theme_provider.dart';
 import '../../../screens/dashboard/widgets/ft_pressable.dart';
 import '../../../theme/ft_glass.dart';
 
@@ -10,11 +11,13 @@ class ExercisePickerFooter extends StatelessWidget {
     required this.selectedCount,
     required this.onAddSelected,
     required this.onCreateNew,
+    this.settings,
   });
 
   final int selectedCount;
   final VoidCallback onAddSelected;
   final VoidCallback onCreateNew;
+  final ThemeSettings? settings;
 
   @override
   Widget build(BuildContext context) {
@@ -22,8 +25,12 @@ class ExercisePickerFooter extends StatelessWidget {
     final primary = context.ftPrimary;
     final ink = context.ftInk;
 
-    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final settings = this.settings ?? FtGlassTheme.resolveThemeSettings(context);
     final enableTransparency = settings?.enableGlassTransparency ?? true;
+    final blurIntensity = settings?.blurIntensity ?? 16.0;
+    final double t = enableTransparency
+        ? ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0)
+        : 1.0;
 
     final String addLabel = selectedCount <= 0
         ? 'Select exercises'
@@ -32,14 +39,20 @@ class ExercisePickerFooter extends StatelessWidget {
     final bool canAdd = selectedCount > 0;
 
     final footerFill = enableTransparency
-        ? (isDark ? const Color(0xE61A162D) : Colors.white.withValues(alpha: 0.88))
+        ? (isDark
+            ? const Color(0xFF1A162D).withValues(alpha: 0.55 + 0.20 * t)
+            : Colors.white.withValues(alpha: 0.45 + 0.22 * t))
         : (isDark ? const Color(0xFF1E1838) : Colors.white);
     final footerBorder = enableTransparency
-        ? (isDark ? const Color(0x33FFFFFF) : Colors.white.withValues(alpha: 0.95))
+        ? (isDark
+            ? const Color(0x33FFFFFF)
+            : Colors.white.withValues(alpha: 0.50 + 0.35 * t))
         : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0));
 
     final createBtnFill = enableTransparency
-        ? (isDark ? const Color(0x22FFFFFF) : const Color(0xFFF7F1FF))
+        ? (isDark
+            ? const Color(0x22FFFFFF)
+            : const Color(0xFFF7F1FF).withValues(alpha: 0.60))
         : (isDark ? const Color(0xFF221C38) : const Color(0xFFF1F5F9));
 
     final disabledBtnFill = isDark

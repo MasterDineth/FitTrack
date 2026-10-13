@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../providers/theme_provider.dart';
 import '../../../theme/ft_glass.dart';
 import '../../../screens/dashboard/widgets/ft_pressable.dart';
 
@@ -9,11 +10,13 @@ class ExercisePickerCategoryChips extends StatelessWidget {
     required this.categories,
     required this.selectedCategory,
     required this.onCategorySelected,
+    this.settings,
   });
 
   final List<String> categories;
   final String selectedCategory;
   final ValueChanged<String> onCategorySelected;
+  final ThemeSettings? settings;
 
   @override
   Widget build(BuildContext context) {
@@ -21,8 +24,12 @@ class ExercisePickerCategoryChips extends StatelessWidget {
     final primary = context.ftPrimary;
     final ink = context.ftInk;
 
-    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final settings = this.settings ?? FtGlassTheme.resolveThemeSettings(context);
     final enableTransparency = settings?.enableGlassTransparency ?? true;
+    final blurIntensity = settings?.blurIntensity ?? 16.0;
+    final double t = enableTransparency
+        ? ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0)
+        : 1.0;
 
     return Padding(
       padding: const EdgeInsets.only(top: 4, bottom: 10),
@@ -38,10 +45,14 @@ class ExercisePickerCategoryChips extends StatelessWidget {
             final isSelected = cat == selectedCategory;
 
             final unselectedFill = enableTransparency
-                ? (isDark ? const Color(0x22FFFFFF) : Colors.white.withValues(alpha: 0.7))
+                ? (isDark
+                    ? const Color(0x22FFFFFF)
+                    : Colors.white.withValues(alpha: 0.40 + 0.20 * t))
                 : (isDark ? const Color(0xFF221C38) : const Color(0xFFF1F5F9));
             final unselectedBorder = enableTransparency
-                ? (isDark ? const Color(0x22FFFFFF) : Colors.white.withValues(alpha: 0.85))
+                ? (isDark
+                    ? const Color(0x22FFFFFF)
+                    : Colors.white.withValues(alpha: 0.50 + 0.25 * t))
                 : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0));
 
             return FtPressable(

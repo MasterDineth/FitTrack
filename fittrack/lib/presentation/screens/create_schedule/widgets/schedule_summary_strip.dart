@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../providers/theme_provider.dart';
 import '../../../theme/ft_glass.dart';
 
 /// 3-Metric Summary Strip card displaying Duration, Total Sets, and Est. Energy Burn.
@@ -9,11 +10,13 @@ class ScheduleSummaryStrip extends StatelessWidget {
     required this.durationFormatted,
     required this.totalSets,
     required this.estimatedCalories,
+    this.settings,
   });
 
   final String durationFormatted;
   final int totalSets;
   final int estimatedCalories;
+  final ThemeSettings? settings;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +25,7 @@ class ScheduleSummaryStrip extends StatelessWidget {
     final ink = context.ftInk;
     final muted = context.ftMuted;
 
-    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final settings = this.settings ?? FtGlassTheme.resolveThemeSettings(context);
 
     return Container(
       width: double.infinity,

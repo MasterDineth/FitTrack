@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/exercise.dart';
+import '../../../providers/theme_provider.dart';
 import '../../../theme/ft_glass.dart';
 import '../../dashboard/widgets/ft_pressable.dart';
 
@@ -19,6 +20,7 @@ class ExerciseBasicsCard extends StatelessWidget {
     required this.onNameChanged,
     required this.onEquipmentChanged,
     required this.onMovementChanged,
+    this.settings,
   });
 
   final TextEditingController nameController;
@@ -27,6 +29,7 @@ class ExerciseBasicsCard extends StatelessWidget {
   final ValueChanged<String> onNameChanged;
   final ValueChanged<Equipment> onEquipmentChanged;
   final ValueChanged<MovementClassification> onMovementChanged;
+  final ThemeSettings? settings;
 
   @override
   Widget build(BuildContext context) {
@@ -34,14 +37,29 @@ class ExerciseBasicsCard extends StatelessWidget {
     final primary = context.ftPrimary;
     final ink = context.ftInk;
     final muted = context.ftMuted;
-    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final effectiveSettings = settings ?? FtGlassTheme.resolveThemeSettings(context);
+    final enableTransparency = effectiveSettings?.enableGlassTransparency ?? true;
+    final blurIntensity = effectiveSettings?.blurIntensity ?? 16.0;
+    final double t = ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0);
+
+    final fieldFill = enableTransparency
+        ? (isDark
+            ? Colors.white.withValues(alpha: 0.08 + 0.05 * t)
+            : Colors.white.withValues(alpha: 0.40 + 0.22 * t))
+        : (isDark ? const Color(0xFF221C38) : Colors.white);
+
+    final fieldBorder = enableTransparency
+        ? (isDark
+            ? Colors.white.withValues(alpha: 0.16 + 0.10 * t)
+            : Colors.white.withValues(alpha: 0.70 + 0.20 * t))
+        : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0));
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: FtGlassTheme.cardDecoration(
         context,
         radius: 24,
-        settings: settings,
+        settings: effectiveSettings,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,22 +97,18 @@ class ExerciseBasicsCard extends StatelessWidget {
 
           // ── FormField: Exercise Name (Required) ──────────────────────────
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0x1F1E1838)
-                  : Colors.white.withValues(alpha: 0.85),
+              color: fieldFill,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark
-                    ? const Color(0x33FFFFFF)
-                    : Colors.white.withValues(alpha: 0.90),
+                color: fieldBorder,
                 width: 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 8,
+                  color: primary.withValues(alpha: isDark ? 0.08 : 0.03),
+                  blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),
               ],
@@ -112,10 +126,11 @@ class ExerciseBasicsCard extends StatelessWidget {
                     color: primary,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 TextField(
                   controller: nameController,
                   onChanged: onNameChanged,
+                  cursorColor: primary,
                   style: TextStyle(
                     fontFamily: FtText.fontFamily,
                     fontSize: 16,
@@ -126,12 +141,19 @@ class ExerciseBasicsCard extends StatelessWidget {
                     isDense: true,
                     contentPadding: EdgeInsets.zero,
                     border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    filled: false,
+                    fillColor: Colors.transparent,
                     hintText: 'e.g. Incline Dumbbell Hammer Press',
                     hintStyle: TextStyle(
                       fontFamily: FtText.fontFamily,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: muted.withValues(alpha: 0.6),
+                      color: muted.withValues(alpha: 0.50),
                     ),
                   ),
                 ),

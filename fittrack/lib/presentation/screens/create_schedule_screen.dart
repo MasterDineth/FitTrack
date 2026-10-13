@@ -188,7 +188,7 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(themeNotifierProvider);
+    final themeSettings = ref.watch(themeNotifierProvider);
     final state = ref.watch(scheduleEditorProvider);
     final notifier = ref.read(scheduleEditorProvider.notifier);
 
@@ -242,6 +242,7 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
                               durationFormatted: state.totalDurationFormatted,
                               totalSets: state.totalSets,
                               estimatedCalories: state.estimatedCalories,
+                              settings: themeSettings,
                             ),
                             const SizedBox(height: 16),
 
@@ -249,6 +250,7 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
                             ScheduleDetailsCard(
                               nameController: _nameController,
                               descController: _descController,
+                              settings: themeSettings,
                               onNameChanged: notifier.setName,
                               onDescChanged: notifier.setDescription,
                             ),
@@ -257,6 +259,7 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
                             // 2b. Cover Image Card (Optional)
                             ScheduleCoverImageCard(
                               coverImagePath: state.coverImagePath,
+                              settings: themeSettings,
                               onImageSelected: notifier.setCoverImagePath,
                               onImageRemoved: () => notifier.setCoverImagePath(null),
                             ),
@@ -265,6 +268,7 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
                             // 3. Target Muscles Card (0 default, up to 3 max)
                             ScheduleTargetMusclesCard(
                               selectedMuscles: state.targetMuscles,
+                              settings: themeSettings,
                               onToggleMuscle: notifier.toggleMuscle,
                             ),
                             const SizedBox(height: 16),
@@ -272,6 +276,7 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
                             // 4. Weekly Schedule Card (up to 3 days max)
                             ScheduleWeeklyCard(
                               assignedWeekdays: state.assignedWeekdays,
+                              settings: themeSettings,
                               onToggleWeekday: notifier.toggleWeekday,
                             ),
                             const SizedBox(height: 16),
@@ -280,6 +285,7 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
                             ScheduleExercisesSection(
                               exercises: state.exercises,
                               expandedIndex: _expandedExerciseIndex,
+                              settings: themeSettings,
                               onToggleExpand: (idx) {
                                 setState(() {
                                   _expandedExerciseIndex =
@@ -322,6 +328,7 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
                 isValid: state.isValid,
                 isSaving: state.isSaving,
                 validationMessage: state.validationMessage,
+                settings: themeSettings,
                 onSave: () => _handleSave(notifier),
               ),
             ),

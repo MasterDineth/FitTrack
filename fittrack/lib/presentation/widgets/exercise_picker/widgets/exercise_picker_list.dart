@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/exercise.dart';
+import '../../../providers/theme_provider.dart';
 import '../../../theme/ft_glass.dart';
 import 'exercise_picker_row.dart';
 
@@ -11,12 +12,14 @@ class ExercisePickerList extends StatelessWidget {
     required this.selectedExerciseIds,
     required this.existingExerciseIds,
     required this.onToggleExercise,
+    this.settings,
   });
 
   final List<Exercise> exercises;
   final Set<String> selectedExerciseIds;
   final Set<String> existingExerciseIds;
   final ValueChanged<Exercise> onToggleExercise;
+  final ThemeSettings? settings;
 
   @override
   Widget build(BuildContext context) {
@@ -58,14 +61,22 @@ class ExercisePickerList extends StatelessWidget {
       );
     }
 
-    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final settings = this.settings ?? FtGlassTheme.resolveThemeSettings(context);
     final enableTransparency = settings?.enableGlassTransparency ?? true;
+    final blurIntensity = settings?.blurIntensity ?? 16.0;
+    final double t = enableTransparency
+        ? ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0)
+        : 1.0;
 
     final listFill = enableTransparency
-        ? (isDark ? const Color(0x1AFFFFFF) : Colors.white.withValues(alpha: 0.62))
+        ? (isDark
+            ? const Color(0x1AFFFFFF)
+            : Colors.white.withValues(alpha: 0.35 + 0.20 * t))
         : (isDark ? const Color(0xFF1E1838) : const Color(0xFFF8F6FF));
     final listBorder = enableTransparency
-        ? (isDark ? const Color(0x22FFFFFF) : Colors.white.withValues(alpha: 0.8))
+        ? (isDark
+            ? const Color(0x22FFFFFF)
+            : Colors.white.withValues(alpha: 0.45 + 0.25 * t))
         : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0));
 
     return Container(

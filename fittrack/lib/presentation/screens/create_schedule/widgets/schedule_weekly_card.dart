@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../providers/theme_provider.dart';
 import '../../../theme/ft_glass.dart';
 import '../../dashboard/widgets/ft_pressable.dart';
 
@@ -9,10 +10,12 @@ class ScheduleWeeklyCard extends StatelessWidget {
     super.key,
     required this.assignedWeekdays,
     required this.onToggleWeekday,
+    this.settings,
   });
 
   final List<int> assignedWeekdays;
   final bool Function(int weekday) onToggleWeekday;
+  final ThemeSettings? settings;
 
   static const List<String> dayLetters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
@@ -48,8 +51,12 @@ class ScheduleWeeklyCard extends StatelessWidget {
     final ink = context.ftInk;
     final muted = context.ftMuted;
 
-    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final settings = this.settings ?? FtGlassTheme.resolveThemeSettings(context);
     final enableTransparency = settings?.enableGlassTransparency ?? true;
+    final blurIntensity = settings?.blurIntensity ?? 16.0;
+    final double t = enableTransparency
+        ? ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0)
+        : 1.0;
 
     final int daysCount = assignedWeekdays.length;
 
@@ -149,10 +156,14 @@ class ScheduleWeeklyCard extends StatelessWidget {
               final weekday = i + 1; // 1 = Mon ... 7 = Sun
               final isAssigned = assignedWeekdays.contains(weekday);
               final unassignedTileFill = enableTransparency
-                  ? (isDark ? const Color(0x1FFFFFFF) : Colors.white.withValues(alpha: 0.6))
+                  ? (isDark
+                      ? const Color(0x1FFFFFFF)
+                      : Colors.white.withValues(alpha: 0.40 + 0.20 * t))
                   : (isDark ? const Color(0xFF221C38) : const Color(0xFFF1F5F9));
               final unassignedTileBorder = enableTransparency
-                  ? (isDark ? const Color(0x22FFFFFF) : Colors.white.withValues(alpha: 0.85))
+                  ? (isDark
+                      ? const Color(0x22FFFFFF)
+                      : Colors.white.withValues(alpha: 0.45 + 0.30 * t))
                   : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0));
 
               return Expanded(

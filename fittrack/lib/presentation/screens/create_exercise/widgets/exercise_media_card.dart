@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../providers/theme_provider.dart';
 import '../../../theme/ft_glass.dart';
 import '../../dashboard/widgets/ft_pressable.dart';
 
@@ -69,6 +70,7 @@ class ExerciseMediaCard extends StatefulWidget {
     required this.onImageSelected,
     required this.onImageRemoved,
     required this.onYoutubeUrlChanged,
+    this.settings,
   });
 
   final String? coverImagePath;
@@ -76,6 +78,7 @@ class ExerciseMediaCard extends StatefulWidget {
   final ValueChanged<String?> onImageSelected;
   final VoidCallback onImageRemoved;
   final ValueChanged<String?> onYoutubeUrlChanged;
+  final ThemeSettings? settings;
 
   @override
   State<ExerciseMediaCard> createState() => _ExerciseMediaCardState();
@@ -159,7 +162,7 @@ class _ExerciseMediaCardState extends State<ExerciseMediaCard> {
       decoration: FtGlassTheme.cardDecoration(
         context,
         radius: 24,
-        settings: settings,
+        settings: widget.settings ?? settings,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -486,17 +489,17 @@ class _ExerciseMediaCardState extends State<ExerciseMediaCard> {
                     children: [
                       Expanded(
                         child: Container(
-                          height: 40,
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          height: 42,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
                           decoration: BoxDecoration(
                             color: isDark
                                 ? const Color(0x1AFFFFFF)
-                                : Colors.white.withValues(alpha: 0.90),
+                                : Colors.white.withValues(alpha: 0.50),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: isDark
                                   ? const Color(0x26FFFFFF)
-                                  : const Color(0xFFE2E8F0),
+                                  : Colors.white.withValues(alpha: 0.70),
                               width: 1,
                             ),
                           ),
@@ -504,27 +507,37 @@ class _ExerciseMediaCardState extends State<ExerciseMediaCard> {
                             children: [
                               Icon(
                                 Icons.link_rounded,
-                                size: 16,
+                                size: 18,
                                 color: muted,
                               ),
-                              const SizedBox(width: 6),
+                              const SizedBox(width: 8),
                               Expanded(
                                 child: TextField(
                                   controller: _youtubeController,
+                                  cursorColor: primary,
                                   style: TextStyle(
                                     fontFamily: FtText.fontFamily,
-                                    fontSize: 12,
+                                    fontSize: 13,
                                     fontWeight: FontWeight.w600,
                                     color: ink,
                                   ),
                                   decoration: InputDecoration(
                                     isDense: true,
+                                    contentPadding: EdgeInsets.zero,
                                     border: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
+                                    errorBorder: InputBorder.none,
+                                    focusedErrorBorder: InputBorder.none,
+                                    disabledBorder: InputBorder.none,
+                                    filled: false,
+                                    fillColor: Colors.transparent,
                                     hintText: 'Paste YouTube link (e.g. https://youtu.be/...)',
                                     hintStyle: TextStyle(
                                       fontFamily: FtText.fontFamily,
-                                      fontSize: 12,
-                                      color: muted.withValues(alpha: 0.65),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: muted.withValues(alpha: 0.55),
                                     ),
                                   ),
                                   onSubmitted: (_) => _applyYoutubeUrl(),

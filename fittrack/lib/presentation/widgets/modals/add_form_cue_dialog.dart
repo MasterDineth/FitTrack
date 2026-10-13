@@ -120,6 +120,33 @@ class _AddFormCueDialogState extends State<AddFormCueDialog> {
     const tealColor = Color(0xFF2DD4BF);
     const roseColor = Color(0xFFF43F5E);
 
+    final enableTransparency = settings?.enableGlassTransparency ?? true;
+    final blurIntensity = settings?.blurIntensity ?? 16.0;
+    final double t = enableTransparency
+        ? ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0)
+        : 1.0;
+
+    final segmentedBg = isDark
+        ? const Color(0x1AFFFFFF)
+        : (enableTransparency
+            ? const Color(0xFFF1EDFC).withValues(alpha: 0.55 + 0.20 * t)
+            : const Color(0xFFF1EDFC));
+    final activeTabFill = isDark
+        ? const Color(0xFF2A2244)
+        : (enableTransparency
+            ? Colors.white.withValues(alpha: 0.55 + 0.22 * t)
+            : Colors.white);
+    final instructionContainerFill = isDark
+        ? const Color(0x1F1E1838)
+        : (enableTransparency
+            ? Colors.white.withValues(alpha: 0.40 + 0.20 * t)
+            : Colors.white.withValues(alpha: 0.85));
+    final instructionContainerBorder = isDark
+        ? const Color(0x33FFFFFF)
+        : (enableTransparency
+            ? Colors.white.withValues(alpha: 0.50 + 0.25 * t)
+            : Colors.white.withValues(alpha: 0.90));
+
     return Center(
       child: Material(
         color: Colors.transparent,
@@ -263,9 +290,7 @@ class _AddFormCueDialogState extends State<AddFormCueDialog> {
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0x1AFFFFFF)
-                      : const Color(0xFFF1EDFC),
+                  color: segmentedBg,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
@@ -280,7 +305,7 @@ class _AddFormCueDialogState extends State<AddFormCueDialog> {
                           height: 38,
                           decoration: BoxDecoration(
                             color: _isPositive
-                                ? (isDark ? const Color(0xFF2A2244) : Colors.white)
+                                ? activeTabFill
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: _isPositive
@@ -331,7 +356,7 @@ class _AddFormCueDialogState extends State<AddFormCueDialog> {
                           height: 38,
                           decoration: BoxDecoration(
                             color: !_isPositive
-                                ? (isDark ? const Color(0xFF2A2244) : Colors.white)
+                                ? activeTabFill
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: !_isPositive
@@ -403,14 +428,10 @@ class _AddFormCueDialogState extends State<AddFormCueDialog> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0x1F1E1838)
-                      : Colors.white.withValues(alpha: 0.85),
+                  color: instructionContainerFill,
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                    color: isDark
-                        ? const Color(0x33FFFFFF)
-                        : Colors.white.withValues(alpha: 0.90),
+                    color: instructionContainerBorder,
                     width: 1,
                   ),
                   boxShadow: [
@@ -432,21 +453,28 @@ class _AddFormCueDialogState extends State<AddFormCueDialog> {
                       buildCounter: (_, {required currentLength, required isFocused, maxLength}) => null,
                       style: TextStyle(
                         fontFamily: FtText.fontFamily,
-                        fontSize: 13,
+                        fontSize: 14.5,
                         fontWeight: FontWeight.w600,
                         color: ink,
                         height: 1.45,
                       ),
                       decoration: InputDecoration(
                         isDense: true,
+                        filled: false,
+                        fillColor: Colors.transparent,
                         contentPadding: EdgeInsets.zero,
                         border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        focusedErrorBorder: InputBorder.none,
+                        disabledBorder: InputBorder.none,
                         hintText: _isPositive
                             ? 'e.g. Keep chest up and pin shoulders back throughout movement'
                             : "e.g. Don't flare elbows out past 60 degrees",
                         hintStyle: TextStyle(
                           fontFamily: FtText.fontFamily,
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: FontWeight.w400,
                           color: muted.withValues(alpha: 0.65),
                         ),

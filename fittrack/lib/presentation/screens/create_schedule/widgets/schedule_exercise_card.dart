@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../providers/theme_provider.dart';
 import '../../../theme/ft_glass.dart';
 import '../../../providers/schedule_editor_notifier.dart';
 import '../../dashboard/widgets/ft_pressable.dart';
@@ -19,6 +20,7 @@ class ScheduleExerciseCard extends StatelessWidget {
     required this.onUpdateReps,
     required this.onUpdateWeight,
     required this.onUpdateRest,
+    this.settings,
   });
 
   final int index;
@@ -30,6 +32,7 @@ class ScheduleExerciseCard extends StatelessWidget {
   final ValueChanged<int> onUpdateReps;
   final ValueChanged<double> onUpdateWeight;
   final ValueChanged<int> onUpdateRest;
+  final ThemeSettings? settings;
 
   String _formatWeight(double weight) {
     if (weight % 1 == 0) {
@@ -50,7 +53,7 @@ class ScheduleExerciseCard extends StatelessWidget {
         ? '${entry.equipment} · ${entry.movementType} · ~$durationMins min'
         : '${entry.targetSets} sets × ${entry.targetReps} reps · ${_formatWeight(entry.targetWeightKg)} kg · ~$durationMins min';
 
-    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final settings = this.settings ?? FtGlassTheme.resolveThemeSettings(context);
 
     return Container(
       width: double.infinity,
@@ -192,6 +195,7 @@ class ScheduleExerciseCard extends StatelessWidget {
                 Expanded(
                   child: ScheduleStepperTile(
                     label: 'SETS',
+                    settings: settings,
                     valueWidget: Text(
                       '${entry.targetSets}',
                       style: TextStyle(
@@ -211,6 +215,7 @@ class ScheduleExerciseCard extends StatelessWidget {
                 Expanded(
                   child: ScheduleStepperTile(
                     label: 'REPS',
+                    settings: settings,
                     valueWidget: Text(
                       '${entry.targetReps}',
                       style: TextStyle(
@@ -234,6 +239,7 @@ class ScheduleExerciseCard extends StatelessWidget {
                   child: ScheduleStepperTile(
                     label: 'WEIGHT (KG)',
                     caption: '0 = bodyweight',
+                    settings: settings,
                     valueWidget: FtPressable(
                       onTap: () => showScheduleWeightDialog(
                         context: context,
@@ -274,6 +280,7 @@ class ScheduleExerciseCard extends StatelessWidget {
                   child: ScheduleStepperTile(
                     label: 'REST BETWEEN SETS',
                     caption: 'Recovery timer',
+                    settings: settings,
                     valueWidget: Text(
                       entry.formattedRestTime,
                       style: TextStyle(

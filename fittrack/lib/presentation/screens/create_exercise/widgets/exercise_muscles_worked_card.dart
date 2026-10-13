@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/muscle_activation.dart';
 import '../../../providers/custom_exercise_notifier.dart';
+import '../../../providers/theme_provider.dart';
 import '../../../theme/ft_glass.dart';
 import '../../dashboard/widgets/ft_pressable.dart';
 
@@ -20,11 +21,13 @@ class ExerciseMusclesWorkedCard extends StatefulWidget {
     required this.activations,
     required this.onAddMuscleTap,
     required this.onRemoveMuscle,
+    this.settings,
   });
 
   final List<MuscleActivationDraft> activations;
   final VoidCallback onAddMuscleTap;
   final ValueChanged<int> onRemoveMuscle;
+  final ThemeSettings? settings;
 
   @override
   State<ExerciseMusclesWorkedCard> createState() =>
@@ -40,7 +43,12 @@ class _ExerciseMusclesWorkedCardState extends State<ExerciseMusclesWorkedCard> {
     final primary = context.ftPrimary;
     final ink = context.ftInk;
     final muted = context.ftMuted;
-    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final settings = widget.settings ?? FtGlassTheme.resolveThemeSettings(context);
+    final enableTransparency = settings?.enableGlassTransparency ?? true;
+    final blurIntensity = settings?.blurIntensity ?? 16.0;
+    final double t = enableTransparency
+        ? ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0)
+        : 1.0;
 
     final count = widget.activations.length;
 
@@ -166,12 +174,22 @@ class _ExerciseMusclesWorkedCardState extends State<ExerciseMusclesWorkedCard> {
                       decoration: BoxDecoration(
                         color: isDark
                             ? const Color(0x1F1E1838)
-                            : Colors.white.withValues(alpha: 0.80),
+                            : Colors.white.withValues(
+                                alpha: (enableTransparency
+                                        ? (0.40 + 0.20 * t)
+                                        : 0.80)
+                                    .clamp(0.0, 1.0),
+                              ),
                         borderRadius: BorderRadius.circular(18),
                         border: Border.all(
                           color: isDark
                               ? const Color(0x33FFFFFF)
-                              : Colors.white.withValues(alpha: 0.90),
+                              : Colors.white.withValues(
+                                  alpha: (enableTransparency
+                                          ? (0.45 + 0.25 * t)
+                                          : 0.90)
+                                      .clamp(0.0, 1.0),
+                                ),
                           width: 1,
                         ),
                         boxShadow: [
@@ -351,7 +369,12 @@ class _ExerciseMusclesWorkedCardState extends State<ExerciseMusclesWorkedCard> {
                   decoration: BoxDecoration(
                     color: isDark
                         ? const Color(0x1F1E1838)
-                        : Colors.white.withValues(alpha: 0.60),
+                        : Colors.white.withValues(
+                            alpha: (enableTransparency
+                                    ? (0.35 + 0.18 * t)
+                                    : 0.60)
+                                .clamp(0.0, 1.0),
+                          ),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                       color: primary.withValues(alpha: 0.40),

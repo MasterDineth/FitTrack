@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../providers/custom_exercise_notifier.dart';
+import '../../../providers/theme_provider.dart';
 import '../../../theme/ft_glass.dart';
 import '../../dashboard/widgets/ft_pressable.dart';
 
@@ -19,12 +20,14 @@ class ExerciseExecutionStepsCard extends StatefulWidget {
     required this.onAddStep,
     required this.onUpdateStep,
     required this.onRemoveStep,
+    this.settings,
   });
 
   final List<ExecutionStepDraft> steps;
   final VoidCallback onAddStep;
   final void Function(int index, {String? title, String? instructions}) onUpdateStep;
   final ValueChanged<int> onRemoveStep;
+  final ThemeSettings? settings;
 
   @override
   State<ExerciseExecutionStepsCard> createState() =>
@@ -47,7 +50,10 @@ class _ExerciseExecutionStepsCardState
     final primary = context.ftPrimary;
     final ink = context.ftInk;
     final muted = context.ftMuted;
-    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final effectiveSettings = widget.settings ?? FtGlassTheme.resolveThemeSettings(context);
+    final enableTransparency = effectiveSettings?.enableGlassTransparency ?? true;
+    final blurIntensity = effectiveSettings?.blurIntensity ?? 16.0;
+    final double t = ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0);
 
     final stepCount = widget.steps.length;
 
@@ -56,7 +62,7 @@ class _ExerciseExecutionStepsCardState
       decoration: FtGlassTheme.cardDecoration(
         context,
         radius: 24,
-        settings: settings,
+        settings: effectiveSettings,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,20 +240,22 @@ class _ExerciseExecutionStepsCardState
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: isDark
-                                      ? const Color(0x1F1E1838)
-                                      : Colors.white.withValues(alpha: 0.75),
+                                      ? const Color(0x18FFFFFF)
+                                      : Colors.white.withValues(
+                                          alpha: enableTransparency ? (0.42 + 0.20 * t) : 0.85,
+                                        ),
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     color: isDark
                                         ? const Color(0x33FFFFFF)
-                                        : Colors.white.withValues(alpha: 0.90),
+                                        : Colors.white.withValues(alpha: 0.80),
                                     width: 1,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.02),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 1),
+                                      color: primary.withValues(alpha: isDark ? 0.06 : 0.03),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
                                     ),
                                   ],
                                 ),
@@ -263,9 +271,10 @@ class _ExerciseExecutionStepsCardState
                                             onChanged: (val) {
                                               widget.onUpdateStep(index, title: val);
                                             },
+                                            cursorColor: primary,
                                             style: TextStyle(
                                               fontFamily: FtText.fontFamily,
-                                              fontSize: 13,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.w700,
                                               color: ink,
                                             ),
@@ -273,6 +282,13 @@ class _ExerciseExecutionStepsCardState
                                               isDense: true,
                                               contentPadding: EdgeInsets.zero,
                                               border: InputBorder.none,
+                                              enabledBorder: InputBorder.none,
+                                              focusedBorder: InputBorder.none,
+                                              errorBorder: InputBorder.none,
+                                              focusedErrorBorder: InputBorder.none,
+                                              disabledBorder: InputBorder.none,
+                                              filled: false,
+                                              fillColor: Colors.transparent,
                                               hintText: index == 0
                                                   ? 'e.g. Stance & Grip'
                                                   : (index == 1
@@ -280,9 +296,9 @@ class _ExerciseExecutionStepsCardState
                                                       : 'e.g. Explosive Drive'),
                                               hintStyle: TextStyle(
                                                 fontFamily: FtText.fontFamily,
-                                                fontSize: 13,
+                                                fontSize: 15,
                                                 fontWeight: FontWeight.w500,
-                                                color: muted.withValues(alpha: 0.6),
+                                                color: muted.withValues(alpha: 0.50),
                                               ),
                                             ),
                                           ),
@@ -293,7 +309,7 @@ class _ExerciseExecutionStepsCardState
                                             padding: const EdgeInsets.all(2.0),
                                             child: Icon(
                                               Icons.close_rounded,
-                                              size: 16,
+                                              size: 18,
                                               color: muted,
                                             ),
                                           ),
@@ -310,13 +326,15 @@ class _ExerciseExecutionStepsCardState
                                       ),
                                       decoration: BoxDecoration(
                                         color: isDark
-                                            ? const Color(0x1FFFFFFF)
-                                            : const Color(0x66F1EDFC),
+                                            ? const Color(0x14FFFFFF)
+                                            : const Color(0xFFF1EDFC).withValues(
+                                                alpha: enableTransparency ? (0.35 + 0.15 * t) : 0.70,
+                                              ),
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
                                           color: isDark
                                               ? const Color(0x1FFFFFFF)
-                                              : const Color(0xFFE2E8F0),
+                                              : Colors.white.withValues(alpha: 0.65),
                                           width: 0.8,
                                         ),
                                       ),
@@ -326,9 +344,10 @@ class _ExerciseExecutionStepsCardState
                                           widget.onUpdateStep(index, instructions: val);
                                         },
                                         maxLines: 2,
+                                        cursorColor: primary,
                                         style: TextStyle(
                                           fontFamily: FtText.fontFamily,
-                                          fontSize: 12,
+                                          fontSize: 13.5,
                                           fontWeight: FontWeight.w500,
                                           color: ink,
                                           height: 1.4,
@@ -337,11 +356,19 @@ class _ExerciseExecutionStepsCardState
                                           isDense: true,
                                           contentPadding: EdgeInsets.zero,
                                           border: InputBorder.none,
+                                          enabledBorder: InputBorder.none,
+                                          focusedBorder: InputBorder.none,
+                                          errorBorder: InputBorder.none,
+                                          focusedErrorBorder: InputBorder.none,
+                                          disabledBorder: InputBorder.none,
+                                          filled: false,
+                                          fillColor: Colors.transparent,
                                           hintText: 'Enter step biomechanics and movement cues...',
                                           hintStyle: TextStyle(
                                             fontFamily: FtText.fontFamily,
-                                            fontSize: 12,
-                                            color: muted.withValues(alpha: 0.6),
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w400,
+                                            color: muted.withValues(alpha: 0.50),
                                           ),
                                         ),
                                       ),

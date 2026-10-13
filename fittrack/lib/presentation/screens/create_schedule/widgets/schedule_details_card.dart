@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../providers/theme_provider.dart';
 import '../../../theme/ft_glass.dart';
 
 /// Details Section Card for Schedule Name and optional Description.
@@ -10,12 +11,14 @@ class ScheduleDetailsCard extends StatelessWidget {
     required this.descController,
     required this.onNameChanged,
     required this.onDescChanged,
+    this.settings,
   });
 
   final TextEditingController nameController;
   final TextEditingController descController;
   final ValueChanged<String> onNameChanged;
   final ValueChanged<String> onDescChanged;
+  final ThemeSettings? settings;
 
   @override
   Widget build(BuildContext context) {
@@ -24,15 +27,19 @@ class ScheduleDetailsCard extends StatelessWidget {
     final ink = context.ftInk;
     final muted = context.ftMuted;
 
-    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final settings = this.settings ?? FtGlassTheme.resolveThemeSettings(context);
     final enableTransparency = settings?.enableGlassTransparency ?? true;
+    final blurIntensity = settings?.blurIntensity ?? 16.0;
+    final double t = enableTransparency
+        ? ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0)
+        : 1.0;
 
     final innerFill = enableTransparency
-        ? (isDark ? const Color(0x18FFFFFF) : Colors.white.withValues(alpha: 0.60))
+        ? (isDark ? const Color(0x18FFFFFF) : Colors.white.withValues(alpha: 0.40 + 0.20 * t))
         : (isDark ? const Color(0xFF221C38) : const Color(0xFFF8F6FF));
 
     final innerBorder = enableTransparency
-        ? (isDark ? const Color(0x22FFFFFF) : Colors.white.withValues(alpha: 0.85))
+        ? (isDark ? const Color(0x22FFFFFF) : Colors.white.withValues(alpha: 0.45 + 0.30 * t))
         : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0));
 
     return Container(

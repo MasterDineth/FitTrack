@@ -48,6 +48,22 @@ class ExerciseDiscardDialog extends StatelessWidget {
     final muted = context.ftMuted;
 
     final settings = FtGlassTheme.resolveThemeSettings(context);
+    final enableTransparency = settings?.enableGlassTransparency ?? true;
+    final blurIntensity = settings?.blurIntensity ?? 16.0;
+    final double t = enableTransparency
+        ? ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0)
+        : 1.0;
+
+    final cancelBtnFill = isDark
+        ? const Color(0x1FFFFFFF)
+        : (enableTransparency
+            ? Colors.white.withValues(alpha: 0.40 + 0.20 * t)
+            : Colors.white.withValues(alpha: 0.85));
+    final cancelBtnBorder = isDark
+        ? const Color(0x33FFFFFF)
+        : (enableTransparency
+            ? Colors.white.withValues(alpha: 0.50 + 0.25 * t)
+            : const Color(0xFFE2E8F0));
 
     return Center(
       child: Material(
@@ -127,14 +143,10 @@ class ExerciseDiscardDialog extends StatelessWidget {
                       child: Container(
                         height: 48,
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0x1FFFFFFF)
-                              : Colors.white.withValues(alpha: 0.85),
+                          color: cancelBtnFill,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: isDark
-                                ? const Color(0x33FFFFFF)
-                                : const Color(0xFFE2E8F0),
+                            color: cancelBtnBorder,
                             width: 1,
                           ),
                         ),

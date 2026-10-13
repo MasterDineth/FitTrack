@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../providers/theme_provider.dart';
 import '../../../theme/ft_glass.dart';
 import '../../../screens/dashboard/widgets/ft_pressable.dart';
 
@@ -10,12 +11,14 @@ class ExercisePickerSearchBar extends StatelessWidget {
     required this.query,
     required this.onQueryChanged,
     required this.onClear,
+    this.settings,
   });
 
   final TextEditingController controller;
   final String query;
   final ValueChanged<String> onQueryChanged;
   final VoidCallback onClear;
+  final ThemeSettings? settings;
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +27,22 @@ class ExercisePickerSearchBar extends StatelessWidget {
     final ink = context.ftInk;
     final muted = context.ftMuted;
 
-    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final settings = this.settings ?? FtGlassTheme.resolveThemeSettings(context);
     final enableTransparency = settings?.enableGlassTransparency ?? true;
+    final blurIntensity = settings?.blurIntensity ?? 16.0;
+    final double t = enableTransparency
+        ? ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0)
+        : 1.0;
 
     final barFill = enableTransparency
-        ? (isDark ? const Color(0x2EFFFFFF) : Colors.white.withValues(alpha: 0.72))
+        ? (isDark
+            ? const Color(0x2EFFFFFF)
+            : Colors.white.withValues(alpha: 0.40 + 0.20 * t))
         : (isDark ? const Color(0xFF221C38) : const Color(0xFFF1F5F9));
     final barBorder = enableTransparency
-        ? (isDark ? const Color(0x33FFFFFF) : Colors.white.withValues(alpha: 0.95))
+        ? (isDark
+            ? const Color(0x33FFFFFF)
+            : Colors.white.withValues(alpha: 0.50 + 0.25 * t))
         : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0));
 
     return Padding(

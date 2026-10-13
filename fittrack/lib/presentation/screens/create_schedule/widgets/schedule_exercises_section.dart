@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../../providers/theme_provider.dart';
 import '../../../theme/ft_glass.dart';
 import '../../../providers/schedule_editor_notifier.dart';
 import '../../dashboard/widgets/ft_pressable.dart';
@@ -20,6 +21,7 @@ class ScheduleExercisesSection extends StatelessWidget {
     required this.onUpdateReps,
     required this.onUpdateWeight,
     required this.onUpdateRest,
+    this.settings,
   });
 
   final List<ScheduleExerciseEntry> exercises;
@@ -32,6 +34,7 @@ class ScheduleExercisesSection extends StatelessWidget {
   final void Function(int index, int reps) onUpdateReps;
   final void Function(int index, double weight) onUpdateWeight;
   final void Function(int index, int rest) onUpdateRest;
+  final ThemeSettings? settings;
 
   Widget _proxyDecorator(Widget child, int index, Animation<double> animation) {
     return AnimatedBuilder(
@@ -292,6 +295,7 @@ class ScheduleExercisesSection extends StatelessWidget {
                 index: i,
                 entry: entry,
                 isExpanded: isExp,
+                settings: settings,
                 onToggleExpand: () => onToggleExpand(i),
                 onRemove: () => onRemoveExercise(i),
                 onUpdateSets: (s) => onUpdateSets(i, s),

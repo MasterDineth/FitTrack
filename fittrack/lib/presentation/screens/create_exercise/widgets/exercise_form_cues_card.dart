@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../providers/custom_exercise_notifier.dart';
+import '../../../providers/theme_provider.dart';
 import '../../../theme/ft_glass.dart';
 import '../../dashboard/widgets/ft_pressable.dart';
 
@@ -17,11 +18,13 @@ class ExerciseFormCuesCard extends StatefulWidget {
     required this.cues,
     required this.onAddCueTap,
     required this.onRemoveCue,
+    this.settings,
   });
 
   final List<FormCueDraft> cues;
   final VoidCallback onAddCueTap;
   final ValueChanged<int> onRemoveCue;
+  final ThemeSettings? settings;
 
   @override
   State<ExerciseFormCuesCard> createState() => _ExerciseFormCuesCardState();
@@ -54,7 +57,12 @@ class _ExerciseFormCuesCardState extends State<ExerciseFormCuesCard> {
     final primary = context.ftPrimary;
     final ink = context.ftInk;
     final muted = context.ftMuted;
-    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final settings = widget.settings ?? FtGlassTheme.resolveThemeSettings(context);
+    final enableTransparency = settings?.enableGlassTransparency ?? true;
+    final blurIntensity = settings?.blurIntensity ?? 16.0;
+    final double t = enableTransparency
+        ? ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0)
+        : 1.0;
 
     final cueCount = widget.cues.length;
 
@@ -186,12 +194,16 @@ class _ExerciseFormCuesCardState extends State<ExerciseFormCuesCard> {
                       decoration: BoxDecoration(
                         color: isDark
                             ? const Color(0x1F1E1838)
-                            : Colors.white.withValues(alpha: 0.80),
+                            : (enableTransparency
+                                ? Colors.white.withValues(alpha: 0.40 + 0.20 * t)
+                                : Colors.white.withValues(alpha: 0.80)),
                         borderRadius: BorderRadius.circular(18),
                         border: Border.all(
                           color: isDark
                               ? const Color(0x33FFFFFF)
-                              : Colors.white.withValues(alpha: 0.90),
+                              : (enableTransparency
+                                  ? Colors.white.withValues(alpha: 0.50 + 0.25 * t)
+                                  : Colors.white.withValues(alpha: 0.90)),
                           width: 1,
                         ),
                         boxShadow: [

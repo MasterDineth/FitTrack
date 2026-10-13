@@ -229,6 +229,43 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
     final muted = context.ftMuted;
     final settings = FtGlassTheme.resolveThemeSettings(context);
 
+    final enableTransparency = settings?.enableGlassTransparency ?? true;
+    final blurIntensity = settings?.blurIntensity ?? 16.0;
+    final double t = enableTransparency
+        ? ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0)
+        : 1.0;
+
+    final searchBarFill = isDark
+        ? const Color(0x1F1E1838)
+        : (enableTransparency
+            ? Colors.white.withValues(alpha: 0.40 + 0.20 * t)
+            : Colors.white.withValues(alpha: 0.85));
+    final searchBarBorder = isDark
+        ? const Color(0x33FFFFFF)
+        : (enableTransparency
+            ? Colors.white.withValues(alpha: 0.50 + 0.25 * t)
+            : Colors.white.withValues(alpha: 0.90));
+    final listContainerFill = isDark
+        ? const Color(0x1F1E1838)
+        : (enableTransparency
+            ? Colors.white.withValues(alpha: 0.38 + 0.20 * t)
+            : Colors.white.withValues(alpha: 0.75));
+    final listContainerBorder = isDark
+        ? const Color(0x33FFFFFF)
+        : (enableTransparency
+            ? Colors.white.withValues(alpha: 0.50 + 0.25 * t)
+            : Colors.white.withValues(alpha: 0.85));
+    final panelFill = isDark
+        ? const Color(0x3D1E1838)
+        : (enableTransparency
+            ? Colors.white.withValues(alpha: 0.42 + 0.20 * t)
+            : Colors.white.withValues(alpha: 0.88));
+    final panelBorder = isDark
+        ? const Color(0x33FFFFFF)
+        : (enableTransparency
+            ? Colors.white.withValues(alpha: 0.50 + 0.25 * t)
+            : Colors.white.withValues(alpha: 0.95));
+
     final isMaxReached = widget.currentCount >= 3;
 
     return Center(
@@ -307,21 +344,17 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                           ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
 
                     // Frosted Search Field
                     Container(
-                      height: 46,
+                      height: 44,
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0x1F1E1838)
-                            : Colors.white.withValues(alpha: 0.85),
+                        color: searchBarFill,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isDark
-                              ? const Color(0x33FFFFFF)
-                              : Colors.white.withValues(alpha: 0.90),
+                          color: searchBarBorder,
                           width: 1,
                         ),
                         boxShadow: [
@@ -350,17 +383,25 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                               },
                               style: TextStyle(
                                 fontFamily: FtText.fontFamily,
-                                fontSize: 13,
+                                fontSize: 14.5,
                                 fontWeight: FontWeight.w600,
                                 color: ink,
                               ),
                               decoration: InputDecoration(
                                 isDense: true,
+                                filled: false,
+                                fillColor: Colors.transparent,
+                                contentPadding: EdgeInsets.zero,
                                 border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                errorBorder: InputBorder.none,
+                                focusedErrorBorder: InputBorder.none,
+                                disabledBorder: InputBorder.none,
                                 hintText: 'Search muscles (e.g. Chest, Lats)',
                                 hintStyle: TextStyle(
                                   fontFamily: FtText.fontFamily,
-                                  fontSize: 13,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                   color: muted.withValues(alpha: 0.7),
                                 ),
@@ -415,14 +456,18 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                                       ? primary
                                       : (isDark
                                           ? const Color(0x1FFFFFFF)
-                                          : Colors.white.withValues(alpha: 0.75)),
+                                          : (enableTransparency
+                                              ? Colors.white.withValues(alpha: 0.45 + 0.20 * t)
+                                              : Colors.white.withValues(alpha: 0.75))),
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
                                     color: isSelected
                                         ? primary
                                         : (isDark
                                             ? const Color(0x33FFFFFF)
-                                            : Colors.white.withValues(alpha: 0.85)),
+                                            : (enableTransparency
+                                                ? Colors.white.withValues(alpha: 0.55 + 0.25 * t)
+                                                : Colors.white.withValues(alpha: 0.85))),
                                     width: 1,
                                   ),
                                   boxShadow: isSelected
@@ -457,7 +502,7 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
 
               // ── 3. Scrollable Muscle Items List ─────────────────────────────
               Expanded(
@@ -465,14 +510,10 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0x1F1E1838)
-                          : Colors.white.withValues(alpha: 0.75),
+                      color: listContainerFill,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: isDark
-                            ? const Color(0x33FFFFFF)
-                            : Colors.white.withValues(alpha: 0.85),
+                        color: listContainerBorder,
                         width: 1,
                       ),
                     ),
@@ -520,7 +561,7 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 16,
-                                    vertical: 11,
+                                    vertical: 10,
                                   ),
                                   color: isSelected
                                       ? primary.withValues(alpha: isDark ? 0.22 : 0.10)
@@ -594,22 +635,18 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
 
-              // ── 4. Docked Configuration Panel ───────────────────────────────
+              // ── 4. Compact Muscle Adjustment Panel ──────────────────────────
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Container(
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0x3D1E1838)
-                        : Colors.white.withValues(alpha: 0.88),
-                    borderRadius: BorderRadius.circular(24),
+                    color: panelFill,
+                    borderRadius: BorderRadius.circular(22),
                     border: Border.all(
-                      color: isDark
-                          ? const Color(0x33FFFFFF)
-                          : Colors.white.withValues(alpha: 0.95),
+                      color: panelBorder,
                       width: 1,
                     ),
                     boxShadow: [
@@ -621,32 +658,31 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                     ],
                   ),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Panel Header: Title + Change trigger
+                      // Header: Selected muscle (expanded) + Change button
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 9,
-                                height: 9,
-                                decoration: BoxDecoration(
-                                  color: primary,
-                                  shape: BoxShape.circle,
-                                ),
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: primary,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _selectedMuscle,
+                              style: TextStyle(
+                                fontFamily: FtText.fontFamily,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: ink,
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                _selectedMuscle,
-                                style: TextStyle(
-                                  fontFamily: FtText.fontFamily,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                  color: ink,
-                                ),
-                              ),
-                            ],
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                           FtPressable(
                             onTap: () {
@@ -658,10 +694,7 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                             },
                             pressedScale: 0.92,
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                               child: Text(
                                 'Change',
                                 style: TextStyle(
@@ -675,100 +708,114 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
-
-                      // Role Section: Prime mover, Synergist, Stabilizer
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'ROLE',
-                          style: TextStyle(
-                            fontFamily: FtText.fontFamily,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.6,
-                            color: muted,
-                          ),
-                        ),
-                      ),
                       const SizedBox(height: 6),
 
-                      Container(
-                        padding: const EdgeInsets.all(3),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0x1FFFFFFF)
-                              : const Color(0xFFF1EDFC),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Row(
-                          children: [
-                            _buildRoleButton('Prime mover', MuscleRole.agonist, primary),
-                            const SizedBox(width: 4),
-                            _buildRoleButton('Synergist', MuscleRole.synergist, primary),
-                            const SizedBox(width: 4),
-                            _buildRoleButton('Stabilizer', MuscleRole.stabilizer, primary),
-                          ],
-                        ),
+                      // Role Segmented Control (Compact)
+                      Row(
+                        children: [
+                          Text(
+                            'ROLE',
+                            style: TextStyle(
+                              fontFamily: FtText.fontFamily,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.6,
+                              color: muted,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(2.5),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? const Color(0x1FFFFFFF)
+                                    : const Color(0xFFF1EDFC).withValues(
+                                        alpha: enableTransparency ? (0.60 + 0.20 * t) : 1.0,
+                                      ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                children: [
+                                  _buildRoleButton('Prime mover', MuscleRole.agonist, primary),
+                                  const SizedBox(width: 3),
+                                  _buildRoleButton('Synergist', MuscleRole.synergist, primary),
+                                  const SizedBox(width: 3),
+                                  _buildRoleButton('Stabilizer', MuscleRole.stabilizer, primary),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 3),
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
                           _roleDescription,
                           style: TextStyle(
                             fontFamily: FtText.fontFamily,
-                            fontSize: 11,
+                            fontSize: 10,
                             fontWeight: FontWeight.w500,
                             color: muted,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 6),
 
-                      // Activation Section: Stepper + Slider
+                      // Activation Row: ACTIVATION label + percentage badge + recruitment
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'ACTIVATION',
+                                style: TextStyle(
+                                  fontFamily: FtText.fontFamily,
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.6,
+                                  color: muted,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                decoration: BoxDecoration(
+                                  color: primary.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  '$_activation%',
+                                  style: TextStyle(
+                                    fontFamily: FtText.fontFamily,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    color: primary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Flexible(
                             child: Text(
-                              'ACTIVATION',
+                              _recruitmentBadgeText,
                               style: TextStyle(
                                 fontFamily: FtText.fontFamily,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.6,
-                                color: muted,
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                color: _recruitmentBadgeColor(context),
                               ),
-                            ),
-                          ),
-                          Text(
-                            _recruitmentBadgeText,
-                            style: TextStyle(
-                              fontFamily: FtText.fontFamily,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: _recruitmentBadgeColor(context),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 4),
 
-                      // Large display
-                      Text(
-                        '$_activation%',
-                        style: TextStyle(
-                          fontFamily: FtText.fontFamily,
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                          color: ink,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-
-                      // Steppers & Slider row
+                      // Activation Slider Row
                       Row(
                         children: [
                           // Decrement (-)
@@ -780,12 +827,14 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                             },
                             pressedScale: 0.90,
                             child: Container(
-                              width: 34,
-                              height: 34,
+                              width: 30,
+                              height: 30,
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? const Color(0x26FFFFFF)
-                                    : Colors.white,
+                                    : (enableTransparency
+                                        ? Colors.white.withValues(alpha: 0.60 + 0.20 * t)
+                                        : Colors.white),
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: isDark
@@ -795,27 +844,27 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 2),
+                                    color: Colors.black.withValues(alpha: 0.04),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 1),
                                   ),
                                 ],
                               ),
                               alignment: Alignment.center,
                               child: Icon(
                                 Icons.remove_rounded,
-                                size: 18,
+                                size: 16,
                                 color: ink,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 6),
 
                           // Slider
                           Expanded(
                             child: SliderTheme(
                               data: SliderTheme.of(context).copyWith(
-                                trackHeight: 6,
+                                trackHeight: 4,
                                 activeTrackColor: primary,
                                 inactiveTrackColor: isDark
                                     ? const Color(0x26FFFFFF)
@@ -823,8 +872,8 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                                 thumbColor: Colors.white,
                                 overlayColor: primary.withValues(alpha: 0.15),
                                 thumbShape: const RoundSliderThumbShape(
-                                  enabledThumbRadius: 9,
-                                  elevation: 3,
+                                  enabledThumbRadius: 7,
+                                  elevation: 2,
                                 ),
                               ),
                               child: Slider(
@@ -840,7 +889,7 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 6),
 
                           // Increment (+)
                           FtPressable(
@@ -851,12 +900,14 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                             },
                             pressedScale: 0.90,
                             child: Container(
-                              width: 34,
-                              height: 34,
+                              width: 30,
+                              height: 30,
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? const Color(0x26FFFFFF)
-                                    : Colors.white,
+                                    : (enableTransparency
+                                        ? Colors.white.withValues(alpha: 0.60 + 0.20 * t)
+                                        : Colors.white),
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: isDark
@@ -866,16 +917,16 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 2),
+                                    color: Colors.black.withValues(alpha: 0.04),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 1),
                                   ),
                                 ],
                               ),
                               alignment: Alignment.center,
                               child: Icon(
                                 Icons.add_rounded,
-                                size: 18,
+                                size: 16,
                                 color: ink,
                               ),
                             ),
@@ -885,7 +936,7 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
 
                       // Step marks indicators
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 42),
+                        padding: const EdgeInsets.symmetric(horizontal: 38),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -901,16 +952,16 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
               // ── 5. Primary CTA Action Button ────────────────────────────────
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                 child: FtPressable(
                   onTap: _submit,
                   pressedScale: 0.98,
                   child: Container(
-                    height: 50,
+                    height: 44,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: isMaxReached
@@ -919,13 +970,13 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
                           color: (isMaxReached ? Colors.grey : primary)
                               .withValues(alpha: 0.35),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
+                          blurRadius: 14,
+                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
@@ -935,7 +986,7 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                       children: [
                         Icon(
                           isMaxReached ? Icons.block_rounded : Icons.add_rounded,
-                          size: 20,
+                          size: 18,
                           color: Colors.white,
                         ),
                         const SizedBox(width: 8),
@@ -945,7 +996,7 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
                               : 'Add $_selectedMuscle',
                           style: const TextStyle(
                             fontFamily: FtText.fontFamily,
-                            fontSize: 14,
+                            fontSize: 13.5,
                             fontWeight: FontWeight.w800,
                             color: Colors.white,
                           ),
@@ -972,17 +1023,17 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
         pressedScale: 0.96,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          height: 34,
+          height: 28,
           decoration: BoxDecoration(
             color: isSelected
                 ? primary
                 : (isDark ? const Color(0x1AFFFFFF) : Colors.transparent),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(8),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
                       color: primary.withValues(alpha: 0.3),
-                      blurRadius: 8,
+                      blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
                   ]
@@ -993,7 +1044,7 @@ class _AddMusclePickerSheetState extends State<AddMusclePickerSheet> {
             label,
             style: TextStyle(
               fontFamily: FtText.fontFamily,
-              fontSize: 11,
+              fontSize: 10.5,
               fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
               color: isSelected ? Colors.white : context.ftMuted,
             ),

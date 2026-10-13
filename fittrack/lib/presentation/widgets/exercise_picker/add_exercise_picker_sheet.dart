@@ -217,13 +217,13 @@ class _AddExercisePickerSheetState extends ConsumerState<AddExercisePickerSheet>
         ),
       ];
     } else {
-      final double fillAlpha = isDark ? (0.80 + 0.14 * t) : (0.78 + 0.14 * t);
+      final double fillAlpha = isDark ? (0.52 + 0.20 * t) : (0.48 + 0.22 * t);
       sheetFill = isDark
           ? const Color(0xFF161226).withValues(alpha: fillAlpha)
           : Colors.white.withValues(alpha: fillAlpha);
       sheetBorder = isDark
           ? const Color(0x38FFFFFF)
-          : Colors.white.withValues(alpha: 0.95);
+          : Colors.white.withValues(alpha: 0.55 + 0.35 * t);
       sheetShadow = [
         BoxShadow(
           color: primary.withValues(alpha: isDark ? 0.30 : 0.16),
@@ -316,6 +316,7 @@ class _AddExercisePickerSheetState extends ConsumerState<AddExercisePickerSheet>
         ExercisePickerSearchBar(
           controller: _searchController,
           query: _query,
+          settings: settings,
           onQueryChanged: (v) => setState(() => _query = v),
           onClear: () {
             _searchController.clear();
@@ -327,6 +328,7 @@ class _AddExercisePickerSheetState extends ConsumerState<AddExercisePickerSheet>
         ExercisePickerCategoryChips(
           categories: _categoryChips,
           selectedCategory: _selectedCategory,
+          settings: settings,
           onCategorySelected: (cat) =>
               setState(() => _selectedCategory = cat),
         ),
@@ -338,6 +340,7 @@ class _AddExercisePickerSheetState extends ConsumerState<AddExercisePickerSheet>
               exercises: _filterExercises(exercises),
               selectedExerciseIds: _selectedExerciseIds,
               existingExerciseIds: widget.existingExerciseIds,
+              settings: settings,
               onToggleExercise: _onToggleExercise,
             ),
             loading: () => Center(
@@ -357,6 +360,7 @@ class _AddExercisePickerSheetState extends ConsumerState<AddExercisePickerSheet>
         // ── Floating Bottom Footer Tray ──────────────────────────────
         ExercisePickerFooter(
           selectedCount: _selectedExerciseIds.length,
+          settings: settings,
           onCreateNew: () {
             Navigator.of(context).pop();
             widget.onCreateNew?.call();

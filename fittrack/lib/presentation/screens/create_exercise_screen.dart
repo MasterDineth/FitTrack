@@ -197,7 +197,7 @@ class _CreateExerciseScreenState extends ConsumerState<CreateExerciseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(themeNotifierProvider);
+    final themeSettings = ref.watch(themeNotifierProvider);
     final state = ref.watch(customExerciseProvider);
     final notifier = ref.read(customExerciseProvider.notifier);
 
@@ -250,6 +250,7 @@ class _CreateExerciseScreenState extends ConsumerState<CreateExerciseScreen> {
                                 nameController: _nameController,
                                 selectedEquipment: state.equipment,
                                 selectedMovement: state.movementClassification,
+                                settings: themeSettings,
                                 onNameChanged: notifier.setTitle,
                                 onEquipmentChanged: notifier.setEquipment,
                                 onMovementChanged: notifier.setMovementClassification,
@@ -260,6 +261,7 @@ class _CreateExerciseScreenState extends ConsumerState<CreateExerciseScreen> {
                               ExerciseMediaCard(
                                 coverImagePath: state.mediaPath,
                                 youtubeUrl: state.youtubeUrl,
+                                settings: themeSettings,
                                 onImageSelected: notifier.setMediaPath,
                                 onImageRemoved: () => notifier.setMediaPath(null),
                                 onYoutubeUrlChanged: notifier.setYoutubeUrl,
@@ -269,6 +271,7 @@ class _CreateExerciseScreenState extends ConsumerState<CreateExerciseScreen> {
                               // 3. Execution Steps Card (Max 3)
                               ExerciseExecutionStepsCard(
                                 steps: state.executionSteps,
+                                settings: themeSettings,
                                 onAddStep: notifier.addExecutionStep,
                                 onUpdateStep: notifier.updateExecutionStep,
                                 onRemoveStep: notifier.removeExecutionStep,
@@ -278,6 +281,7 @@ class _CreateExerciseScreenState extends ConsumerState<CreateExerciseScreen> {
                               // 4. Form Cues Card (Max 3)
                               ExerciseFormCuesCard(
                                 cues: state.formCues,
+                                settings: themeSettings,
                                 onAddCueTap: () => _showAddFormCueModal(notifier),
                                 onRemoveCue: notifier.removeFormCue,
                               ),
@@ -286,6 +290,7 @@ class _CreateExerciseScreenState extends ConsumerState<CreateExerciseScreen> {
                               // 5. Muscles Worked Card (Max 3)
                               ExerciseMusclesWorkedCard(
                                 activations: state.muscleActivations,
+                                settings: themeSettings,
                                 onAddMuscleTap: () => _showAddMusclePickerSheet(
                                   notifier,
                                   state.muscleActivations.length,
@@ -311,6 +316,7 @@ class _CreateExerciseScreenState extends ConsumerState<CreateExerciseScreen> {
                 child: ExerciseSaveBar(
                   isValid: state.isValid,
                   isSaving: state.isSaving,
+                  settings: themeSettings,
                   onSave: () => _handleSave(notifier),
                 ),
               ),
