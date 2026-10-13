@@ -635,5 +635,62 @@ void main() {
       // Card should be dismissed and removed from state
       expect(container.read(scheduleEditorProvider).exercises.length, 2);
     });
+
+    testWidgets('Tapping back button displays ScheduleDiscardDialog; Cancel keeps editing, Discard confirms', (tester) async {
+      final container = ProviderContainer(
+        overrides: [
+          scheduleRepositoryProvider.overrideWithValue(_MockScheduleRepository()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(scheduleEditorProvider.notifier);
+      notifier.setName('Push Routine');
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            home: CreateScheduleScreen(),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Tap back button in header
+      final backButton = find.byIcon(Icons.arrow_back_rounded);
+      expect(backButton, findsOneWidget);
+      await tester.tap(backButton);
+      await tester.pumpAndSettle();
+
+      // Discard dialog should appear
+      expect(find.text('Discard schedule?'), findsOneWidget);
+      expect(find.text('Keep editing'), findsOneWidget);
+      expect(find.text('Discard'), findsOneWidget);
+
+      // Tap "Keep editing"
+      await tester.tap(find.text('Keep editing'));
+      await tester.pumpAndSettle();
+
+      // Dialog dismissed, state preserved
+      expect(find.text('Discard schedule?'), findsNothing);
+      expect(container.read(scheduleEditorProvider).name, 'Push Routine');
+
+      // Tap back again
+      await tester.tap(backButton);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Discard schedule?'), findsOneWidget);
+
+      // Tap "Discard"
+      await tester.tap(find.text('Discard'));
+      await tester.pumpAndSettle();
+
+      // State reset
+      expect(container.read(scheduleEditorProvider).name, '');
+    });
   });
 }
+

@@ -108,37 +108,27 @@ class ScheduleSaveBar extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           height: 54,
           decoration: BoxDecoration(
-            gradient: isValid
-                ? LinearGradient(
-                    colors: [
+            gradient: LinearGradient(
+              colors: isValid
+                  ? [
                       context.ftPrimaryLight,
                       primary,
+                    ]
+                  : [
+                      context.ftPrimaryLight.withValues(alpha: 0.85),
+                      primary.withValues(alpha: 0.90),
                     ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  )
-                : null,
-            color: isValid
-                ? null
-                : (isDark
-                    ? primary.withValues(alpha: 0.25)
-                    : primary.withValues(alpha: 0.14)),
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             borderRadius: BorderRadius.circular(24),
-            border: isValid
-                ? null
-                : Border.all(
-                    color: primary.withValues(alpha: 0.22),
-                    width: 1.0,
-                  ),
-            boxShadow: isValid
-                ? [
-                    BoxShadow(
-                      color: primary.withValues(alpha: 0.35),
-                      blurRadius: 18,
-                      offset: const Offset(0, 6),
-                    ),
-                  ]
-                : null,
+            boxShadow: [
+              BoxShadow(
+                color: primary.withValues(alpha: isValid ? 0.35 : 0.22),
+                blurRadius: isValid ? 18 : 12,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -153,23 +143,19 @@ class ScheduleSaveBar extends StatelessWidget {
                   ),
                 )
               else ...[
-                Icon(
+                const Icon(
                   Icons.check_circle_rounded,
                   size: 22,
-                  color: isValid
-                      ? Colors.white
-                      : (isDark ? Colors.white.withValues(alpha: 0.9) : primary),
+                  color: Colors.white,
                 ),
                 const SizedBox(width: 8),
-                Text(
+                const Text(
                   'Save schedule',
                   style: TextStyle(
                     fontFamily: FtText.fontFamily,
-                    fontSize: 15,
+                    fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: isValid
-                        ? Colors.white
-                        : (isDark ? Colors.white.withValues(alpha: 0.9) : primary),
+                    color: Colors.white,
                   ),
                 ),
               ],

@@ -15,6 +15,7 @@ import 'create_schedule/widgets/schedule_save_bar.dart';
 import 'create_schedule/widgets/schedule_summary_strip.dart';
 import 'create_schedule/widgets/schedule_target_muscles_card.dart';
 import 'create_schedule/widgets/schedule_weekly_card.dart';
+import 'create_schedule/widgets/schedule_discard_dialog.dart';
 
 /// Completely redesigned FitTrack Create Schedule Screen.
 /// Adheres strictly to Stitch Screen ID `378f56a0b632436289e53841eb67b6fb` and AGENTS.md.
@@ -60,11 +61,31 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
     super.dispose();
   }
 
-  void _onBackTap() {
-    if (context.canPop()) {
-      context.pop();
-    } else {
+  Future<void> _onBackTap() async {
+    final shouldDiscard = await ScheduleDiscardDialog.show(context);
+    if (!mounted) return;
+    if (shouldDiscard) {
+      ref.read(scheduleEditorProvider.notifier).reset();
+      _popOrGo();
+    }
+  }
+
+  void _navigateBackAfterSave() {
+    ref.read(scheduleEditorProvider.notifier).reset();
+    _popOrGo();
+  }
+
+  void _popOrGo() {
+    try {
+      if (context.canPop()) {
+        context.pop();
+        return;
+      }
       context.go('/workouts');
+    } catch (_) {
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
     }
   }
 
@@ -145,7 +166,7 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
           ),
         ),
       );
-      _onBackTap();
+      _navigateBackAfterSave();
     } else {
       final error = ref.read(scheduleEditorProvider).saveError ?? 'Failed to save schedule';
       messenger.showSnackBar(
@@ -177,10 +198,10 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
         : 100.0;
 
     return PopScope(
-      canPop: true,
-      onPopInvokedWithResult: (didPop, _) {
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-        _onBackTap();
+        await _onBackTap();
       },
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
