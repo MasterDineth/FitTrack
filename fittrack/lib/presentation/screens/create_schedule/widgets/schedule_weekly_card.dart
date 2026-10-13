@@ -48,23 +48,19 @@ class ScheduleWeeklyCard extends StatelessWidget {
     final ink = context.ftInk;
     final muted = context.ftMuted;
 
+    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final enableTransparency = settings?.enableGlassTransparency ?? true;
+
     final int daysCount = assignedWeekdays.length;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark
-            ? const Color(0x331E1838)
-            : Colors.white.withValues(alpha: 0.75),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isDark
-              ? const Color(0x26FFFFFF)
-              : Colors.white.withValues(alpha: 0.9),
-          width: 1,
-        ),
-        boxShadow: [
+      decoration: FtGlassTheme.cardDecoration(
+        context,
+        radius: 24,
+        settings: settings,
+        customShadows: [
           BoxShadow(
             color: primary.withValues(alpha: isDark ? 0.12 : 0.06),
             blurRadius: 20,
@@ -152,6 +148,12 @@ class ScheduleWeeklyCard extends StatelessWidget {
             children: List.generate(7, (i) {
               final weekday = i + 1; // 1 = Mon ... 7 = Sun
               final isAssigned = assignedWeekdays.contains(weekday);
+              final unassignedTileFill = enableTransparency
+                  ? (isDark ? const Color(0x1FFFFFFF) : Colors.white.withValues(alpha: 0.6))
+                  : (isDark ? const Color(0xFF221C38) : const Color(0xFFF1F5F9));
+              final unassignedTileBorder = enableTransparency
+                  ? (isDark ? const Color(0x22FFFFFF) : Colors.white.withValues(alpha: 0.85))
+                  : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0));
 
               return Expanded(
                 child: Padding(
@@ -165,16 +167,12 @@ class ScheduleWeeklyCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: isAssigned
                             ? primary
-                            : (isDark
-                                ? const Color(0x1FFFFFFF)
-                                : Colors.white.withValues(alpha: 0.6)),
+                            : unassignedTileFill,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: isAssigned
                               ? primary
-                              : (isDark
-                                  ? const Color(0x22FFFFFF)
-                                  : Colors.white.withValues(alpha: 0.85)),
+                              : unassignedTileBorder,
                           width: 1,
                         ),
                         boxShadow: isAssigned

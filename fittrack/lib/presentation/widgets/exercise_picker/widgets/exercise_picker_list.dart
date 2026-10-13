@@ -58,17 +58,23 @@ class ExercisePickerList extends StatelessWidget {
       );
     }
 
+    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final enableTransparency = settings?.enableGlassTransparency ?? true;
+
+    final listFill = enableTransparency
+        ? (isDark ? const Color(0x1AFFFFFF) : Colors.white.withValues(alpha: 0.62))
+        : (isDark ? const Color(0xFF1E1838) : const Color(0xFFF8F6FF));
+    final listBorder = enableTransparency
+        ? (isDark ? const Color(0x22FFFFFF) : Colors.white.withValues(alpha: 0.8))
+        : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0));
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: isDark
-            ? const Color(0x1AFFFFFF)
-            : Colors.white.withValues(alpha: 0.62),
+        color: listFill,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isDark
-              ? const Color(0x22FFFFFF)
-              : Colors.white.withValues(alpha: 0.8),
+          color: listBorder,
           width: 1,
         ),
       ),

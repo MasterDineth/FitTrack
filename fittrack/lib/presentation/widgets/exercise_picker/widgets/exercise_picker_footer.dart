@@ -22,25 +22,42 @@ class ExercisePickerFooter extends StatelessWidget {
     final primary = context.ftPrimary;
     final ink = context.ftInk;
 
+    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final enableTransparency = settings?.enableGlassTransparency ?? true;
+
     final String addLabel = selectedCount <= 0
         ? 'Select exercises'
         : (selectedCount == 1 ? 'Add 1 exercise' : 'Add $selectedCount exercises');
 
     final bool canAdd = selectedCount > 0;
 
+    final footerFill = enableTransparency
+        ? (isDark ? const Color(0xE61A162D) : Colors.white.withValues(alpha: 0.88))
+        : (isDark ? const Color(0xFF1E1838) : Colors.white);
+    final footerBorder = enableTransparency
+        ? (isDark ? const Color(0x33FFFFFF) : Colors.white.withValues(alpha: 0.95))
+        : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0));
+
+    final createBtnFill = enableTransparency
+        ? (isDark ? const Color(0x22FFFFFF) : const Color(0xFFF7F1FF))
+        : (isDark ? const Color(0xFF221C38) : const Color(0xFFF1F5F9));
+
+    final disabledBtnFill = isDark
+        ? primary.withValues(alpha: 0.16)
+        : primary.withValues(alpha: 0.12);
+    final disabledContentColor = isDark
+        ? Colors.white.withValues(alpha: 0.55)
+        : primary.withValues(alpha: 0.60);
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
       child: Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: isDark
-              ? const Color(0xE61A162D)
-              : Colors.white.withValues(alpha: 0.88),
+          color: footerFill,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isDark
-                ? const Color(0x33FFFFFF)
-                : Colors.white.withValues(alpha: 0.95),
+            color: footerBorder,
             width: 1,
           ),
           boxShadow: [
@@ -61,9 +78,7 @@ class ExercisePickerFooter extends StatelessWidget {
                 child: Container(
                   height: 48,
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0x22FFFFFF)
-                        : const Color(0xFFF7F1FF),
+                    color: createBtnFill,
                     borderRadius: BorderRadius.circular(18),
                     border: Border.all(
                       color: primary.withValues(alpha: 0.15),
@@ -120,8 +135,14 @@ class ExercisePickerFooter extends StatelessWidget {
                         : null,
                     color: canAdd
                         ? null
-                        : (isDark ? const Color(0x1AFFFFFF) : const Color(0xFFECE4FF)),
+                        : disabledBtnFill,
                     borderRadius: BorderRadius.circular(18),
+                    border: canAdd
+                        ? null
+                        : Border.all(
+                            color: primary.withValues(alpha: 0.18),
+                            width: 1.0,
+                          ),
                     boxShadow: canAdd
                         ? [
                             BoxShadow(
@@ -140,7 +161,7 @@ class ExercisePickerFooter extends StatelessWidget {
                         size: 19,
                         color: canAdd
                             ? Colors.white
-                            : (isDark ? const Color(0x66FFFFFF) : const Color(0xFF797586)),
+                            : disabledContentColor,
                       ),
                       const SizedBox(width: 6),
                       Flexible(
@@ -154,7 +175,7 @@ class ExercisePickerFooter extends StatelessWidget {
                             fontWeight: FontWeight.w700,
                             color: canAdd
                                 ? Colors.white
-                                : (isDark ? const Color(0x66FFFFFF) : const Color(0xFF797586)),
+                                : disabledContentColor,
                           ),
                         ),
                       ),

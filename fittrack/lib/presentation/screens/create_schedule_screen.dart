@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/schedule_editor_notifier.dart';
+import '../providers/theme_provider.dart';
 import '../theme/ft_glass.dart';
 import '../widgets/exercise_picker/add_exercise_picker_sheet.dart';
 import '../widgets/ft_background_painter.dart';
@@ -86,26 +87,36 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
       return;
     }
 
+    final themeSettings = ref.read(themeNotifierProvider);
+    final enableTransparency = themeSettings.enableGlassTransparency;
+    final blurIntensity = themeSettings.blurIntensity;
+    final double t = ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0);
+    final double scrimSigma = enableTransparency ? (6.0 + 10.0 * t) : 0.0;
+
+    final sheet = AddExercisePickerSheet(
+      currentExercisesCount: currentCount,
+      existingExerciseIds: ref
+          .read(scheduleEditorProvider)
+          .exercises
+          .map((e) => e.exerciseId)
+          .toSet(),
+      onExercisesAdded: (selected) {
+        notifier.addExercises(selected);
+      },
+      onCreateNew: () => context.push('/exercises/create-custom'),
+    );
+
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.45),
-      builder: (_) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AddExercisePickerSheet(
-          currentExercisesCount: currentCount,
-          existingExerciseIds: ref
-              .read(scheduleEditorProvider)
-              .exercises
-              .map((e) => e.exerciseId)
-              .toSet(),
-          onExercisesAdded: (selected) {
-            notifier.addExercises(selected);
-          },
-          onCreateNew: () => context.push('/exercises/create-custom'),
-        ),
-      ),
+      builder: (_) => enableTransparency && scrimSigma > 0
+          ? BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: scrimSigma, sigmaY: scrimSigma),
+              child: sheet,
+            )
+          : sheet,
     );
   }
 
@@ -156,6 +167,7 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(themeNotifierProvider);
     final state = ref.watch(scheduleEditorProvider);
     final notifier = ref.read(scheduleEditorProvider.notifier);
 

@@ -60,21 +60,17 @@ class ScheduleTargetMusclesCard extends StatelessWidget {
     final ink = context.ftInk;
     final muted = context.ftMuted;
 
+    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final enableTransparency = settings?.enableGlassTransparency ?? true;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark
-            ? const Color(0x331E1838)
-            : Colors.white.withValues(alpha: 0.75),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isDark
-              ? const Color(0x26FFFFFF)
-              : Colors.white.withValues(alpha: 0.9),
-          width: 1,
-        ),
-        boxShadow: [
+      decoration: FtGlassTheme.cardDecoration(
+        context,
+        radius: 24,
+        settings: settings,
+        customShadows: [
           BoxShadow(
             color: primary.withValues(alpha: isDark ? 0.12 : 0.06),
             blurRadius: 20,
@@ -168,6 +164,13 @@ class ScheduleTargetMusclesCard extends StatelessWidget {
             runSpacing: 8,
             children: allMuscles.map((muscle) {
               final isSelected = selectedMuscles.contains(muscle);
+              final unselectedChipFill = enableTransparency
+                  ? (isDark ? const Color(0x1FFFFFFF) : Colors.white.withValues(alpha: 0.6))
+                  : (isDark ? const Color(0xFF221C38) : const Color(0xFFF1F5F9));
+              final unselectedChipBorder = enableTransparency
+                  ? (isDark ? const Color(0x26FFFFFF) : Colors.white.withValues(alpha: 0.8))
+                  : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0));
+
               return FtPressable(
                 onTap: () => _handleTap(context, muscle),
                 pressedScale: 0.95,
@@ -178,16 +181,12 @@ class ScheduleTargetMusclesCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isSelected
                         ? primary
-                        : (isDark
-                            ? const Color(0x1FFFFFFF)
-                            : Colors.white.withValues(alpha: 0.6)),
+                        : unselectedChipFill,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: isSelected
                           ? primary
-                          : (isDark
-                              ? const Color(0x26FFFFFF)
-                              : Colors.white.withValues(alpha: 0.8)),
+                          : unselectedChipBorder,
                       width: 1,
                     ),
                     boxShadow: isSelected

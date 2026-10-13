@@ -52,6 +52,133 @@ class ScheduleSaveBar extends StatelessWidget {
     final isDark = context.isDark;
     final primary = context.ftPrimary;
 
+    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final enableTransparency = settings?.enableGlassTransparency ?? true;
+    final blurIntensity = settings?.blurIntensity ?? 16.0;
+
+    final double t = ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0);
+    final double effectiveSigma = enableTransparency ? (12.0 + 24.0 * t) : 0.0;
+
+    final Color dockFill;
+    final Color dockBorder;
+    final List<BoxShadow> dockShadow;
+
+    if (!enableTransparency) {
+      dockFill = isDark ? const Color(0xFF1E1838) : Colors.white;
+      dockBorder = isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0);
+      dockShadow = [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.08),
+          blurRadius: 24,
+          offset: const Offset(0, 8),
+        ),
+      ];
+    } else {
+      final double fillAlpha = isDark ? (0.75 + 0.15 * t) : (0.72 + 0.14 * t);
+      dockFill = isDark
+          ? const Color(0xFF1E1838).withValues(alpha: fillAlpha)
+          : Colors.white.withValues(alpha: fillAlpha);
+      dockBorder = isDark
+          ? const Color(0x3DFFFFFF)
+          : Colors.white.withValues(alpha: 0.95);
+      dockShadow = [
+        BoxShadow(
+          color: primary.withValues(alpha: isDark ? 0.28 : 0.14),
+          blurRadius: 36,
+          offset: const Offset(0, 10),
+        ),
+      ];
+    }
+
+    Widget dockContent = Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: dockFill,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: dockBorder,
+          width: 1.2,
+        ),
+        boxShadow: dockShadow,
+      ),
+      child: FtPressable(
+        onTap: () => _handleTap(context),
+        pressedScale: 0.98,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          height: 54,
+          decoration: BoxDecoration(
+            gradient: isValid
+                ? LinearGradient(
+                    colors: [
+                      context.ftPrimaryLight,
+                      primary,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
+            color: isValid
+                ? null
+                : (isDark
+                    ? primary.withValues(alpha: 0.25)
+                    : primary.withValues(alpha: 0.14)),
+            borderRadius: BorderRadius.circular(24),
+            border: isValid
+                ? null
+                : Border.all(
+                    color: primary.withValues(alpha: 0.22),
+                    width: 1.0,
+                  ),
+            boxShadow: isValid
+                ? [
+                    BoxShadow(
+                      color: primary.withValues(alpha: 0.35),
+                      blurRadius: 18,
+                      offset: const Offset(0, 6),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (isSaving)
+                const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              else ...[
+                Icon(
+                  Icons.check_circle_rounded,
+                  size: 22,
+                  color: isValid
+                      ? Colors.white
+                      : (isDark ? Colors.white.withValues(alpha: 0.9) : primary),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Save schedule',
+                  style: TextStyle(
+                    fontFamily: FtText.fontFamily,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: isValid
+                        ? Colors.white
+                        : (isDark ? Colors.white.withValues(alpha: 0.9) : primary),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+
     return RepaintBoundary(
       child: Center(
         child: ConstrainedBox(
@@ -60,103 +187,19 @@ class ScheduleSaveBar extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(28),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xD91E1838)
-                        : Colors.white.withValues(alpha: 0.82),
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(
-                      color: isDark
-                          ? const Color(0x3DFFFFFF)
-                          : Colors.white.withValues(alpha: 0.95),
-                      width: 1.2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: primary.withValues(alpha: isDark ? 0.28 : 0.16),
-                        blurRadius: 36,
-                        offset: const Offset(0, 10),
+              child: enableTransparency && effectiveSigma > 0
+                  ? BackdropFilter(
+                      filter: ImageFilter.blur(
+                        sigmaX: effectiveSigma,
+                        sigmaY: effectiveSigma,
                       ),
-                    ],
-                  ),
-                  child: FtPressable(
-              onTap: () => _handleTap(context),
-              pressedScale: 0.98,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                height: 54,
-                decoration: BoxDecoration(
-                  gradient: isValid
-                      ? LinearGradient(
-                          colors: [
-                            context.ftPrimaryLight,
-                            primary,
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        )
-                      : null,
-                  color: isValid
-                      ? null
-                      : (isDark ? const Color(0x22FFFFFF) : const Color(0xFFECE4FF)),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: isValid
-                      ? [
-                          BoxShadow(
-                            color: primary.withValues(alpha: 0.35),
-                            blurRadius: 18,
-                            offset: const Offset(0, 6),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (isSaving)
-                      const SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    else ...[
-                      Icon(
-                        Icons.check_circle_rounded,
-                        size: 22,
-                        color: isValid
-                            ? Colors.white
-                            : (isDark ? const Color(0x66FFFFFF) : const Color(0xFF797586)),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Save schedule',
-                        style: TextStyle(
-                          fontFamily: FtText.fontFamily,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: isValid
-                              ? Colors.white
-                              : (isDark ? const Color(0x66FFFFFF) : const Color(0xFF797586)),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
+                      child: dockContent,
+                    )
+                  : dockContent,
             ),
           ),
         ),
       ),
-    ),
-  ),
-),
-);
+    );
   }
 }

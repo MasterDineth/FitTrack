@@ -24,20 +24,26 @@ class ExercisePickerSearchBar extends StatelessWidget {
     final ink = context.ftInk;
     final muted = context.ftMuted;
 
+    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final enableTransparency = settings?.enableGlassTransparency ?? true;
+
+    final barFill = enableTransparency
+        ? (isDark ? const Color(0x2EFFFFFF) : Colors.white.withValues(alpha: 0.72))
+        : (isDark ? const Color(0xFF221C38) : const Color(0xFFF1F5F9));
+    final barBorder = enableTransparency
+        ? (isDark ? const Color(0x33FFFFFF) : Colors.white.withValues(alpha: 0.95))
+        : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0));
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       child: Container(
         height: 52,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: isDark
-              ? const Color(0x2EFFFFFF)
-              : Colors.white.withValues(alpha: 0.72),
+          color: barFill,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isDark
-                ? const Color(0x33FFFFFF)
-                : Colors.white.withValues(alpha: 0.95),
+            color: barBorder,
             width: 1,
           ),
           boxShadow: [
@@ -60,6 +66,7 @@ class ExercisePickerSearchBar extends StatelessWidget {
               child: TextField(
                 controller: controller,
                 onChanged: onQueryChanged,
+                cursorColor: primary,
                 style: TextStyle(
                   fontFamily: FtText.fontFamily,
                   fontSize: 15,
@@ -75,6 +82,13 @@ class ExercisePickerSearchBar extends StatelessWidget {
                     color: muted.withValues(alpha: 0.7),
                   ),
                   border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  focusedErrorBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  filled: false,
+                  fillColor: Colors.transparent,
                   isDense: true,
                   contentPadding: EdgeInsets.zero,
                 ),

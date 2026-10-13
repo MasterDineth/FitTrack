@@ -21,6 +21,9 @@ class ExercisePickerCategoryChips extends StatelessWidget {
     final primary = context.ftPrimary;
     final ink = context.ftInk;
 
+    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final enableTransparency = settings?.enableGlassTransparency ?? true;
+
     return Padding(
       padding: const EdgeInsets.only(top: 4, bottom: 10),
       child: SizedBox(
@@ -34,6 +37,13 @@ class ExercisePickerCategoryChips extends StatelessWidget {
             final cat = categories[i];
             final isSelected = cat == selectedCategory;
 
+            final unselectedFill = enableTransparency
+                ? (isDark ? const Color(0x22FFFFFF) : Colors.white.withValues(alpha: 0.7))
+                : (isDark ? const Color(0xFF221C38) : const Color(0xFFF1F5F9));
+            final unselectedBorder = enableTransparency
+                ? (isDark ? const Color(0x22FFFFFF) : Colors.white.withValues(alpha: 0.85))
+                : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0));
+
             return FtPressable(
               onTap: () => onCategorySelected(cat),
               pressedScale: 0.94,
@@ -44,16 +54,12 @@ class ExercisePickerCategoryChips extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isSelected
                       ? primary
-                      : (isDark
-                          ? const Color(0x22FFFFFF)
-                          : Colors.white.withValues(alpha: 0.7)),
+                      : unselectedFill,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isSelected
                         ? Colors.transparent
-                        : (isDark
-                            ? const Color(0x22FFFFFF)
-                            : Colors.white.withValues(alpha: 0.85)),
+                        : unselectedBorder,
                     width: 1,
                   ),
                   boxShadow: isSelected

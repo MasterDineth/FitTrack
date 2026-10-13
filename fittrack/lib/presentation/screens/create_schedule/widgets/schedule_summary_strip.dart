@@ -22,21 +22,16 @@ class ScheduleSummaryStrip extends StatelessWidget {
     final ink = context.ftInk;
     final muted = context.ftMuted;
 
+    final settings = FtGlassTheme.resolveThemeSettings(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-      decoration: BoxDecoration(
-        color: isDark
-            ? const Color(0x331E1838)
-            : Colors.white.withValues(alpha: 0.75),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isDark
-              ? const Color(0x26FFFFFF)
-              : Colors.white.withValues(alpha: 0.9),
-          width: 1,
-        ),
-        boxShadow: [
+      decoration: FtGlassTheme.cardDecoration(
+        context,
+        radius: 24,
+        settings: settings,
+        customShadows: [
           BoxShadow(
             color: primary.withValues(alpha: isDark ? 0.15 : 0.08),
             blurRadius: 24,

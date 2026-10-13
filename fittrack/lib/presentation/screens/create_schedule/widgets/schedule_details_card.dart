@@ -24,21 +24,25 @@ class ScheduleDetailsCard extends StatelessWidget {
     final ink = context.ftInk;
     final muted = context.ftMuted;
 
+    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final enableTransparency = settings?.enableGlassTransparency ?? true;
+
+    final innerFill = enableTransparency
+        ? (isDark ? const Color(0x18FFFFFF) : Colors.white.withValues(alpha: 0.60))
+        : (isDark ? const Color(0xFF221C38) : const Color(0xFFF8F6FF));
+
+    final innerBorder = enableTransparency
+        ? (isDark ? const Color(0x22FFFFFF) : Colors.white.withValues(alpha: 0.85))
+        : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0));
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark
-            ? const Color(0x331E1838)
-            : Colors.white.withValues(alpha: 0.75),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isDark
-              ? const Color(0x26FFFFFF)
-              : Colors.white.withValues(alpha: 0.9),
-          width: 1,
-        ),
-        boxShadow: [
+      decoration: FtGlassTheme.cardDecoration(
+        context,
+        radius: 24,
+        settings: settings,
+        customShadows: [
           BoxShadow(
             color: primary.withValues(alpha: isDark ? 0.12 : 0.06),
             blurRadius: 20,
@@ -95,21 +99,26 @@ class ScheduleDetailsCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // Schedule Name Input Box (generous, comfortable height)
+          // Schedule Name Input Box (Stitch FormField style)
           Container(
-            height: 64,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            height: 58,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0x1AFFFFFF)
-                  : Colors.white.withValues(alpha: 0.8),
+              color: innerFill,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark
-                    ? const Color(0x1FFFFFFF)
-                    : Colors.white.withValues(alpha: 0.95),
+                color: innerBorder,
                 width: 1,
               ),
+              boxShadow: enableTransparency && !isDark
+                  ? [
+                      BoxShadow(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        blurRadius: 2,
+                        offset: const Offset(0, 1),
+                      ),
+                    ]
+                  : null,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,6 +140,7 @@ class ScheduleDetailsCard extends StatelessWidget {
                     controller: nameController,
                     onChanged: onNameChanged,
                     textInputAction: TextInputAction.next,
+                    cursorColor: primary,
                     style: TextStyle(
                       fontFamily: FtText.fontFamily,
                       fontSize: 16,
@@ -146,6 +156,13 @@ class ScheduleDetailsCard extends StatelessWidget {
                         color: muted.withValues(alpha: 0.65),
                       ),
                       border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      errorBorder: InputBorder.none,
+                      focusedErrorBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
+                      filled: false,
+                      fillColor: Colors.transparent,
                       isDense: true,
                       contentPadding: EdgeInsets.zero,
                     ),
@@ -156,21 +173,26 @@ class ScheduleDetailsCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // Description Input Box (generous min-height 110dp)
+          // Description Input Box (Stitch FormField style)
           Container(
-            constraints: const BoxConstraints(minHeight: 110),
+            constraints: const BoxConstraints(minHeight: 96),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0x14FFFFFF)
-                  : Colors.white.withValues(alpha: 0.6),
+              color: innerFill,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark
-                    ? const Color(0x1AFFFFFF)
-                    : Colors.white.withValues(alpha: 0.85),
+                color: innerBorder,
                 width: 1,
               ),
+              boxShadow: enableTransparency && !isDark
+                  ? [
+                      BoxShadow(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        blurRadius: 2,
+                        offset: const Offset(0, 1),
+                      ),
+                    ]
+                  : null,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,15 +204,16 @@ class ScheduleDetailsCard extends StatelessWidget {
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.7,
-                    color: muted,
+                    color: isDark ? const Color(0x99FFFFFF) : muted,
                   ),
                 ),
                 const SizedBox(height: 6),
                 TextField(
                   controller: descController,
                   onChanged: onDescChanged,
-                  maxLines: 4,
-                  minLines: 3,
+                  maxLines: 3,
+                  minLines: 2,
+                  cursorColor: primary,
                   style: TextStyle(
                     fontFamily: FtText.fontFamily,
                     fontSize: 14,
@@ -207,6 +230,13 @@ class ScheduleDetailsCard extends StatelessWidget {
                       color: muted.withValues(alpha: 0.65),
                     ),
                     border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    filled: false,
+                    fillColor: Colors.transparent,
                     isDense: true,
                     contentPadding: EdgeInsets.zero,
                   ),

@@ -25,13 +25,23 @@ class ScheduleStepperTile extends StatelessWidget {
     final ink = context.ftInk;
     final muted = context.ftMuted;
 
+    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final enableTransparency = settings?.enableGlassTransparency ?? true;
+
+    final tileFill = enableTransparency
+        ? (isDark ? const Color(0x1AFFFFFF) : Colors.white.withValues(alpha: 0.8))
+        : (isDark ? const Color(0xFF221C38) : const Color(0xFFF1F5F9));
+    final tileBorder = enableTransparency
+        ? (isDark ? const Color(0x1AFFFFFF) : Colors.white.withValues(alpha: 0.95))
+        : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFE2E8F0));
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0x1AFFFFFF) : Colors.white.withValues(alpha: 0.8),
+        color: tileFill,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? const Color(0x1AFFFFFF) : Colors.white.withValues(alpha: 0.95),
+          color: tileBorder,
           width: 1,
         ),
       ),

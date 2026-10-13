@@ -50,22 +50,17 @@ class ScheduleExerciseCard extends StatelessWidget {
         ? '${entry.equipment} · ${entry.movementType} · ~$durationMins min'
         : '${entry.targetSets} sets × ${entry.targetReps} reps · ${_formatWeight(entry.targetWeightKg)} kg · ~$durationMins min';
 
+    final settings = FtGlassTheme.resolveThemeSettings(context);
+
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark
-            ? const Color(0x331E1838)
-            : Colors.white.withValues(alpha: 0.78),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isDark
-              ? const Color(0x26FFFFFF)
-              : Colors.white.withValues(alpha: 0.9),
-          width: 1,
-        ),
-        boxShadow: [
+      decoration: FtGlassTheme.cardDecoration(
+        context,
+        radius: 24,
+        settings: settings,
+        customShadows: [
           BoxShadow(
             color: primary.withValues(alpha: isDark ? 0.12 : 0.06),
             blurRadius: 18,
