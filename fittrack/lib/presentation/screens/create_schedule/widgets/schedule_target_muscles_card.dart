@@ -89,34 +89,39 @@ class ScheduleTargetMusclesCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0x22FFFFFF)
-                          : const Color(0xFFE6DEFF),
-                      shape: BoxShape.circle,
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0x22FFFFFF)
+                            : const Color(0xFFE6DEFF),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.adjust_rounded,
+                        size: 20,
+                        color: primary,
+                      ),
                     ),
-                    child: Icon(
-                      Icons.adjust_rounded,
-                      size: 20,
-                      color: primary,
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Text(
+                        'Target muscles',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: FtText.fontFamily,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: ink,
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Target muscles',
-                    style: TextStyle(
-                      fontFamily: FtText.fontFamily,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: ink,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               if (selectedMuscles.isNotEmpty)
                 Container(

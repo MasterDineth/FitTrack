@@ -29,12 +29,7 @@ class ExercisePickerFooter extends StatelessWidget {
     final bool canAdd = selectedCount > 0;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-        16,
-        8,
-        16,
-        16 + MediaQuery.paddingOf(context).bottom,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
       child: Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(

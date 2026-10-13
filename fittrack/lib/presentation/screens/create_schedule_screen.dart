@@ -95,6 +95,11 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: AddExercisePickerSheet(
           currentExercisesCount: currentCount,
+          existingExerciseIds: ref
+              .read(scheduleEditorProvider)
+              .exercises
+              .map((e) => e.exerciseId)
+              .toSet(),
           onExercisesAdded: (selected) {
             notifier.addExercises(selected);
           },
@@ -154,10 +159,10 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
     final state = ref.watch(scheduleEditorProvider);
     final notifier = ref.read(scheduleEditorProvider.notifier);
 
-    // Dock clearance padding: bottom nav dock + save bar clearance
+    // Dock clearance padding: save bar clearance
     final bottomPadding = (MediaQuery.paddingOf(context).bottom > 0)
-        ? MediaQuery.paddingOf(context).bottom + 160.0
-        : 180.0;
+        ? MediaQuery.paddingOf(context).bottom + 90.0
+        : 100.0;
 
     return PopScope(
       canPop: true,
@@ -165,9 +170,12 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
         if (didPop) return;
         _onBackTap();
       },
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Stack(
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Stack(
           children: [
             // 1. Dynamic Mesh Gradient Background
             const Positioned.fill(
@@ -275,8 +283,8 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
               left: 0,
               right: 0,
               bottom: (MediaQuery.paddingOf(context).bottom > 0)
-                  ? MediaQuery.paddingOf(context).bottom + 80.0
-                  : 96.0,
+                  ? MediaQuery.paddingOf(context).bottom + 12.0
+                  : 20.0,
               child: ScheduleSaveBar(
                 isValid: state.isValid,
                 isSaving: state.isSaving,
@@ -287,6 +295,7 @@ class _CreateScheduleScreenState extends ConsumerState<CreateScheduleScreen> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }

@@ -1,11 +1,13 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../theme/ft_glass.dart';
 import '../../../providers/schedule_editor_notifier.dart';
 import '../../dashboard/widgets/ft_pressable.dart';
 import 'schedule_exercise_card.dart';
 
 /// Exercises Section in the Create Schedule screen with header,
-/// reorderable list of exercise cards, and reorder hint.
+/// reorderable list of exercise cards, drag confinement, and swipe-to-discard.
 class ScheduleExercisesSection extends StatelessWidget {
   const ScheduleExercisesSection({
     super.key,
@@ -31,6 +33,64 @@ class ScheduleExercisesSection extends StatelessWidget {
   final void Function(int index, int reps) onUpdateReps;
   final void Function(int index, double weight) onUpdateWeight;
   final void Function(int index, int rest) onUpdateRest;
+
+  Widget _buildDismissBackground({required bool alignLeft}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFBA1A1A),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x33BA1A1A),
+            blurRadius: 16,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      alignment: alignLeft ? Alignment.centerLeft : Alignment.centerRight,
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.delete_rounded,
+            color: Colors.white,
+            size: 26,
+          ),
+          SizedBox(width: 8),
+          Text(
+            'Discard',
+            style: TextStyle(
+              fontFamily: FtText.fontFamily,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _proxyDecorator(Widget child, int index, Animation<double> animation) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (BuildContext context, Widget? child) {
+        final double animValue = Curves.easeInOut.transform(animation.value);
+        final double elevation = lerpDouble(0, 10, animValue)!;
+        return Material(
+          elevation: elevation,
+          color: Colors.transparent,
+          shadowColor: const Color(0x335F3BDC),
+          borderRadius: BorderRadius.circular(24),
+          clipBehavior: Clip.antiAlias,
+          child: child,
+        );
+      },
+      child: child,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -257,8 +317,8 @@ class ScheduleExercisesSection extends StatelessWidget {
             ),
           )
         else ...[
-          // Reorderable list of exercise cards
           ReorderableListView.builder(
+            proxyDecorator: _proxyDecorator,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: exercises.length,
@@ -267,17 +327,35 @@ class ScheduleExercisesSection extends StatelessWidget {
             itemBuilder: (context, i) {
               final entry = exercises[i];
               final isExp = expandedIndex == i;
-              return ScheduleExerciseCard(
-                key: ValueKey('${entry.exerciseId}_$i'),
-                index: i,
-                entry: entry,
-                isExpanded: isExp,
-                onToggleExpand: () => onToggleExpand(i),
-                onRemove: () => onRemoveExercise(i),
-                onUpdateSets: (s) => onUpdateSets(i, s),
-                onUpdateReps: (r) => onUpdateReps(i, r),
-                onUpdateWeight: (w) => onUpdateWeight(i, w),
-                onUpdateRest: (sec) => onUpdateRest(i, sec),
+              return Dismissible(
+                key: ValueKey('dismiss_${entry.exerciseId}_$i'),
+                direction: DismissDirection.horizontal,
+                onUpdate: (details) {
+                  if (details.reached) {
+                    HapticFeedback.mediumImpact();
+                  }
+                },
+                confirmDismiss: (direction) async {
+                  HapticFeedback.heavyImpact();
+                  return true;
+                },
+                onDismissed: (_) {
+                  onRemoveExercise(i);
+                },
+                background: _buildDismissBackground(alignLeft: true),
+                secondaryBackground: _buildDismissBackground(alignLeft: false),
+                child: ScheduleExerciseCard(
+                  key: ValueKey('${entry.exerciseId}_$i'),
+                  index: i,
+                  entry: entry,
+                  isExpanded: isExp,
+                  onToggleExpand: () => onToggleExpand(i),
+                  onRemove: () => onRemoveExercise(i),
+                  onUpdateSets: (s) => onUpdateSets(i, s),
+                  onUpdateReps: (r) => onUpdateReps(i, r),
+                  onUpdateWeight: (w) => onUpdateWeight(i, w),
+                  onUpdateRest: (sec) => onUpdateRest(i, sec),
+                ),
               );
             },
           ),

@@ -95,10 +95,10 @@ class ScheduleDetailsCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // Schedule Name Input Box (h-14)
+          // Schedule Name Input Box (generous, comfortable height)
           Container(
-            height: 56,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            height: 64,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
               color: isDark
                   ? const Color(0x1AFFFFFF)
@@ -121,18 +121,19 @@ class ScheduleDetailsCard extends StatelessWidget {
                     fontFamily: FtText.fontFamily,
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
-                    letterSpacing: 0.6,
+                    letterSpacing: 0.7,
                     color: primary,
                   ),
                 ),
-                const SizedBox(height: 1),
+                const SizedBox(height: 2),
                 Expanded(
                   child: TextField(
                     controller: nameController,
                     onChanged: onNameChanged,
+                    textInputAction: TextInputAction.next,
                     style: TextStyle(
                       fontFamily: FtText.fontFamily,
-                      fontSize: 15,
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: ink,
                     ),
@@ -140,9 +141,9 @@ class ScheduleDetailsCard extends StatelessWidget {
                       hintText: 'e.g. Push Hypertrophy A',
                       hintStyle: TextStyle(
                         fontFamily: FtText.fontFamily,
-                        fontSize: 14,
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
-                        color: muted.withValues(alpha: 0.7),
+                        color: muted.withValues(alpha: 0.65),
                       ),
                       border: InputBorder.none,
                       isDense: true,
@@ -155,10 +156,10 @@ class ScheduleDetailsCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // Description Input Box (min-h-[96px])
+          // Description Input Box (generous min-height 110dp)
           Container(
-            constraints: const BoxConstraints(minHeight: 88),
-            padding: const EdgeInsets.all(14),
+            constraints: const BoxConstraints(minHeight: 110),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: isDark
                   ? const Color(0x14FFFFFF)
@@ -180,30 +181,30 @@ class ScheduleDetailsCard extends StatelessWidget {
                     fontFamily: FtText.fontFamily,
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
-                    letterSpacing: 0.6,
+                    letterSpacing: 0.7,
                     color: muted,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 TextField(
                   controller: descController,
                   onChanged: onDescChanged,
-                  maxLines: 3,
-                  minLines: 2,
+                  maxLines: 4,
+                  minLines: 3,
                   style: TextStyle(
                     fontFamily: FtText.fontFamily,
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: ink,
-                    height: 1.4,
+                    height: 1.45,
                   ),
                   decoration: InputDecoration(
                     hintText: 'Compound pressing followed by lateral deltoid work.',
                     hintStyle: TextStyle(
                       fontFamily: FtText.fontFamily,
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: muted.withValues(alpha: 0.7),
+                      color: muted.withValues(alpha: 0.65),
                     ),
                     border: InputBorder.none,
                     isDense: true,

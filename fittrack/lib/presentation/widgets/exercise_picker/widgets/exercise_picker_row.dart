@@ -12,11 +12,13 @@ class ExercisePickerRow extends StatelessWidget {
     required this.exercise,
     required this.isSelected,
     required this.onTap,
+    this.isAlreadyInSchedule = false,
   });
 
   final Exercise exercise;
   final bool isSelected;
   final VoidCallback onTap;
+  final bool isAlreadyInSchedule;
 
   String _formatEnumName(String name) {
     if (name.isEmpty) return '';
@@ -30,19 +32,21 @@ class ExercisePickerRow extends StatelessWidget {
     final ink = context.ftInk;
     final muted = context.ftMuted;
 
-    return FtPressable(
-      onTap: onTap,
-      pressedScale: 0.98,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        height: 72,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? primary.withValues(alpha: isDark ? 0.18 : 0.09)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
+    return Opacity(
+      opacity: isAlreadyInSchedule ? 0.45 : 1.0,
+      child: FtPressable(
+        onTap: isAlreadyInSchedule ? null : onTap,
+        pressedScale: isAlreadyInSchedule ? 1.0 : 0.98,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          height: 72,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? primary.withValues(alpha: isDark ? 0.18 : 0.09)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+          ),
         child: Row(
           children: [
             // 44x44 Thumbnail with border
@@ -137,55 +141,89 @@ class ExercisePickerRow extends StatelessWidget {
             ),
             const SizedBox(width: 10),
 
-            // Checkbox Indicator (28x28)
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? primary
-                    : (isDark ? const Color(0x22FFFFFF) : const Color(0xFFF2EBFF)),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected
-                      ? primary
-                      : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFCAC4D7)),
-                  width: 1.5,
+            // Right indicator: "Added" pill badge if already in routine, else Animated Checkbox
+            if (isAlreadyInSchedule)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0x22FFFFFF) : const Color(0xFFECE4FF),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFD6C8FF),
+                    width: 1,
+                  ),
                 ),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: primary.withValues(alpha: 0.35),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                    : null,
-              ),
-              child: isSelected
-                  ? const Center(
-                      child: Icon(
-                        Icons.check_rounded,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Center(
-                      child: Container(
-                        width: 14,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0x1AFFFFFF) : Colors.white,
-                          shape: BoxShape.circle,
-                        ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.check_rounded,
+                      size: 13,
+                      color: isDark ? Colors.white70 : primary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Added',
+                      style: TextStyle(
+                        fontFamily: FtText.fontFamily,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white70 : primary,
                       ),
                     ),
-            ),
+                  ],
+                ),
+              )
+            else
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? primary
+                      : (isDark ? const Color(0x22FFFFFF) : const Color(0xFFF2EBFF)),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected
+                        ? primary
+                        : (isDark ? const Color(0x33FFFFFF) : const Color(0xFFCAC4D7)),
+                    width: 1.5,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: primary.withValues(alpha: 0.35),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: isSelected
+                    ? const Center(
+                        child: Icon(
+                          Icons.check_rounded,
+                          size: 18,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Center(
+                        child: Container(
+                          width: 14,
+                          height: 14,
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0x1AFFFFFF) : Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+              ),
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildCoverImage(BuildContext context) {

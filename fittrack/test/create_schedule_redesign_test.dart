@@ -231,6 +231,63 @@ void main() {
       expect(container.read(scheduleEditorProvider).exercises.length, 12);
     });
 
+    test('Exercises: rejects duplicate exercise IDs', () {
+      final container = ProviderContainer(
+        overrides: [
+          scheduleRepositoryProvider.overrideWithValue(_MockScheduleRepository()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(scheduleEditorProvider.notifier);
+      expect(
+        notifier.addExercise(
+          ScheduleExerciseEntry(
+            exerciseId: 'ex1',
+            exerciseName: 'Bench Press',
+            equipment: 'Barbell',
+            movementType: 'Compound',
+          ),
+        ),
+        isTrue,
+      );
+
+      // Attempt duplicate addition
+      expect(
+        notifier.addExercise(
+          ScheduleExerciseEntry(
+            exerciseId: 'ex1',
+            exerciseName: 'Bench Press',
+            equipment: 'Barbell',
+            movementType: 'Compound',
+          ),
+        ),
+        isFalse,
+      );
+      expect(container.read(scheduleEditorProvider).exercises.length, 1);
+
+      // Batch addition containing duplicates
+      notifier.addExercises([
+        ScheduleExerciseEntry(
+          exerciseId: 'ex1',
+          exerciseName: 'Bench Press',
+          equipment: 'Barbell',
+          movementType: 'Compound',
+        ),
+        ScheduleExerciseEntry(
+          exerciseId: 'ex2',
+          exerciseName: 'Incline Dumbbell Press',
+          equipment: 'Dumbbell',
+          movementType: 'Compound',
+        ),
+      ]);
+      expect(container.read(scheduleEditorProvider).exercises.length, 2);
+      expect(
+        container.read(scheduleEditorProvider).exercises.map((e) => e.exerciseId).toList(),
+        ['ex1', 'ex2'],
+      );
+    });
+
     test('Exercise parameter updates: sets, reps, weight by 2.5kg, rest by 15s', () {
       final container = ProviderContainer(
         overrides: [
@@ -407,6 +464,47 @@ void main() {
       expect(find.text('2 selected'), findsOneWidget);
       expect(find.text('Only 2 more exercises can be added (12 max)'), findsOneWidget);
     });
+
+    testWidgets('Grays out already added exercises and displays Added badge', (tester) async {
+      tester.view.physicalSize = const Size(800, 1400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final mockExerciseRepo = _MockExerciseRepository();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            exerciseRepositoryProvider.overrideWithValue(mockExerciseRepo),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: AddExercisePickerSheet(
+                currentExercisesCount: 1,
+                existingExerciseIds: const {'ex1'},
+                onExercisesAdded: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // 'ex1' is 'Barbell Bench Press' and is already in schedule
+      expect(find.text('Barbell Bench Press'), findsOneWidget);
+      expect(find.text('Added'), findsOneWidget);
+
+      // Tapping on already added item does not select it
+      await tester.tap(find.text('Barbell Bench Press'));
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('0 selected'), findsOneWidget);
+    });
   });
 
   group('CreateScheduleScreen UI & Integration Tests', () {
@@ -467,6 +565,75 @@ void main() {
 
       // Error toast should appear
       expect(find.text('Please enter a schedule name'), findsOneWidget);
+    });
+
+    testWidgets('Swipe to discard removes exercise card', (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final mockScheduleRepo = _MockScheduleRepository();
+      final mockExerciseRepo = _MockExerciseRepository();
+
+      final container = ProviderContainer(
+        overrides: [
+          scheduleRepositoryProvider.overrideWithValue(mockScheduleRepo),
+          exerciseRepositoryProvider.overrideWithValue(mockExerciseRepo),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(scheduleEditorProvider.notifier);
+      notifier.setName('Full Body');
+      notifier.toggleMuscle('Chest');
+      notifier.addExercises([
+        ScheduleExerciseEntry(
+          exerciseId: 'ex1',
+          exerciseName: 'Barbell Bench Press',
+          equipment: 'Barbell',
+          movementType: 'Compound',
+        ),
+        ScheduleExerciseEntry(
+          exerciseId: 'ex2',
+          exerciseName: 'Incline Dumbbell Press',
+          equipment: 'Dumbbell',
+          movementType: 'Compound',
+        ),
+        ScheduleExerciseEntry(
+          exerciseId: 'ex3',
+          exerciseName: 'Cable Flyes',
+          equipment: 'Cable',
+          movementType: 'Isolation',
+        ),
+      ]);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            home: CreateScheduleScreen(),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('Barbell Bench Press'), findsOneWidget);
+
+      // Scroll exercise into clear view
+      await tester.ensureVisible(find.text('Barbell Bench Press'));
+      await tester.pumpAndSettle();
+
+      // Swipe dismiss the first exercise
+      await tester.drag(find.byType(Dismissible).first, const Offset(-500, 0), warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      // Card should be dismissed and removed from state
+      expect(container.read(scheduleEditorProvider).exercises.length, 2);
     });
   });
 }

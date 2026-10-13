@@ -225,20 +225,27 @@ class ScheduleEditorNotifier extends _$ScheduleEditorNotifier {
     return true;
   }
 
-  /// Adds a single exercise if current count < 12.
+  /// Adds a single exercise if current count < 12 and not already present.
   bool addExercise(ScheduleExerciseEntry entry) {
     if (state.exercises.length >= 12) return false;
+    if (state.exercises.any((e) => e.exerciseId == entry.exerciseId)) return false;
     state = state.copyWith(
       exercises: [...state.exercises, entry],
     );
     return true;
   }
 
-  /// Adds multiple exercises up to the 12 exercises limit.
+  /// Adds multiple exercises up to the 12 exercises limit, ignoring duplicates.
   void addExercises(List<ScheduleExerciseEntry> entries) {
+    final existingIds = state.exercises.map((e) => e.exerciseId).toSet();
+    final nonDuplicates = entries
+        .where((e) => !existingIds.contains(e.exerciseId))
+        .toList();
+    if (nonDuplicates.isEmpty) return;
+
     final remainingSlots = 12 - state.exercises.length;
     if (remainingSlots <= 0) return;
-    final toAdd = entries.take(remainingSlots).toList();
+    final toAdd = nonDuplicates.take(remainingSlots).toList();
     state = state.copyWith(
       exercises: [...state.exercises, ...toAdd],
     );

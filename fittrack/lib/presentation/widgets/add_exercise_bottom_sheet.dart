@@ -11,11 +11,13 @@ class AddExerciseBottomSheet extends StatelessWidget {
     required this.onExercisesAdded,
     this.onCreateNew,
     this.currentExercisesCount = 0,
+    this.existingExerciseIds = const <String>{},
   });
 
   final void Function(List<ScheduleExerciseEntry> selected) onExercisesAdded;
   final VoidCallback? onCreateNew;
   final int currentExercisesCount;
+  final Set<String> existingExerciseIds;
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +25,7 @@ class AddExerciseBottomSheet extends StatelessWidget {
       onExercisesAdded: onExercisesAdded,
       onCreateNew: onCreateNew,
       currentExercisesCount: currentExercisesCount,
+      existingExerciseIds: existingExerciseIds,
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/exercise.dart';
@@ -6,7 +7,7 @@ import '../../providers/schedule_editor_notifier.dart';
 import '../../theme/ft_glass.dart';
 import 'widgets/exercise_picker_category_chips.dart';
 import 'widgets/exercise_picker_footer.dart';
-import 'widgets/exercise_picker_row.dart';
+import 'widgets/exercise_picker_list.dart';
 import 'widgets/exercise_picker_search_bar.dart';
 
 final _allExercisesProvider = FutureProvider.autoDispose((ref) {
@@ -31,11 +32,13 @@ class AddExercisePickerSheet extends ConsumerStatefulWidget {
     required this.onExercisesAdded,
     this.onCreateNew,
     this.currentExercisesCount = 0,
+    this.existingExerciseIds = const <String>{},
   });
 
   final void Function(List<ScheduleExerciseEntry> selected) onExercisesAdded;
   final VoidCallback? onCreateNew;
   final int currentExercisesCount;
+  final Set<String> existingExerciseIds;
 
   @override
   ConsumerState<AddExercisePickerSheet> createState() =>
@@ -89,6 +92,7 @@ class _AddExercisePickerSheetState extends ConsumerState<AddExercisePickerSheet>
   }
 
   void _onToggleExercise(Exercise exercise) {
+    if (widget.existingExerciseIds.contains(exercise.id)) return;
     setState(() {
       if (_selectedExerciseIds.contains(exercise.id)) {
         _selectedExerciseIds.remove(exercise.id);
@@ -191,26 +195,33 @@ class _AddExercisePickerSheetState extends ConsumerState<AddExercisePickerSheet>
     final ink = context.ftInk;
     final muted = context.ftMuted;
 
-    return Center(
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+
+    return Align(
+      alignment: Alignment.bottomCenter,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 393),
         child: Container(
           height: MediaQuery.sizeOf(context).height * 0.88,
-          margin: const EdgeInsets.only(left: 12, right: 12, bottom: 12),
+          margin: EdgeInsets.only(
+            left: 12,
+            right: 12,
+            bottom: bottomInset > 0 ? bottomInset : 12,
+          ),
           decoration: BoxDecoration(
             color: isDark
-                ? const Color(0xF0181428)
-                : Colors.white.withValues(alpha: 0.88),
+                ? const Color(0xE6181428)
+                : Colors.white.withValues(alpha: 0.84),
             borderRadius: BorderRadius.circular(32),
             border: Border.all(
               color: isDark
                   ? const Color(0x33FFFFFF)
-                  : Colors.white.withValues(alpha: 0.85),
-              width: 1,
+                  : Colors.white.withValues(alpha: 0.9),
+              width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
-                color: primary.withValues(alpha: isDark ? 0.28 : 0.18),
+                color: primary.withValues(alpha: isDark ? 0.28 : 0.16),
                 blurRadius: 40,
                 offset: const Offset(0, -10),
               ),
@@ -218,8 +229,10 @@ class _AddExercisePickerSheetState extends ConsumerState<AddExercisePickerSheet>
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(32),
-            child: Column(
-              children: [
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+              child: Column(
+                children: [
                 // ── Top Grabber Pill ──────────────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.only(top: 12, bottom: 6),
@@ -317,85 +330,12 @@ class _AddExercisePickerSheetState extends ConsumerState<AddExercisePickerSheet>
                 // ── Selectable Exercise Rows List ────────────────────────────
                 Expanded(
                   child: exercisesAsync.when(
-                    data: (exercises) {
-                      final filtered = _filterExercises(exercises);
-                      if (filtered.isEmpty) {
-                        return Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.search_off_rounded,
-                                size: 40,
-                                color: muted.withValues(alpha: 0.6),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'No exercises found',
-                                style: TextStyle(
-                                  fontFamily: FtText.fontFamily,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: ink,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Try another search term or filter',
-                                style: TextStyle(
-                                  fontFamily: FtText.fontFamily,
-                                  fontSize: 12,
-                                  color: muted,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0x1AFFFFFF)
-                              : Colors.white.withValues(alpha: 0.62),
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: isDark
-                                ? const Color(0x22FFFFFF)
-                                : Colors.white.withValues(alpha: 0.8),
-                            width: 1,
-                          ),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(24),
-                          child: ListView.separated(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            physics: const BouncingScrollPhysics(),
-                            itemCount: filtered.length,
-                            separatorBuilder: (_, _) => Divider(
-                              height: 1,
-                              thickness: 1,
-                              indent: 16,
-                              endIndent: 16,
-                              color: isDark
-                                  ? const Color(0x1AFFFFFF)
-                                  : const Color(0xFFF2EBFF),
-                            ),
-                            itemBuilder: (context, i) {
-                              final ex = filtered[i];
-                              final isSelected =
-                                  _selectedExerciseIds.contains(ex.id);
-                              return ExercisePickerRow(
-                                exercise: ex,
-                                isSelected: isSelected,
-                                onTap: () => _onToggleExercise(ex),
-                              );
-                            },
-                          ),
-                        ),
-                      );
-                    },
+                    data: (exercises) => ExercisePickerList(
+                      exercises: _filterExercises(exercises),
+                      selectedExerciseIds: _selectedExerciseIds,
+                      existingExerciseIds: widget.existingExerciseIds,
+                      onToggleExercise: _onToggleExercise,
+                    ),
                     loading: () => Center(
                       child: CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(primary),
@@ -428,6 +368,7 @@ class _AddExercisePickerSheetState extends ConsumerState<AddExercisePickerSheet>
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 }

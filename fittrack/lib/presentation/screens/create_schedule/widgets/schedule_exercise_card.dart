@@ -149,7 +149,7 @@ class ScheduleExerciseCard extends StatelessWidget {
                 ),
               ),
 
-              // Expand / Collapse Chevron Button
+              // Expand / Collapse Chevron Button (animated rotation)
               FtPressable(
                 onTap: onToggleExpand,
                 pressedScale: 0.90,
@@ -162,20 +162,34 @@ class ScheduleExerciseCard extends StatelessWidget {
                         : const Color(0xFFF2EBFF),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    isExpanded
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.keyboard_arrow_down_rounded,
-                    size: 20,
-                    color: ink,
+                  child: AnimatedRotation(
+                    turns: isExpanded ? 0.5 : 0.0,
+                    duration: const Duration(milliseconds: 260),
+                    curve: Curves.easeInOutCubic,
+                    child: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 20,
+                      color: ink,
+                    ),
                   ),
                 ),
               ),
             ],
           ),
 
-          // ── Expanded Content (2x2 Steppers Grid + Footer) ─────────────────
-          if (isExpanded) ...[
+          // ── Animated Expanded Content (2x2 Steppers Grid + Footer) ────────
+          ClipRect(
+            child: AnimatedCrossFade(
+              crossFadeState: isExpanded
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 260),
+              firstCurve: Curves.easeInOutCubic,
+              secondCurve: Curves.easeInOutCubic,
+              sizeCurve: Curves.easeInOutCubic,
+              firstChild: const SizedBox(width: double.infinity, height: 0),
+              secondChild: Column(
+                children: [
             const SizedBox(height: 14),
             Row(
               children: [
@@ -342,8 +356,11 @@ class ScheduleExerciseCard extends StatelessWidget {
               ),
             ),
           ],
-        ],
+        ),
       ),
-    );
+    ),
+  ],
+),
+);
   }
 }

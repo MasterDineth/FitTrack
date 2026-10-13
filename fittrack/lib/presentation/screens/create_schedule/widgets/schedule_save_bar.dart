@@ -1,8 +1,9 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../theme/ft_glass.dart';
 import '../../dashboard/widgets/ft_pressable.dart';
 
-/// Floating Save Panel docked above the bottom navigation dock.
+/// Floating Save Panel docked above the bottom screen edge.
 /// Matching Stitch Screen ID 378f56a0b632436289e53841eb67b6fb.
 class ScheduleSaveBar extends StatelessWidget {
   const ScheduleSaveBar({
@@ -51,33 +52,38 @@ class ScheduleSaveBar extends StatelessWidget {
     final isDark = context.isDark;
     final primary = context.ftPrimary;
 
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 393),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xE61E1838)
-                  : Colors.white.withValues(alpha: 0.88),
+    return RepaintBoundary(
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 393),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: ClipRRect(
               borderRadius: BorderRadius.circular(28),
-              border: Border.all(
-                color: isDark
-                    ? const Color(0x33FFFFFF)
-                    : Colors.white.withValues(alpha: 0.95),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: primary.withValues(alpha: isDark ? 0.25 : 0.14),
-                  blurRadius: 36,
-                  offset: const Offset(0, 12),
-                ),
-              ],
-            ),
-            child: FtPressable(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xD91E1838)
+                        : Colors.white.withValues(alpha: 0.82),
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(
+                      color: isDark
+                          ? const Color(0x3DFFFFFF)
+                          : Colors.white.withValues(alpha: 0.95),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primary.withValues(alpha: isDark ? 0.28 : 0.16),
+                        blurRadius: 36,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: FtPressable(
               onTap: () => _handleTap(context),
               pressedScale: 0.98,
               child: AnimatedContainer(
@@ -148,6 +154,9 @@ class ScheduleSaveBar extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ),
+  ),
+),
+);
   }
 }

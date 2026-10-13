@@ -27,35 +27,42 @@ class ExercisePickerSearchBar extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       child: Container(
-        height: 48,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
+        height: 52,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
           color: isDark
               ? const Color(0x2EFFFFFF)
-              : const Color(0xFFF7F1FF),
-          borderRadius: BorderRadius.circular(16),
+              : Colors.white.withValues(alpha: 0.72),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isDark
-                ? const Color(0x26FFFFFF)
-                : Colors.white.withValues(alpha: 0.9),
+                ? const Color(0x33FFFFFF)
+                : Colors.white.withValues(alpha: 0.95),
             width: 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: primary.withValues(alpha: isDark ? 0.08 : 0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Icon(
               Icons.search_rounded,
-              size: 20,
+              size: 22,
               color: primary,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             Expanded(
               child: TextField(
                 controller: controller,
                 onChanged: onQueryChanged,
                 style: TextStyle(
                   fontFamily: FtText.fontFamily,
-                  fontSize: 13,
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: ink,
                 ),
@@ -63,9 +70,9 @@ class ExercisePickerSearchBar extends StatelessWidget {
                   hintText: 'Search exercises',
                   hintStyle: TextStyle(
                     fontFamily: FtText.fontFamily,
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: muted.withValues(alpha: 0.8),
+                    color: muted.withValues(alpha: 0.7),
                   ),
                   border: InputBorder.none,
                   isDense: true,
@@ -77,11 +84,20 @@ class ExercisePickerSearchBar extends StatelessWidget {
               FtPressable(
                 onTap: onClear,
                 pressedScale: 0.90,
-                child: Icon(
-                  Icons.close_rounded,
-                  size: 18,
-                  color: muted,
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: muted,
+                  ),
                 ),
+              )
+            else
+              Icon(
+                Icons.tune_rounded,
+                size: 19,
+                color: muted.withValues(alpha: 0.7),
               ),
           ],
         ),

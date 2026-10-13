@@ -317,6 +317,7 @@ GoRouter router(Ref ref) {
                   ),
                   GoRoute(
                     path: 'create-schedule',
+                    parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) => const CreateScheduleScreen(),
                   ),
                 ],
