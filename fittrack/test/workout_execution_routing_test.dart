@@ -281,7 +281,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final startButtonFinder = find.text('Start Workout');
+      final startButtonFinder = find.text('Start workout');
       expect(startButtonFinder, findsOneWidget);
 
       await tester.tap(startButtonFinder);

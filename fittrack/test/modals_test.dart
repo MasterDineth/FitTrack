@@ -78,18 +78,25 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 300));
 
-    // Verify Warning badge, headline, and buttons
-    expect(find.text('WARNING!'), findsOneWidget);
-    expect(find.text('Discard workout?'), findsOneWidget);
-    expect(find.text('UNSAVED SESSION STATS'), findsOneWidget);
+    // Verify Warning headline, telemetry, and buttons
+    expect(find.text('Discard Workout?'), findsOneWidget);
+    expect(find.text('UNLOGGED PROGRESS'), findsOneWidget);
     expect(find.text('02:04'), findsOneWidget);
-    expect(find.text('Keep Training'), findsOneWidget);
-    expect(find.text('Discard Workout'), findsOneWidget);
+    expect(find.text('Resume Workout'), findsOneWidget);
+    expect(find.text('Hold to Discard (1.25s)'), findsOneWidget);
 
-    // Tap Discard Workout
-    await tester.tap(find.text('Discard Workout'));
+    // Tapping briefly should NOT discard (requires 1.25-second hold)
+    await tester.tap(find.text('Hold to Discard (1.25s)'));
     await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
+    expect(discarded, isFalse);
+
+    // Long press and hold for 1.35 seconds to discard
+    final center = tester.getCenter(find.text('Hold to Discard (1.25s)'));
+    final gesture = await tester.startGesture(center);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 1350));
+    await gesture.up();
+    await tester.pumpAndSettle();
 
     expect(discarded, isTrue);
   });

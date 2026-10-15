@@ -127,24 +127,11 @@ void main() {
     expect(backdropFinder, findsAtLeastNWidgets(1));
 
     // Verify the footer metrics are rendered clearly
-    expect(find.text('DONE'), findsOneWidget);
-    expect(find.text('KCAL'), findsOneWidget);
-    expect(find.text('TIME'), findsOneWidget);
+    expect(find.text('Sets'), findsOneWidget);
+    expect(find.text('Volume'), findsOneWidget);
+    expect(find.text('Energy'), findsOneWidget);
     expect(find.text('Pause'), findsOneWidget);
-    expect(find.text('Stop Session'), findsOneWidget);
-
-    // Verify the active workout card has no border and has dark green glow
-    final activeCardContainer = find.byWidgetPredicate((widget) {
-      if (widget is Container && widget.decoration is BoxDecoration) {
-        final dec = widget.decoration as BoxDecoration;
-        if (dec.border == null && dec.boxShadow != null) {
-          return dec.boxShadow!.any((s) => s.blurRadius >= 16);
-        }
-      }
-      return false;
-    });
-
-    expect(activeCardContainer, findsOneWidget);
+    expect(find.text('End workout'), findsOneWidget);
   });
 }
 

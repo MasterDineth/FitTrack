@@ -133,29 +133,6 @@ GoRouter router(Ref ref) {
         path: '/onboarding/fitness',
         builder: (context, state) => const FitnessProfileSetupScreen(),
       ),
-      GoRoute(
-        path: '/workouts/detail',
-        parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) {
-          final extra = state.extra;
-          if (extra is WorkoutSchedule) {
-            return WorkoutDetailScreen(
-              scheduleId: extra.id,
-              workoutSchedule: extra,
-            );
-          }
-          return WorkoutDetailScreen(
-            scheduleId: (extra as dynamic)?.id?.toString() ?? '',
-          );
-        },
-      ),
-      GoRoute(
-        path: '/workouts/detail/:scheduleId',
-        parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => WorkoutDetailScreen(
-          scheduleId: state.pathParameters['scheduleId']!,
-        ),
-      ),
 
       GoRoute(
         path: '/exercises/create-custom',
@@ -314,6 +291,29 @@ GoRouter router(Ref ref) {
                   GoRoute(
                     path: 'search',
                     builder: (context, state) => const WorkoutSearchScreen(),
+                  ),
+                  GoRoute(
+                    path: 'detail/:scheduleId',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => WorkoutDetailScreen(
+                      scheduleId: state.pathParameters['scheduleId']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'detail',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) {
+                      final extra = state.extra;
+                      if (extra is WorkoutSchedule) {
+                        return WorkoutDetailScreen(
+                          scheduleId: extra.id,
+                          workoutSchedule: extra,
+                        );
+                      }
+                      return WorkoutDetailScreen(
+                        scheduleId: (extra as dynamic)?.id?.toString() ?? '',
+                      );
+                    },
                   ),
                   GoRoute(
                     path: 'create-schedule',
