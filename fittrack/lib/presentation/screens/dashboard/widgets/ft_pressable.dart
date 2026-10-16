@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Interactive wrapper providing calibrated press feedback.
 /// Scale .95 (buttons/avatar) or .98 (cards) for 100ms down / 160ms up.
@@ -8,6 +9,7 @@ class FtPressable extends StatefulWidget {
   final VoidCallback? onLongPress;
   final double pressedScale;
   final HitTestBehavior behavior;
+  final bool enableHaptics;
 
   const FtPressable({
     super.key,
@@ -16,6 +18,7 @@ class FtPressable extends StatefulWidget {
     this.onLongPress,
     this.pressedScale = 0.95,
     this.behavior = HitTestBehavior.opaque,
+    this.enableHaptics = true,
   });
 
   @override
@@ -27,6 +30,9 @@ class _FtPressableState extends State<FtPressable> {
 
   void _handleTapDown(TapDownDetails _) {
     if (widget.onTap != null || widget.onLongPress != null) {
+      if (widget.enableHaptics) {
+        HapticFeedback.selectionClick();
+      }
       setState(() => _isPressed = true);
     }
   }

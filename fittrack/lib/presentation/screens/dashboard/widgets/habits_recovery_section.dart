@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../domain/entities/daily_habit.dart';
 import '../../../theme/ft_glass.dart';
@@ -86,7 +87,13 @@ class HabitsRecoverySection extends ConsumerWidget {
                   child: _HabitItemRow(
                     habit: habit,
                     onToggle: () {
-                      ref.read(habitsProvider.notifier).toggle(habit.id);
+                      HapticFeedback.mediumImpact();
+                      ref.read(habitsNotifierProvider.notifier).toggle(habit.id);
+                      ref.read(dashboardNotificationsProvider.notifier).pushNotification(
+                        type: FtNotificationType.habit,
+                        title: 'Habit updated:',
+                        body: habit.title,
+                      );
                     },
                   ),
                 );
