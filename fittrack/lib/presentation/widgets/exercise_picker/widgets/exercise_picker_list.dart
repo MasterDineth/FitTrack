@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/exercise.dart';
+import '../../../../domain/entities/exercise_catalog.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../theme/ft_glass.dart';
 import 'exercise_picker_row.dart';
@@ -20,6 +21,35 @@ class ExercisePickerList extends StatelessWidget {
   final Set<String> existingExerciseIds;
   final ValueChanged<Exercise> onToggleExercise;
   final ThemeSettings? settings;
+
+  bool _isAlreadyInSchedule(Exercise exercise) {
+    if (existingExerciseIds.contains(exercise.id)) return true;
+
+    final canonicalId = ExerciseCatalog.toCanonicalId(exercise.id);
+    if (canonicalId != null && existingExerciseIds.contains(canonicalId)) {
+      return true;
+    }
+    final aliasId = ExerciseCatalog.toAliasId(exercise.id);
+    if (aliasId != null && existingExerciseIds.contains(aliasId)) {
+      return true;
+    }
+
+    final exName = exercise.name.trim().toLowerCase();
+    for (final existingId in existingExerciseIds) {
+      if (ExerciseCatalog.isSameExercise(exercise.id, existingId, name1: exercise.name)) {
+        return true;
+      }
+      final existingName = ExerciseCatalog.resolveName(existingId).trim().toLowerCase();
+      if (existingName.isNotEmpty &&
+          (existingName == exName ||
+              (existingName.contains('deadlift') &&
+                  exName.contains('deadlift') &&
+                  existingName.contains('romanian') == exName.contains('romanian')))) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +137,7 @@ class ExercisePickerList extends StatelessWidget {
           itemBuilder: (context, i) {
             final ex = exercises[i];
             final isSelected = selectedExerciseIds.contains(ex.id);
-            final isAlreadyAdded = existingExerciseIds.contains(ex.id);
+            final isAlreadyAdded = _isAlreadyInSchedule(ex);
             return ExercisePickerRow(
               exercise: ex,
               isSelected: isSelected,

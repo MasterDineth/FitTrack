@@ -20,6 +20,7 @@ import '../screens/workout_search_screen.dart';
 import '../screens/workout_detail_screen.dart';
 import '../screens/create_schedule_screen.dart';
 import '../../domain/entities/workout_schedule.dart';
+import '../../domain/entities/schedule_exercise.dart';
 import '../screens/create_custom_exercise_screen.dart';
 import '../screens/active_workout_screen.dart';
 import '../screens/exercise_guide_details_screen.dart';
@@ -133,29 +134,6 @@ GoRouter router(Ref ref) {
         path: '/onboarding/fitness',
         builder: (context, state) => const FitnessProfileSetupScreen(),
       ),
-      GoRoute(
-        path: '/workouts/detail',
-        parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) {
-          final extra = state.extra;
-          if (extra is WorkoutSchedule) {
-            return WorkoutDetailScreen(
-              scheduleId: extra.id,
-              workoutSchedule: extra,
-            );
-          }
-          return WorkoutDetailScreen(
-            scheduleId: (extra as dynamic)?.id?.toString() ?? '',
-          );
-        },
-      ),
-      GoRoute(
-        path: '/workouts/detail/:scheduleId',
-        parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => WorkoutDetailScreen(
-          scheduleId: state.pathParameters['scheduleId']!,
-        ),
-      ),
 
       GoRoute(
         path: '/exercises/create-custom',
@@ -167,6 +145,7 @@ GoRouter router(Ref ref) {
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => ActiveWorkoutScreen(
           scheduleId: state.pathParameters['scheduleId']!,
+          customExercises: state.extra as List<ScheduleExercise>?,
         ),
       ),
       GoRoute(
@@ -174,6 +153,7 @@ GoRouter router(Ref ref) {
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => ActiveWorkoutScreen(
           scheduleId: state.pathParameters['id']!,
+          customExercises: state.extra as List<ScheduleExercise>?,
         ),
       ),
       GoRoute(
@@ -314,6 +294,29 @@ GoRouter router(Ref ref) {
                   GoRoute(
                     path: 'search',
                     builder: (context, state) => const WorkoutSearchScreen(),
+                  ),
+                  GoRoute(
+                    path: 'detail/:scheduleId',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => WorkoutDetailScreen(
+                      scheduleId: state.pathParameters['scheduleId']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'detail',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) {
+                      final extra = state.extra;
+                      if (extra is WorkoutSchedule) {
+                        return WorkoutDetailScreen(
+                          scheduleId: extra.id,
+                          workoutSchedule: extra,
+                        );
+                      }
+                      return WorkoutDetailScreen(
+                        scheduleId: (extra as dynamic)?.id?.toString() ?? '',
+                      );
+                    },
                   ),
                   GoRoute(
                     path: 'create-schedule',

@@ -21,4 +21,10 @@ abstract class IScheduleRepository {
 
   /// Searches schedules matching [query] with optional [category] filter.
   Future<List<Schedule>> searchSchedules(String query, {String? category});
+
+  /// Increments the completion count for a completed workout schedule.
+  Future<void> incrementCompletionCount(String scheduleId);
+
+  /// Retrieves trending schedules sorted by completion count descending.
+  Future<List<Schedule>> getTrendingSchedules({int limit = 5});
 }

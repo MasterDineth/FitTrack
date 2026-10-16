@@ -115,6 +115,12 @@ class _MockScheduleRepository implements IScheduleRepository {
 
   @override
   Future<void> deleteSchedule(String id) async {}
+
+  @override
+  Future<void> incrementCompletionCount(String scheduleId) async {}
+
+  @override
+  Future<List<Schedule>> getTrendingSchedules({int limit = 5}) async => [];
 }
 
 void main() {

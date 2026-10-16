@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../domain/entities/schedule.dart';
 import '../../domain/entities/exercise.dart';
+import '../../domain/entities/exercise_catalog.dart';
 import '../../domain/entities/exercise_log.dart';
 import '../../domain/entities/set_log.dart';
 import '../../domain/entities/workout_session.dart';
@@ -45,19 +46,38 @@ class LiveExerciseEntry {
   LiveExerciseEntry({
     required this.scheduleExercise,
     required this.exercise,
-    int? currentWeight,
-    int? currentReps,
-    int? extraSets,
-  })  : liveWeightKg =
-            scheduleExercise.targetWeightKg,
+  })  : liveWeightKg = scheduleExercise.targetWeightKg,
         liveReps = scheduleExercise.targetReps,
-        totalSets = scheduleExercise.targetSets;
+        totalSets = scheduleExercise.targetSets {
+    for (int i = 0; i < totalSets; i++) {
+      setWeights[i] = scheduleExercise.targetWeightKg;
+      setReps[i] = scheduleExercise.targetReps;
+    }
+  }
 
   final ScheduleExercise scheduleExercise;
   final Exercise exercise;
   double liveWeightKg;
   int liveReps;
   int totalSets; // may grow if "+ Set" tapped
+  final Map<int, double> setWeights = {};
+  final Map<int, int> setReps = {};
+
+  double weightForSet(int setIndex) =>
+      setWeights[setIndex] ?? liveWeightKg;
+
+  int repsForSet(int setIndex) =>
+      setReps[setIndex] ?? liveReps;
+
+  void setWeightForSet(int setIndex, double weight) {
+    setWeights[setIndex] = weight;
+    liveWeightKg = weight;
+  }
+
+  void setRepsForSet(int setIndex, int reps) {
+    setReps[setIndex] = reps;
+    liveReps = reps;
+  }
 
   // Convenience getters
   String get exerciseId => exercise.id;
@@ -81,6 +101,7 @@ class ActiveWorkoutState {
     required this.elapsedSeconds,
     required this.restRemainingSeconds,
     required this.completedSets,
+    this.skippedExerciseIds = const {},
     this.errorMessage,
   });
 
@@ -92,6 +113,7 @@ class ActiveWorkoutState {
   final int elapsedSeconds;
   final int restRemainingSeconds;
   final List<CompletedSetEntry> completedSets;
+  final Set<String> skippedExerciseIds;
   final String? errorMessage;
 
   // ── Computed ───────────────────────────────────────────────────────────────
@@ -115,6 +137,8 @@ class ActiveWorkoutState {
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
+  String get formattedElapsed => elapsedFormatted;
+
   String get restRemainingFormatted {
     final m = restRemainingSeconds ~/ 60;
     final s = restRemainingSeconds % 60;
@@ -129,6 +153,14 @@ class ActiveWorkoutState {
           ? entries.sublist(currentExerciseIndex + 1)
           : [];
 
+  /// Past entries (completed or skipped).
+  List<LiveExerciseEntry> get pastEntries =>
+      currentExerciseIndex > 0
+          ? entries.sublist(0, currentExerciseIndex)
+          : [];
+
+  bool isSkipped(String exerciseId) => skippedExerciseIds.contains(exerciseId);
+
   ActiveWorkoutState copyWith({
     WorkoutPhase? phase,
     Schedule? schedule,
@@ -138,6 +170,7 @@ class ActiveWorkoutState {
     int? elapsedSeconds,
     int? restRemainingSeconds,
     List<CompletedSetEntry>? completedSets,
+    Set<String>? skippedExerciseIds,
     String? errorMessage,
   }) => ActiveWorkoutState(
     phase: phase ?? this.phase,
@@ -148,6 +181,7 @@ class ActiveWorkoutState {
     elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
     restRemainingSeconds: restRemainingSeconds ?? this.restRemainingSeconds,
     completedSets: completedSets ?? this.completedSets,
+    skippedExerciseIds: skippedExerciseIds ?? this.skippedExerciseIds,
     errorMessage: errorMessage ?? this.errorMessage,
   );
 }
@@ -187,15 +221,20 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
 
   // ── Session Lifecycle ──────────────────────────────────────────────────────
 
-  Future<void> startWorkout(String scheduleId) => startSession(scheduleId);
+  Future<void> startWorkout(String scheduleId, {List<ScheduleExercise>? customExercises}) =>
+      startSession(scheduleId, customExercises: customExercises);
 
-  Future<void> startSession(String scheduleId) async {
+  Future<void> startSession(String scheduleId, {List<ScheduleExercise>? customExercises}) async {
     try {
       final scheduleRepo = ref.read(scheduleRepositoryProvider);
       final exerciseRepo = ref.read(exerciseRepositoryProvider);
 
       Schedule? schedule = await scheduleRepo.getScheduleById(scheduleId);
       List<ScheduleExercise> scheduleExercises = [];
+
+      if (customExercises != null && customExercises.isNotEmpty) {
+        scheduleExercises = List.from(customExercises);
+      }
 
       if (schedule == null) {
         // Fallback: search schedulesProvider for predefined / in-memory schedules
@@ -217,9 +256,11 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
             ),
             orderIndex: 0,
           );
-          scheduleExercises = ws.exercises;
+          if (scheduleExercises.isEmpty) {
+            scheduleExercises = ws.exercises;
+          }
         }
-      } else {
+      } else if (scheduleExercises.isEmpty) {
         scheduleExercises =
             await scheduleRepo.getScheduleExercises(scheduleId);
       }
@@ -309,14 +350,7 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
   }
 
   static String _resolveExerciseName(String exerciseId) {
-    if (exerciseId.startsWith('ex_')) {
-      final raw = exerciseId.substring(3).replaceAll('_', ' ');
-      return raw.split(' ').map((w) {
-        if (w.isEmpty) return '';
-        return '${w[0].toUpperCase()}${w.substring(1)}';
-      }).join(' ');
-    }
-    return exerciseId;
+    return ExerciseCatalog.resolveName(exerciseId);
   }
 
   static Equipment _resolveEquipment(String exerciseId) {
@@ -361,8 +395,10 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
     final idx = state.currentExerciseIndex;
     if (idx >= state.entries.length) return;
     final entry = state.entries[idx];
-    entry.liveWeightKg =
-        (entry.liveWeightKg + delta).clamp(0, 999);
+    final currentSet = state.currentSetIndex;
+    final currentWeight = entry.weightForSet(currentSet);
+    final newWeight = (currentWeight + delta).clamp(0.0, 999.0);
+    entry.setWeightForSet(currentSet, newWeight);
     state = state.copyWith(entries: List.from(state.entries));
   }
 
@@ -370,14 +406,23 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
     final idx = state.currentExerciseIndex;
     if (idx >= state.entries.length) return;
     final entry = state.entries[idx];
-    entry.liveReps = (entry.liveReps + delta).clamp(1, 999);
+    final currentSet = state.currentSetIndex;
+    final currentReps = entry.repsForSet(currentSet);
+    final newReps = (currentReps + delta).clamp(1, 999);
+    entry.setRepsForSet(currentSet, newReps);
     state = state.copyWith(entries: List.from(state.entries));
   }
 
   void addSet() {
     final idx = state.currentExerciseIndex;
     if (idx >= state.entries.length) return;
-    state.entries[idx].totalSets++;
+    final entry = state.entries[idx];
+    final newSetIndex = entry.totalSets;
+    entry.totalSets++;
+    final prevWeight = entry.weightForSet(newSetIndex - 1);
+    final prevReps = entry.repsForSet(newSetIndex - 1);
+    entry.setWeights[newSetIndex] = prevWeight;
+    entry.setReps[newSetIndex] = prevReps;
     state = state.copyWith(entries: List.from(state.entries));
   }
 
@@ -387,12 +432,16 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
     final entry = state.currentEntry;
     if (entry == null) return;
 
+    final currentSet = state.currentSetIndex;
+    final actualWeight = entry.weightForSet(currentSet);
+    final actualReps = entry.repsForSet(currentSet);
+
     final completed = CompletedSetEntry(
       scheduleExerciseId: entry.scheduleExercise.id,
       exerciseId: entry.exerciseId,
-      setNumber: state.currentSetIndex + 1,
-      actualReps: entry.liveReps,
-      actualWeightKg: entry.liveWeightKg,
+      setNumber: currentSet + 1,
+      actualReps: actualReps,
+      actualWeightKg: actualWeight,
       targetReps: entry.targetReps,
       targetWeightKg: entry.targetWeightKg,
       restDurationSeconds: entry.restDurationSeconds,
@@ -475,8 +524,8 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
       }
       // Reset live values to new exercise defaults
       final nextEntry = state.entries[nextExerciseIndex];
-      nextEntry.liveWeightKg = nextEntry.targetWeightKg;
-      nextEntry.liveReps = nextEntry.targetReps;
+      nextEntry.liveWeightKg = nextEntry.weightForSet(0);
+      nextEntry.liveReps = nextEntry.repsForSet(0);
 
       state = state.copyWith(
         phase: WorkoutPhase.active,
@@ -486,10 +535,19 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
         entries: List.from(state.entries),
       );
     } else {
+      final nextSet = state.currentSetIndex + 1;
+      // Inherit previous set's weight if not yet set
+      if (!entry.setWeights.containsKey(nextSet)) {
+        entry.setWeights[nextSet] = entry.weightForSet(state.currentSetIndex);
+      }
+      entry.liveWeightKg = entry.weightForSet(nextSet);
+      entry.liveReps = entry.repsForSet(nextSet);
+
       state = state.copyWith(
         phase: WorkoutPhase.active,
-        currentSetIndex: state.currentSetIndex + 1,
+        currentSetIndex: nextSet,
         restRemainingSeconds: 0,
+        entries: List.from(state.entries),
       );
     }
   }
@@ -499,26 +557,33 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
   void skipExercise({String? reason}) {
     _restTimer?.cancel();
     final entry = state.currentEntry;
-    if (entry != null && reason != null) {
-      // Record the skip reason keyed by exerciseId
-      _skipReasons[entry.exerciseId] = reason;
+    final updatedSkipped = Set<String>.from(state.skippedExerciseIds);
+    if (entry != null) {
+      if (reason != null) {
+        _skipReasons[entry.exerciseId] = reason;
+      }
+      updatedSkipped.add(entry.exerciseId);
     }
     final nextIndex = state.currentExerciseIndex + 1;
     if (nextIndex >= state.entries.length) {
       _cancelTimers();
-      state = state.copyWith(phase: WorkoutPhase.finished);
+      state = state.copyWith(
+        phase: WorkoutPhase.finished,
+        skippedExerciseIds: updatedSkipped,
+      );
       _persistSession(state.completedSets);
       return;
     }
     final nextEntry = state.entries[nextIndex];
-    nextEntry.liveWeightKg = nextEntry.targetWeightKg;
-    nextEntry.liveReps = nextEntry.targetReps;
+    nextEntry.liveWeightKg = nextEntry.weightForSet(0);
+    nextEntry.liveReps = nextEntry.repsForSet(0);
 
     state = state.copyWith(
       phase: WorkoutPhase.active,
       currentExerciseIndex: nextIndex,
       currentSetIndex: 0,
       restRemainingSeconds: 0,
+      skippedExerciseIds: updatedSkipped,
       entries: List.from(state.entries),
     );
   }
@@ -556,15 +621,50 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
     _cancelTimers();
     _sessionStartTime = null;
     _skipReasons.clear();
-    state = state.copyWith(
-      phase: WorkoutPhase.loading,
+    state = const ActiveWorkoutState(
+      phase: WorkoutPhase.discarded,
+      schedule: Schedule(
+        id: '',
+        name: '',
+        description: '',
+        targetMuscles: [],
+        assignedWeekdays: [],
+        orderIndex: 0,
+      ),
+      entries: [],
       elapsedSeconds: 0,
       restRemainingSeconds: 0,
       currentExerciseIndex: 0,
       currentSetIndex: 0,
-      completedSets: const [],
+      completedSets: [],
+      skippedExerciseIds: {},
     );
     ref.read(sessionsRevisionProvider.notifier).bump();
+  }
+
+  /// Resets the active workout state completely to a clean, discarded state.
+  void resetSession() {
+    _cancelTimers();
+    _sessionStartTime = null;
+    _skipReasons.clear();
+    state = const ActiveWorkoutState(
+      phase: WorkoutPhase.discarded,
+      schedule: Schedule(
+        id: '',
+        name: '',
+        description: '',
+        targetMuscles: [],
+        assignedWeekdays: [],
+        orderIndex: 0,
+      ),
+      entries: [],
+      elapsedSeconds: 0,
+      restRemainingSeconds: 0,
+      currentExerciseIndex: 0,
+      currentSetIndex: 0,
+      completedSets: [],
+      skippedExerciseIds: {},
+    );
   }
 
   Future<void> stopSession() async {
@@ -679,6 +779,16 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
         ));
       }
       await repo.saveSetLogs(setLogs);
+
+      if (state.schedule.id.isNotEmpty) {
+        try {
+          await ref
+              .read(scheduleRepositoryProvider)
+              .incrementCompletionCount(state.schedule.id);
+          ref.read(schedulesProvider.notifier).loadFromDatabase();
+        } catch (_) {}
+      }
+
       ref.read(sessionsRevisionProvider.notifier).bump();
     } catch (_) {
       // Silently swallow — data is already in memory if needed

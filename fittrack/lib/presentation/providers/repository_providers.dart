@@ -1,4 +1,6 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../domain/entities/exercise.dart';
 import '../../domain/repositories/i_auth_repository.dart';
 import '../../domain/repositories/i_user_repository.dart';
 import '../../domain/repositories/i_schedule_repository.dart';
@@ -92,4 +94,8 @@ IHabitsRepository habitsRepository(Ref ref) {
 ILifestyleContentRepository lifestyleContentRepository(Ref ref) {
   return const LifestyleContentRepositoryImpl();
 }
+
+final exerciseByIdProvider = FutureProvider.autoDispose.family<Exercise?, String>((ref, id) async {
+  return ref.watch(exerciseRepositoryProvider).getExerciseById(id);
+});
 

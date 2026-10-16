@@ -23,6 +23,7 @@ abstract class Schedule with _$Schedule {
     @Default(4) int daysPerWeek,
     @Default(45) int estimatedMinutes,
     @Default(false) bool isCustom,
+    @Default(0) int completionCount,
   }) = _Schedule;
 
   factory Schedule.fromJson(Map<String, dynamic> json) => _$ScheduleFromJson(json);

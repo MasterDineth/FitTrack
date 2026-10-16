@@ -68,6 +68,7 @@ class SqliteScheduleRepository implements IScheduleRepository {
           'daysPerWeek': schedule.daysPerWeek,
           'estimatedMinutes': schedule.estimatedMinutes,
           'isCustom': schedule.isCustom ? 1 : 0,
+          'completionCount': schedule.completionCount,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
@@ -174,6 +175,27 @@ class SqliteScheduleRepository implements IScheduleRepository {
     }).toList();
   }
 
+  @override
+  Future<void> incrementCompletionCount(String scheduleId) async {
+    final db = await _dbHelper.database;
+    await db.rawUpdate(
+      'UPDATE schedules SET completionCount = completionCount + 1 WHERE id = ?',
+      [scheduleId],
+    );
+  }
+
+  @override
+  Future<List<Schedule>> getTrendingSchedules({int limit = 5}) async {
+    final db = await _dbHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'schedules',
+      where: 'isArchived = 0',
+      orderBy: 'completionCount DESC, orderIndex ASC',
+      limit: limit,
+    );
+    return maps.map(_mapToSchedule).toList();
+  }
+
   // ── Helpers ──────────────────────────────────────────────────────────────
 
   Schedule _mapToSchedule(Map<String, dynamic> map) {
@@ -187,6 +209,7 @@ class SqliteScheduleRepository implements IScheduleRepository {
     modMap['durationWeeks'] = modMap['durationWeeks'] as int? ?? 8;
     modMap['daysPerWeek'] = modMap['daysPerWeek'] as int? ?? 4;
     modMap['estimatedMinutes'] = modMap['estimatedMinutes'] as int? ?? 45;
+    modMap['completionCount'] = modMap['completionCount'] as int? ?? 0;
     modMap['targetMuscles'] =
         List<String>.from(json.decode(modMap['targetMuscles'] as String));
     modMap['assignedWeekdays'] =

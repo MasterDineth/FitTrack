@@ -46,8 +46,8 @@ Build module by module, never horizontally across the app. For every module:
 3.  Data implementation, **migration** (see section 11), and Riverpod providers.
 4.  UI connected to the finished state logic.
 5.  **Tests** (see section 12).
-6.  **Docs:** update `DATA_MODEL.md` (it is currently outdated) and any changed contracts.
-7.  **Verify:** `flutter analyze`, `flutter test`, and a profile-mode check for UI work.
+6.  **Docs:** update `DATA_MODEL.md` and any changed contracts.
+7.  **Verify:** `flutter analyze` and `flutter test`.
 
 UI-only tasks touch only `presentation/` unless data changes are explicitly requested.
 
@@ -57,9 +57,9 @@ UI-only tasks touch only `presentation/` unless data changes are explicitly requ
 3.  One provider per concern. Each screen section is its own small `ConsumerWidget` that watches only what it needs, using `select()` where possible. No screen-wide `ref.watch` of many providers at the top of `build`.
 4.  Use `ref.watch` in `build`, `ref.read` in callbacks, and `ref.listen` for side effects. NEVER perform side effects (navigation, writes, timers) inside `build`.
 5.  Mutable state lives in `Notifier` / `AsyncNotifier`. After any write (session saved, schedule edited, habit toggled), invalidate or bump the specific dependent providers once.
-6.  Aggregations (counts, sums, ranges) are done in SQL, not by loading all rows. No provider may call `getAll*()` just to compute a number.
+6.  Aggations (counts, sums, ranges) are done in SQL, not by loading all rows. No provider may call `getAll*()` just to compute a number.
 7.  Every `AsyncValue` handles loading, error and empty states explicitly.
-8.  A debug-only `ProviderObserver` logs provider creation and disposal counts. Use it to prove a fix.
+8.  A debug-only `ProviderObserver` logs provider creation and disposal counts.
 
 ## 7. Navigation Rules (GoRouter)
 *   All paths are constants. Gating (splash, auth, onboarding completion) happens in the router `redirect` driven by providers. Screens NEVER call `context.go` for gating.
@@ -67,38 +67,41 @@ UI-only tasks touch only `presentation/` unless data changes are explicitly requ
 *   The bottom navigation and page transitions live in one shell widget. Do not duplicate nav code per screen.
 *   Never use a back or close button on a screen that is the root of a flow.
 
-## 8. UI & Design System (Stitch)
-*   Implement layouts **exactly** as the Stitch payload specifies (spacing, radii, colours, type, motion). If the design contains a data, copy or accessibility problem, build it correctly and flag the deviation.
-*   **Tokens:** colours, radii, spacing, text styles, glass tiers and motion durations live in a `ThemeExtension` under `presentation/theme/`. NEVER hardcode hex colours, font sizes or radii inside widgets.
-*   **Brand:** primary violet (current Stitch value `#5F3BDC`; see the theme file for the canonical token). The default accent after a data reset MUST be the brand violet, never a fallback green.
-*   **Font:** Plus Jakarta Sans, bundled as an asset family. NEVER rely on a font that is not declared in `pubspec.yaml`.
-*   **Glass style:** cards use translucent fill, hairline border, inset top highlight and soft violet-tinted shadow. They do NOT use per-card blur (see section 9).
-*   **Reuse:** shared widgets (`GlassSurface`, section headers, chips, stat tiles, list rows, sheets) live in `presentation/widgets/`. Check for an existing one before writing a new one.
-*   **Images:** bundled as sized WebP/PNG assets under `assets/images/` and declared in `pubspec.yaml`. NEVER hot-link Stitch or other signed URLs.
-*   **Copy:** sentence case, plain language. No internal jargon in the UI ("telemetry", "vault", "kinetic"). Button labels are verbs.
-*   **Accessibility:** text contrast at least 4.5:1, tap targets at least 48dp, no fixed heights on text containers (layouts survive large text), `Semantics` on icon-only buttons, and `MediaQuery.disableAnimationsOf` honoured (durations become 0). Avoid text below 11sp. If the design requires it, keep it in one constant and flag it.
+## 8. UI & Design System (Stitch & Frosted Glass Consistency)
+*   Implement layouts **exactly** as the Stitch payload and finalized screens specify (spacing, radii, colours, type, frosted glass tiers, and motion). If the design contains a data, copy or accessibility problem, build it correctly and flag the deviation.
+*   **Tokens (`FtGlassTheme` & `AppColors`):** All colours, radii, spacing, text styles, glass tiers and motion durations live in `presentation/theme/`. NEVER hardcode raw hex colours, font sizes or arbitrary radii inside widgets when a theme token or `ColorScheme` role exists.
+    *   **Typography:** Plus Jakarta Sans is set in `ThemeData`. Do not repeat `fontFamily: 'Plus Jakarta Sans'` inline. Avoid text below `11sp` unless required by a badge/micro-label constant.
+    *   **Dynamic Accent & Background:** All screens sit over `AmbientMeshBackground`, which dynamically adapts to the active primary accent colour and theme mode (Light, Dark, OLED Black) set in Appearance Settings.
+*   **Brand:** Primary violet (`#5F3BDC`). The default accent after a data reset MUST be the brand violet, never a fallback green.
+*   **Frosted Glass Design System (Appearance Settings Driven):**
+    *   **Visual Parity:** All newly built screens (Schedule Details, Active Workout, Rest Timer, Pause/Discard/Confirm Modals, Workout Summary, and all Settings sub-screens) MUST match the frosted glass aesthetic of the finalized screens (Dashboard, Workouts, History, Create Schedule, Appearance).
+    *   **Shared Glass Components:** Always use `GlassSurface` (`lib/presentation/widgets/glass_surface.dart` with `FtGlassTier.glass1`, `FtGlassTier.glass2`, `FtGlassTier.glassFloating`) or `FrostedGlassBox` / `FtSettingsCard` consistently—NEVER build ad-hoc inline `Container` + `BackdropFilter` glass by hand inside screen files.
+    *   **Appearance Screen Authority:** Do NOT hardcode `enableBlur: false` on cards or alter the existing blur sigma multipliers. Frosted glass enable/disable and blur intensity MUST remain dynamically controlled by `ThemeSettings` (`themeNotifierProvider`) from the Appearance screen so toggling or sliding blur intensity updates all glass surfaces across the app.
+    *   **Modals & Dialogs:** Use `modal_backdrop_helper.dart` and shared glass modal containers for all confirmation, pause, discard, skip, and picker sheets so they match the finalized glass dialog style.
+*   **Reuse:** Check `presentation/widgets/` (`GlassSurface`, `GlassIconButton`, `GlassPillChip`, ` GlassHairlineDivider`, `FtPrimaryButton`, `FtTextField`, `FtSettingsCard`, `SettingsGroupCard`, `SettingsTileRow`) before creating new widgets.
+*   **Images:** Bundled as sized WebP/PNG assets under `assets/images/` and declared in `pubspec.yaml`. NEVER hot-link Stitch or other signed URLs.
+*   **Copy:** Sentence case, plain language. No internal jargon in visible UI text ("telemetry", "vault", "kinetic"). Button labels are verbs.
+*   **Accessibility:** Text contrast at least 4.5:1, tap targets at least 48dp, no fixed heights on text containers (layouts survive large text), `Semantics` on icon-only buttons, and `MediaQuery.disableAnimationsOf` honoured.
 
-## 9. Performance & Structure Guardrails
-These patterns were found in the codebase and are now banned in new code. Fix any you touch.
-*   **No `shrinkWrap: true`** lists or grids inside a scroll view. Use slivers (`SliverList`, `SliverGrid`, `SliverToBoxAdapter`) or a plain `Column`/`Row` for a small fixed number of items.
-*   **No synchronous file I/O** (`existsSync`, `readAsBytesSync`) in `build` or the UI isolate hot path.
-*   **Every image** sets `cacheWidth` / `ResizeImage` to display size x device pixel ratio. No full-resolution decode for small avatars. Precache hero images.
-*   **`BackdropFilter`:** only for floating overlays over scrolling content (the bottom dock) and modal sheets or scrims. NEVER per card or list row. At most one visible at a time (plus the modal scrim). Wrap it in a `RepaintBoundary`.
-*   **`Opacity`, `ShaderMask`, `saveLayer` and `ClipRRect` with layer clipping:** not on static content. Use colour alpha. Large soft shadows (blur 24 or more) only on a few focal cards.
-*   **Timers:** a clock rebuilds only its own `Text`, minute-aligned, cancelled in `dispose`, and paused when `TickerMode` is false. No per-second `setState` on large trees.
-*   **Animations:** prefer implicit animations. Every `AnimationController` is disposed. No `setState` per frame. Wrap animating subtrees in `RepaintBoundary`.
-*   **Lists:** dynamic lists use builder constructors. Do not rebuild `Theme.of(context)` or `BoxDecoration` objects per item; hoist them.
-*   **File size:** screens above about 400 lines MUST be split into section widgets in their own files, with `const` constructors where possible. Files above 1,000 lines are not accepted for new work.
-*   **Evidence:** UI work that touches a scrolling screen, the nav shell or an animation includes a profile-mode check (DevTools: UI vs raster thread, rebuild counts, provider creation counts) in the PR description. Target: no jank during scroll, and no rebuilds while the screen is idle.
+## 9. Structural & Code Quality Guardrails (For All New Screens)
+To keep new screens clean, modular, and easy to optimize later:
+*   **Modular Screen Decomposition (400-Line Limit):** Screens above ~400 lines MUST be decomposed into a dedicated feature folder (e.g., `presentation/screens/active_workout/widgets/`, `presentation/screens/workout_summary/widgets/`, `presentation/screens/schedule_detail/widgets/`) following the exact pattern of `presentation/screens/dashboard/` and `presentation/screens/create_schedule/`.
+*   **No `shrinkWrap: true`:** Do not use `shrinkWrap: true` lists or grids inside scroll views. Use slivers (`CustomScrollView` + `SliverList.builder`, `SliverToBoxAdapter`) or a plain `Column` for a small fixed number of items. In modals with scrollable lists, wrap `ListView.builder` in a `Flexible` or `ConstrainedBox`.
+*   **Isolated Timer Widgets (Active Workout & Rest Timer):**
+    *   In `ActiveWorkoutScreen` and `ActiveRestTimerView`, keep timer ticks scoped to the timer display widget (or watched via `.select()`) so that 1-second stopwatch/rest ticks do not force the entire screen tree or text inputs to rebuild every second.
+    *   Store `startedAt`, `pausedAt`, `accumulatedPausedSeconds`, and `restEndsAt` in state so elapsed/remaining time remains accurate across app backgrounding.
+*   **Images:** Every `Image.file` or `FileImage` (such as the user avatar in `account_details_screen.dart`) MUST use `cacheWidth` or `ResizeImage` to display size x device pixel ratio.
+*   **Animations:** Every `AnimationController` MUST be disposed in `dispose()` and paused when `TickerMode.of(context)` is false.
+*   **No synchronous file I/O** (`existsSync`, `readAsBytesSync`) in `build`.
 
 ## 10. Data Integrity, Honesty & Security
-*   **No fake UI.** NEVER leave `onPressed: () {}` / `onTap: () {}`. A control is either implemented, disabled (null handler with a disabled style), or removed. A temporary stub carries `// TODO(<issue>)` and is listed in the PR.
-*   **No fabricated status.** Do not hard-code "Synced", "Optimal", "Pro", version strings, scores or encryption claims. Show them only when backed by real data or real behaviour.
-*   **Sample data** is allowed only behind a debug-only flag (for example `kUseSampleData`) to reproduce a Stitch frame. Release builds show a real empty state when there is no data source.
-*   **Privacy:** health and body data is sensitive and local-first. Never log personal data. Use no `print`; use a logger gated by build mode.
-*   **Auth & secrets:** NEVER store plaintext passwords or tokens. Use a vetted backend or a salted slow hash (Argon2, bcrypt or PBKDF2). NEVER write custom crypto. Store secrets in platform secure storage (add `flutter_secure_storage` with justification when needed).
-*   **SQL:** parameterised queries only.
-*   **Import/restore:** validate `.fittrack` files (schema version, size limits) before touching data. Destructive actions (erase, restore, discard) require confirmation, and any "back up first" option MUST really back up.
+*   **No fake UI:** NEVER leave `onPressed: () {}` / `onTap: () {}`. A control is either implemented, disabled (null handler with a disabled style), or removed. A temporary stub carries `// TODO(<issue>)` and is listed in the PR.
+*   **No fabricated status:** Do not hard-code "Synced", "Optimal", "Pro", version strings, scores or encryption claims. Show them only when backed by real data or real behaviour.
+*   **Sample data:** Allowed only behind a debug-only flag (for example `kUseSampleData`) to reproduce a Stitch frame. Release builds show a real empty state when there is no data source.
+*   **Privacy:** Health and body data is sensitive and local-first. Never log personal data. Use no `print`; use a logger gated by build mode.
+*   **Auth & secrets:** NEVER store plaintext passwords or tokens. Use a vetted backend or a salted slow hash (Argon2, bcrypt or PBKDF2). NEVER write custom crypto. Store secrets in platform secure storage.
+*   **SQL:** Parameterised queries only.
+*   **Import/restore:** Validate `.fittrack` files (schema version, size limits) before touching data. Destructive actions (erase, restore, discard) require confirmation, and any "back up first" option MUST really back up.
 *   **Biometrics:** `local_auth` fails closed.
 
 ## 11. Database & Migrations
@@ -108,12 +111,12 @@ These patterns were found in the codebase and are now banned in new code. Fix an
 *   `DATA_MODEL.md` MUST match the real schema. Update it in the same PR. Derive values instead of storing duplicates (store date of birth, not age).
 
 ## 12. Testing & Definition of Done
-*   **Domain:** unit tests for entity validation and business rules.
-*   **Data:** repository tests against an in-memory SQLite (add `sqflite_common_ffi` as a dev dependency) including migrations.
+*   **Domain:** Unit tests for entity validation and business rules.
+*   **Data:** Repository tests against an in-memory SQLite (`sqflite_common_ffi`) including migrations.
 *   **Providers:** `ProviderContainer` tests with overridden repositories.
-*   **UI:** widget tests for the loading, empty, error and data states of each screen, and for key interactions. Add goldens for design-critical widgets when stable.
+*   **UI:** Widget tests for the loading, empty, error and data states of each screen, and for key interactions.
 *   Every bug fix adds a regression test.
-*   **Definition of done:** `flutter analyze` clean, `flutter test` green, generated files up to date, no new banned patterns (section 9), no new no-op handlers, docs updated, and a profile-mode check for UI-heavy work.
+*   **Definition of done:** `flutter analyze` clean, `flutter test` green, generated files up to date, screen modularized into sub-widgets (<400 lines per file), uses shared glass components (`GlassSurface` / `FtSettingsCard`), no no-op handlers, and docs updated.
 
 ## 13. Git & Agent Conduct
 *   One branch per slice (`feature/<module>-<topic>`), small commits with clear messages, and no force-push to shared branches.
@@ -122,5 +125,5 @@ These patterns were found in the codebase and are now banned in new code. Fix an
 *   Do not delete existing behaviour or user-data paths unless asked. Prefer additive migrations.
 *   When requirements are ambiguous or sources conflict, state the assumption you chose instead of silently picking one.
 
-## 14. Module Map (vertical slices)
-Onboarding and auth; Dashboard; Workouts (library, detail, schedules, create schedule, create exercise); Active workout (session, rest timer, summary, end/discard flows); History and history detail; Profile; Settings (account, security and app lock, password, workout preferences, units and equipment, appearance, notifications, data management and erase); shared UI foundation (theme tokens, glass widgets, shell and dock).
+## 14. Module Map (Vertical Slices)
+Onboarding and auth; Dashboard; Workouts (library, schedule details, schedules, create schedule, create exercise); Active workout (session, rest timer, workout summary/complete, pause/end/discard/skip modals); History and history detail; Profile; Settings (account details, security and app lock, password & security, workout preferences, units and equipment, appearance, notifications, data management, erase data, help center, about); shared UI foundation (theme tokens, glass widgets, shell and dock).

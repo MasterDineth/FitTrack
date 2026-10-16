@@ -23,6 +23,7 @@ abstract class WorkoutSchedule with _$WorkoutSchedule {
     @Default(0) int exerciseCount,
     @Default(0) int estimatedMinutes,
     @Default(<ScheduleExercise>[]) List<ScheduleExercise> exercises,
+    @Default(0) int completionCount,
   }) = _WorkoutSchedule;
 
   factory WorkoutSchedule.fromJson(Map<String, dynamic> json) =>
@@ -47,6 +48,7 @@ abstract class WorkoutSchedule with _$WorkoutSchedule {
       exerciseCount: exercises.isNotEmpty ? exercises.length : 0,
       estimatedMinutes: (schedule.estimatedMinutes ?? 45) as int,
       exercises: exercises,
+      completionCount: (schedule.completionCount ?? 0) as int,
     );
   }
 }

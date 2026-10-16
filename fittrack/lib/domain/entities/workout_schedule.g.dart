@@ -30,6 +30,7 @@ _WorkoutSchedule _$WorkoutScheduleFromJson(Map<String, dynamic> json) =>
               ?.map((e) => ScheduleExercise.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const <ScheduleExercise>[],
+      completionCount: (json['completionCount'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$WorkoutScheduleToJson(_WorkoutSchedule instance) =>
@@ -48,4 +49,5 @@ Map<String, dynamic> _$WorkoutScheduleToJson(_WorkoutSchedule instance) =>
       'exerciseCount': instance.exerciseCount,
       'estimatedMinutes': instance.estimatedMinutes,
       'exercises': instance.exercises,
+      'completionCount': instance.completionCount,
     };
