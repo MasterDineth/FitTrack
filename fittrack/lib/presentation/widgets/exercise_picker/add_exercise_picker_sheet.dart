@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/exercise.dart';
+import '../../../domain/entities/exercise_catalog.dart';
 import '../../providers/repository_providers.dart';
 import '../../providers/schedule_editor_notifier.dart';
 import '../../providers/theme_provider.dart';
@@ -92,8 +93,37 @@ class _AddExercisePickerSheetState extends ConsumerState<AddExercisePickerSheet>
     super.dispose();
   }
 
+  bool _isAlreadyInSchedule(Exercise exercise) {
+    if (widget.existingExerciseIds.contains(exercise.id)) return true;
+
+    final canonicalId = ExerciseCatalog.toCanonicalId(exercise.id);
+    if (canonicalId != null && widget.existingExerciseIds.contains(canonicalId)) {
+      return true;
+    }
+    final aliasId = ExerciseCatalog.toAliasId(exercise.id);
+    if (aliasId != null && widget.existingExerciseIds.contains(aliasId)) {
+      return true;
+    }
+
+    final exName = exercise.name.trim().toLowerCase();
+    for (final existingId in widget.existingExerciseIds) {
+      if (ExerciseCatalog.isSameExercise(exercise.id, existingId, name1: exercise.name)) {
+        return true;
+      }
+      final existingName = ExerciseCatalog.resolveName(existingId).trim().toLowerCase();
+      if (existingName.isNotEmpty &&
+          (existingName == exName ||
+              (existingName.contains('deadlift') &&
+                  exName.contains('deadlift') &&
+                  existingName.contains('romanian') == exName.contains('romanian')))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   void _onToggleExercise(Exercise exercise) {
-    if (widget.existingExerciseIds.contains(exercise.id)) return;
+    if (_isAlreadyInSchedule(exercise)) return;
     setState(() {
       if (_selectedExerciseIds.contains(exercise.id)) {
         _selectedExerciseIds.remove(exercise.id);
@@ -148,7 +178,17 @@ class _AddExercisePickerSheetState extends ConsumerState<AddExercisePickerSheet>
   }
 
   List<Exercise> _filterExercises(List<Exercise> all) {
-    return all.where((ex) {
+    final seen = <String>{};
+    final deduplicated = <Exercise>[];
+    for (final ex in all) {
+      final key = ExerciseCatalog.toCanonicalId(ex.id) ?? ex.name.trim().toLowerCase();
+      if (seen.add(key)) {
+        final displayName = ExerciseCatalog.resolveName(ex.id, fallbackName: ex.name);
+        deduplicated.add(ex.copyWith(name: displayName));
+      }
+    }
+
+    return deduplicated.where((ex) {
       final q = _query.trim().toLowerCase();
       final matchesSearch = q.isEmpty ||
           ex.name.toLowerCase().contains(q) ||
@@ -165,18 +205,20 @@ class _AddExercisePickerSheetState extends ConsumerState<AddExercisePickerSheet>
         (e) => e.id == id,
         orElse: () => Exercise(
           id: id,
-          name: id,
+          name: ExerciseCatalog.resolveName(id),
           equipment: Equipment.other,
           movementClassification: MovementClassification.other,
           isCustom: false,
         ),
       );
+      final canonicalId = ExerciseCatalog.toCanonicalId(ex.id) ?? ex.id;
+      final resolvedName = ExerciseCatalog.resolveName(ex.id, fallbackName: ex.name);
       return ScheduleExerciseEntry(
-        exerciseId: ex.id,
-        exerciseName: ex.name,
+        exerciseId: canonicalId,
+        exerciseName: resolvedName,
         equipment: ex.equipment.name,
         movementType: ex.movementClassification.name,
-        mediaUrl: ex.mediaUrl,
+        mediaUrl: ex.mediaUrl ?? ExerciseCatalog.resolveImage(canonicalId),
         targetSets: 3,
         targetReps: 10,
         targetWeightKg: 0.0,

@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import '../../domain/entities/exercise.dart';
+import '../../domain/entities/exercise_catalog.dart';
 import '../../domain/entities/muscle_activation.dart';
 import '../../domain/entities/execution_step.dart';
 import '../../domain/entities/form_cue.dart';
@@ -15,20 +16,64 @@ class SqliteExerciseRepository implements IExerciseRepository {
   Future<List<Exercise>> getAllExercises() async {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query('exercises');
-    return maps.map(_mapToExercise).toList();
+    final all = maps.map(_mapToExercise).toList();
+
+    if (all.isEmpty) {
+      return ExerciseCatalog.allCanonicalExercises;
+    }
+
+    // Deduplicate so alias rows and canonical rows don't produce duplicate UI items
+    final seen = <String>{};
+    final unique = <Exercise>[];
+    for (final ex in all) {
+      final key = ExerciseCatalog.toCanonicalId(ex.id) ?? ex.name.trim().toLowerCase();
+      if (seen.add(key)) {
+        // If it's a known canonical spec, enrich name if it was a raw fallback
+        final enrichedName = ExerciseCatalog.resolveName(ex.id, fallbackName: ex.name);
+        unique.add(ex.copyWith(name: enrichedName));
+      }
+    }
+    return unique;
   }
 
   @override
   Future<Exercise?> getExerciseById(String id) async {
     final db = await _dbHelper.database;
-    final List<Map<String, dynamic>> maps = await db.query(
+    var maps = await db.query(
       'exercises',
       where: 'id = ?',
       whereArgs: [id],
     );
 
-    if (maps.isEmpty) return null;
-    return _mapToExercise(maps.first);
+    if (maps.isEmpty) {
+      final canonical = ExerciseCatalog.toCanonicalId(id);
+      if (canonical != null && canonical != id) {
+        maps = await db.query(
+          'exercises',
+          where: 'id = ?',
+          whereArgs: [canonical],
+        );
+      }
+    }
+
+    if (maps.isEmpty) {
+      final alias = ExerciseCatalog.toAliasId(id);
+      if (alias != null && alias != id) {
+        maps = await db.query(
+          'exercises',
+          where: 'id = ?',
+          whereArgs: [alias],
+        );
+      }
+    }
+
+    if (maps.isEmpty) {
+      return ExerciseCatalog.getCanonicalExercise(id);
+    }
+
+    final entity = _mapToExercise(maps.first);
+    final enrichedName = ExerciseCatalog.resolveName(id, fallbackName: entity.name);
+    return entity.copyWith(name: enrichedName);
   }
 
   @override

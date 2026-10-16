@@ -1,7 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:fittrack/domain/entities/schedule_exercise.dart';
+import 'package:fittrack/domain/entities/exercise_catalog.dart';
 import '../../../theme/ft_glass.dart';
+import '../../../providers/repository_providers.dart';
 
 /// Single exercise row with expandable animated set breakdown and draggable number marker.
 ///
@@ -9,7 +13,7 @@ import '../../../theme/ft_glass.dart';
 /// - Holding and dragging directly from the number icon to reorder (no extra 3 dots or drag handles).
 /// - Buttery smooth AnimatedSize expansion and collapse.
 /// - Full dark-mode adaptive theme tokens.
-class WorkoutDetailExerciseRow extends StatelessWidget {
+class WorkoutDetailExerciseRow extends ConsumerWidget {
   const WorkoutDetailExerciseRow({
     super.key,
     required this.exercise,
@@ -30,10 +34,21 @@ class WorkoutDetailExerciseRow extends StatelessWidget {
   final VoidCallback? onRemove;
 
   @override
-  Widget build(BuildContext context) {
-    final name = _resolveName(exercise.exerciseId);
-    final muscle = _resolveMuscle(exercise.exerciseId);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final exerciseAsync = ref.watch(exerciseByIdProvider(exercise.exerciseId));
+    final liveExercise = exerciseAsync.value;
+    final name = ExerciseCatalog.resolveName(
+      exercise.exerciseId,
+      fallbackName: liveExercise?.name,
+    );
+    final muscle = ExerciseCatalog.resolveMuscle(
+      exercise.exerciseId,
+      exerciseName: name,
+    );
     final muscleColor = _resolveMuscleColor(muscle);
+    final imageAsset = (liveExercise?.mediaUrl != null && liveExercise!.mediaUrl!.isNotEmpty)
+        ? liveExercise.mediaUrl!
+        : ExerciseCatalog.resolveImage(exercise.exerciseId);
 
     return DragTarget<int>(
       onWillAcceptWithDetails: (details) => details.data != index,
@@ -111,12 +126,7 @@ class WorkoutDetailExerciseRow extends StatelessWidget {
                           borderRadius: BorderRadius.circular(13),
                         ),
                         clipBehavior: Clip.antiAlias,
-                        child: Image.asset(
-                          _resolveImage(exercise.exerciseId),
-                          fit: BoxFit.cover,
-                          cacheWidth: 96,
-                          cacheHeight: 96,
-                        ),
+                        child: _buildThumbnailImage(imageAsset),
                       ),
                       const SizedBox(width: 12),
 
@@ -453,67 +463,36 @@ class WorkoutDetailExerciseRow extends StatelessWidget {
     );
   }
 
-  static const Map<String, (String, String, String)> _exerciseMetadata = {
-    'ex1': ('BB Bench Press', 'Chest', 'assets/images/dashboard/hero_workout.webp'),
-    'ex2': ('Incline DB Press', 'Shoulders', 'assets/images/dashboard/coaching_bench.webp'),
-    'ex3': ('Cable Flyes', 'Chest', 'assets/images/dashboard/hero_workout.webp'),
-    'ex4': ('Overhead Press', 'Shoulders', 'assets/images/dashboard/coaching_bench.webp'),
-    'ex5': ('Lateral Raises', 'Shoulders', 'assets/images/dashboard/coaching_bench.webp'),
-    'ex6': ('Tricep Pushdowns', 'Triceps', 'assets/images/dashboard/hero_workout.webp'),
-    'ex7': ('Overhead Tricep Extension', 'Triceps', 'assets/images/dashboard/coaching_bench.webp'),
-    'ex8': ('Barbell Squat', 'Legs', 'assets/images/dashboard/hero_workout.webp'),
-    'ex9': ('Bent-Over Row', 'Back', 'assets/images/dashboard/coaching_bench.webp'),
-    'ex10': ('Deadlift', 'Back', 'assets/images/dashboard/hero_workout.webp'),
-    'e1': ('Barbell Bench Press', 'Chest', 'assets/images/dashboard/hero_workout.webp'),
-    'e2': ('Incline DB Press', 'Shoulders', 'assets/images/dashboard/coaching_bench.webp'),
-  };
-
-  String _resolveName(String exerciseId) {
-    if (_exerciseMetadata.containsKey(exerciseId)) {
-      return _exerciseMetadata[exerciseId]!.$1;
+  Widget _buildThumbnailImage(String imagePath) {
+    if (imagePath.startsWith('assets/')) {
+      return Image.asset(
+        imagePath,
+        fit: BoxFit.cover,
+        cacheWidth: 96,
+        cacheHeight: 96,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/images/dashboard/coaching_bench.webp',
+          fit: BoxFit.cover,
+        ),
+      );
     }
-    if (exerciseId.startsWith('ex_')) {
-      final raw = exerciseId.substring(3).replaceAll('_', ' ');
-      return raw.split(' ').map((w) {
-        if (w.isEmpty) return '';
-        return '${w[0].toUpperCase()}${w.substring(1)}';
-      }).join(' ');
+    final file = File(imagePath);
+    if (file.existsSync()) {
+      return Image.file(
+        file,
+        fit: BoxFit.cover,
+        cacheWidth: 96,
+        cacheHeight: 96,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/images/dashboard/coaching_bench.webp',
+          fit: BoxFit.cover,
+        ),
+      );
     }
-    return exerciseId;
-  }
-
-  String _resolveMuscle(String exerciseId) {
-    if (_exerciseMetadata.containsKey(exerciseId)) {
-      return _exerciseMetadata[exerciseId]!.$2;
-    }
-    final lower = exerciseId.toLowerCase();
-    if (lower.contains('bench') || lower.contains('chest') || lower.contains('fly')) {
-      return 'Chest';
-    }
-    if (lower.contains('overhead') || lower.contains('press') || lower.contains('lateral') || lower.contains('shoulder')) {
-      return 'Shoulders';
-    }
-    if (lower.contains('tricep') || lower.contains('extension')) {
-      return 'Triceps';
-    }
-    if (lower.contains('pull') || lower.contains('row') || lower.contains('lat') || lower.contains('back')) {
-      return 'Back';
-    }
-    if (lower.contains('squat') || lower.contains('leg') || lower.contains('deadlift')) {
-      return 'Legs';
-    }
-    return 'Full Body';
-  }
-
-  String _resolveImage(String exerciseId) {
-    if (_exerciseMetadata.containsKey(exerciseId)) {
-      return _exerciseMetadata[exerciseId]!.$3;
-    }
-    final muscle = _resolveMuscle(exerciseId);
-    if (muscle == 'Chest' || muscle == 'Back' || muscle == 'Legs') {
-      return 'assets/images/dashboard/hero_workout.webp';
-    }
-    return 'assets/images/dashboard/coaching_bench.webp';
+    return Image.asset(
+      'assets/images/dashboard/coaching_bench.webp',
+      fit: BoxFit.cover,
+    );
   }
 
   Color _resolveMuscleColor(String muscle) {
@@ -525,9 +504,17 @@ class WorkoutDetailExerciseRow extends StatelessWidget {
       case 'triceps':
         return const Color(0xFF14B8A6);
       case 'back':
+      case 'posterior chain':
         return const Color(0xFF3B82F6);
       case 'legs':
+      case 'hamstrings':
+      case 'quads':
         return const Color(0xFF8B5CF6);
+      case 'arms':
+      case 'biceps':
+        return const Color(0xFFEC4899);
+      case 'core':
+        return const Color(0xFF06B6D4);
       default:
         return const Color(0xFF10B981);
     }

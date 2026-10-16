@@ -257,7 +257,7 @@ Used by `security_app_lock_screen.dart` and `password_security_screen.dart`.
 
 ### 7.5 `BackupSnapshot` & Data Erase Scopes (`backup_snapshot.dart`, `data_management_provider.dart`)
 Used by `data_management_screen.dart` and `erase_data_screen.dart`.
-*   **schemaVersion** `INTEGER`: Matches `DatabaseHelper._databaseVersion` (`12`)
+*   **schemaVersion** `INTEGER`: Matches `DatabaseHelper._databaseVersion` (`14`)
 *   **createdAt** `DateTime`: Export timestamp
 *   **appVersion** `String`: Semantic version string
 *   **dataPayload**: Serialized JSON map of `userProfile`, `bodyTelemetry`, `fitnessProfile`, `schedules`, `scheduleExercises`, `customExercises`, `workoutSessions`, `exerciseLogs`, `setLogs`, and user settings.

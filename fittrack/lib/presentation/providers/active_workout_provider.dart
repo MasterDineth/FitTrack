@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../domain/entities/schedule.dart';
 import '../../domain/entities/exercise.dart';
+import '../../domain/entities/exercise_catalog.dart';
 import '../../domain/entities/exercise_log.dart';
 import '../../domain/entities/set_log.dart';
 import '../../domain/entities/workout_session.dart';
@@ -348,33 +349,8 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
     ];
   }
 
-  static final Map<String, String> _seedExerciseNames = {
-    'ex1': 'BB Bench Press',
-    'ex2': 'Incline DB Press',
-    'ex3': 'Cable Flyes',
-    'ex4': 'Overhead Press',
-    'ex5': 'Lateral Raises',
-    'ex6': 'Tricep Pushdowns',
-    'ex7': 'Overhead Tricep Extension',
-    'ex8': 'Barbell Squat',
-    'ex9': 'Bent-Over Row',
-    'ex10': 'Deadlift',
-    'e1': 'BB Bench Press',
-    'e2': 'Incline DB Press',
-  };
-
   static String _resolveExerciseName(String exerciseId) {
-    if (_seedExerciseNames.containsKey(exerciseId)) {
-      return _seedExerciseNames[exerciseId]!;
-    }
-    if (exerciseId.startsWith('ex_')) {
-      final raw = exerciseId.substring(3).replaceAll('_', ' ');
-      return raw.split(' ').map((w) {
-        if (w.isEmpty) return '';
-        return '${w[0].toUpperCase()}${w.substring(1)}';
-      }).join(' ');
-    }
-    return exerciseId;
+    return ExerciseCatalog.resolveName(exerciseId);
   }
 
   static Equipment _resolveEquipment(String exerciseId) {
