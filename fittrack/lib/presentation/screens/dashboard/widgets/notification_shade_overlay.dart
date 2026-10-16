@@ -7,11 +7,60 @@ import '../../../theme/ft_glass.dart';
 import '../../../widgets/glass_surface.dart';
 import 'ft_pressable.dart';
 
-class NotificationShadeOverlay extends ConsumerWidget {
+class NotificationShadeOverlay extends ConsumerStatefulWidget {
   const NotificationShadeOverlay({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NotificationShadeOverlay> createState() =>
+      _NotificationShadeOverlayState();
+}
+
+class _NotificationShadeOverlayState
+    extends ConsumerState<NotificationShadeOverlay> {
+  final Set<String> _clearingItemIds = {};
+  bool _isClearingAll = false;
+  double _verticalDragDistance = 0.0;
+
+  void _closeShade() {
+    if (_isClearingAll) return;
+    HapticFeedback.lightImpact();
+    ref.read(dashboardNotificationsProvider.notifier).closeShade();
+  }
+
+  /// Triggers Android-style staggered cascade dismissal with haptics for each card,
+  /// then clears the state and collapses the shade overlay.
+  Future<void> _handleClearAllAnimated(List<FtNotificationItem> items) async {
+    if (_isClearingAll || items.isEmpty) return;
+    setState(() => _isClearingAll = true);
+
+    for (int i = 0; i < items.length; i++) {
+      if (!mounted) return;
+      HapticFeedback.selectionClick();
+      setState(() {
+        _clearingItemIds.add(items[i].id);
+      });
+      await Future.delayed(const Duration(milliseconds: 65));
+    }
+
+    // Wait for the last card slide animation to complete
+    await Future.delayed(const Duration(milliseconds: 220));
+    if (!mounted) return;
+
+    final notifier = ref.read(dashboardNotificationsProvider.notifier);
+    notifier.clearAll();
+    HapticFeedback.mediumImpact();
+    notifier.closeShade();
+
+    if (mounted) {
+      setState(() {
+        _clearingItemIds.clear();
+        _isClearingAll = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(dashboardNotificationsProvider);
     final notifier = ref.read(dashboardNotificationsProvider.notifier);
     final isOpen = state.isShadeOpen;
@@ -29,13 +78,15 @@ class NotificationShadeOverlay extends ConsumerWidget {
 
           return Stack(
             children: [
-              // 1. Blurred Frosted Backdrop Scrim (Tap outside to close)
+              // 1. Blurred Frosted Backdrop Scrim (Tap or swipe up to close)
               Positioned.fill(
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    notifier.closeShade();
+                  onTap: _closeShade,
+                  onVerticalDragEnd: (details) {
+                    if ((details.primaryVelocity ?? 0) < -140) {
+                      _closeShade();
+                    }
                   },
                   child: BackdropFilter(
                     filter: ImageFilter.blur(
@@ -52,7 +103,7 @@ class NotificationShadeOverlay extends ConsumerWidget {
                 ),
               ),
 
-              // 2. Centered 393px Full-Height Frosted Notification Shade (Image 2 Box)
+              // 2. Centered 393px Full-Height Frosted Notification Shade
               SafeArea(
                 child: Center(
                   child: ConstrainedBox(
@@ -74,58 +125,73 @@ class NotificationShadeOverlay extends ConsumerWidget {
             ],
           );
         },
-        child: GlassSurface(
-          tier: FtGlassTier.glassFloating,
-          radius: 30.0,
-          padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ── Header: Only "Notifications" Title + "Clear all" Button ────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        'Notifications',
-                        style: TextStyle(
-                          fontFamily: FtText.fontFamily,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.4,
-                          color: context.ftInk,
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onVerticalDragStart: (_) {
+            _verticalDragDistance = 0.0;
+          },
+          onVerticalDragUpdate: (details) {
+            _verticalDragDistance += details.primaryDelta ?? 0.0;
+            // Swipe up anywhere in the body collapses the shade
+            if (_verticalDragDistance < -50) {
+              _closeShade();
+              _verticalDragDistance = 0.0;
+            }
+          },
+          onVerticalDragEnd: (details) {
+            if ((details.primaryVelocity ?? 0) < -140) {
+              _closeShade();
+            }
+          },
+          child: GlassSurface(
+            tier: FtGlassTier.glassFloating,
+            radius: 30.0,
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── Header: "Notifications" Title + "Close" Button ─────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Notifications',
+                          style: TextStyle(
+                            fontFamily: FtText.fontFamily,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.4,
+                            color: context.ftInk,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      if (state.items.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: context.ftPrimary.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            '${state.items.length}',
-                            style: TextStyle(
-                              fontFamily: FtText.fontFamily,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              color: context.ftPrimary,
+                        const SizedBox(width: 8),
+                        if (state.items.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: context.ftPrimary.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              '${state.items.length}',
+                              style: TextStyle(
+                                fontFamily: FtText.fontFamily,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: context.ftPrimary,
+                              ),
                             ),
                           ),
-                        ),
-                    ],
-                  ),
-                  if (state.items.isNotEmpty)
+                      ],
+                    ),
+                    // Close button in header (replaces top clear all)
                     FtPressable(
-                      onTap: () {
-                        HapticFeedback.heavyImpact();
-                        notifier.clearAll();
-                      },
+                      onTap: _closeShade,
                       pressedScale: 0.95,
                       child: GlassSurface(
                         tier: FtGlassTier.glass2,
@@ -135,72 +201,155 @@ class NotificationShadeOverlay extends ConsumerWidget {
                           horizontal: 12,
                           vertical: 6,
                         ),
-                        child: Text(
-                          'Clear all',
-                          style: TextStyle(
-                            fontFamily: FtText.fontFamily,
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            color: context.ftPrimary,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.close_rounded,
+                              size: 14,
+                              color: context.ftInk,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Close',
+                              style: TextStyle(
+                                fontFamily: FtText.fontFamily,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                color: context.ftInk,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+
+                // ── Notification Toast List (Swipe to Discard / Expandable) ─
+                Expanded(
+                  child: state.items.isEmpty
+                      ? _buildEmptyState(context)
+                      : NotificationListener<ScrollNotification>(
+                          onNotification: (notification) {
+                            // Detect swipe-up overscroll on the list to dismiss
+                            if (notification is OverscrollNotification &&
+                                notification.overscroll > 12) {
+                              _closeShade();
+                              return true;
+                            }
+                            if (notification is ScrollEndNotification &&
+                                (notification.dragDetails?.primaryVelocity ?? 0) <
+                                    -200) {
+                              _closeShade();
+                              return true;
+                            }
+                            return false;
+                          },
+                          child: ListView.separated(
+                            physics: const BouncingScrollPhysics(),
+                            padding: const EdgeInsets.only(top: 2, bottom: 8),
+                            itemCount: state.items.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(height: 10),
+                            itemBuilder: (context, index) {
+                              final item = state.items[index];
+                              final isClearingThis =
+                                  _clearingItemIds.contains(item.id);
+
+                              return AnimatedSlide(
+                                duration: const Duration(milliseconds: 260),
+                                curve: Curves.easeInCubic,
+                                offset: isClearingThis
+                                    ? const Offset(1.35, 0.0)
+                                    : Offset.zero,
+                                child: AnimatedOpacity(
+                                  duration: const Duration(milliseconds: 220),
+                                  curve: Curves.easeIn,
+                                  opacity: isClearingThis ? 0.0 : 1.0,
+                                  child: _SwipeableToastNotificationTile(
+                                    key: ValueKey(item.id),
+                                    item: item,
+                                    onDismissed: () {
+                                      notifier.dismissItem(item.id);
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                ),
+
+                // ── Bottom "Clear all" Button (moved to bottom) ────────────
+                if (state.items.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8, bottom: 4),
+                    child: Center(
+                      child: FtPressable(
+                        onTap: () => _handleClearAllAnimated(state.items),
+                        pressedScale: 0.95,
+                        child: GlassSurface(
+                          tier: FtGlassTier.glass2,
+                          radius: 999,
+                          shadow: false,
+                          borderTint:
+                              context.ftPrimary.withValues(alpha: 0.22),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 8,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.clear_all_rounded,
+                                size: 16,
+                                color: context.ftPrimary,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Clear all',
+                                style: TextStyle(
+                                  fontFamily: FtText.fontFamily,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: context.ftPrimary,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ),
-                ],
-              ),
-              const SizedBox(height: 14),
+                  ),
 
-              // ── Notification Toast List (Swipe to Discard Only) ────────────
-              Expanded(
-                child: state.items.isEmpty
-                    ? _buildEmptyState(context)
-                    : ListView.separated(
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.only( top: 2, bottom: 12),
-                        itemCount: state.items.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 10),
-                        itemBuilder: (context, index) {
-                          final item = state.items[index];
-                          return _SwipeableToastNotificationTile(
-                            key: ValueKey(item.id),
-                            item: item,
-                            onDismissed: () {
-                              HapticFeedback.mediumImpact();
-                              notifier.dismissItem(item.id);
-                            },
-                          );
-                        },
-                      ),
-              ),
-
-              // ── Bottom Grab Handle to Collapse Shade ──────────────────────
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  notifier.closeShade();
-                },
-                onVerticalDragEnd: (details) {
-                  if ((details.primaryVelocity ?? 0) < -120) {
-                    HapticFeedback.lightImpact();
-                    notifier.closeShade();
-                  }
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6.0),
-                  child: Center(
-                    child: Container(
-                      width: 42,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: context.ftMuted.withValues(alpha: 0.28),
-                        borderRadius: BorderRadius.circular(999),
+                // ── Bottom Grab Handle to Collapse Shade ────────────────────
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _closeShade,
+                  onVerticalDragEnd: (details) {
+                    if ((details.primaryVelocity ?? 0) < -120) {
+                      _closeShade();
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: Center(
+                      child: Container(
+                        width: 42,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: context.ftMuted.withValues(alpha: 0.28),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -237,7 +386,7 @@ class NotificationShadeOverlay extends ConsumerWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            'Swipe down or use the test bar to push alerts',
+            'Swipe up anywhere to close shade',
             style: TextStyle(
               fontFamily: FtText.fontFamily,
               fontSize: 11.5,
@@ -251,8 +400,12 @@ class NotificationShadeOverlay extends ConsumerWidget {
   }
 }
 
-/// Compact toast-like notification card with swipe-to-discard and NO individual X button.
-class _SwipeableToastNotificationTile extends StatelessWidget {
+/// Expandable and swipeable notification card with:
+/// - In-flight haptic feedback when crossing the dismiss threshold.
+/// - Clean clipping so delete color does not bleed around rounded corners.
+/// - Opaque card backing to prevent background color leakage through frosted glass.
+/// - Expandable on tap: closed by default, separates into title and full body when expanded.
+class _SwipeableToastNotificationTile extends StatefulWidget {
   final FtNotificationItem item;
   final VoidCallback onDismissed;
 
@@ -263,75 +416,200 @@ class _SwipeableToastNotificationTile extends StatelessWidget {
   });
 
   @override
+  State<_SwipeableToastNotificationTile> createState() =>
+      _SwipeableToastNotificationTileState();
+}
+
+class _SwipeableToastNotificationTileState
+    extends State<_SwipeableToastNotificationTile> {
+  bool _isExpanded = false;
+  bool _hasTriggeredHaptic = false;
+
+  String _formatTimeAgo(DateTime timestamp) {
+    final diff = DateTime.now().difference(timestamp);
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Dismissible(
-      key: ValueKey('dismiss_${item.id}'),
-      direction: DismissDirection.horizontal,
-      dismissThresholds: const {
-        DismissDirection.startToEnd: 0.28,
-        DismissDirection.endToStart: 0.28,
-      },
-      resizeDuration: const Duration(milliseconds: 220),
-      movementDuration: const Duration(milliseconds: 260),
-      onDismissed: (_) => onDismissed(),
-      background: _buildSwipeBackground(Alignment.centerLeft),
-      secondaryBackground: _buildSwipeBackground(Alignment.centerRight),
-      child: GlassSurface(
-        tier: FtGlassTier.glass1,
-        radius: 16.0,
-        borderTint: context.ftPrimary.withValues(alpha: 0.16),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
-          children: [
-            _buildLeadingIcon(context, item.type),
-            const SizedBox(width: 10),
-            Expanded(
-              child: RichText(
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                text: TextSpan(
-                  style: TextStyle(
-                    fontFamily: FtText.fontFamily,
-                    fontSize: 12,
-                    color: context.ftInk,
-                  ),
+    final isDark = context.isDark;
+    final cardColor = isDark ? const Color(0xFF1E1A34) : Colors.white;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16.0),
+      child: Dismissible(
+        key: ValueKey('dismiss_${widget.item.id}'),
+        direction: DismissDirection.horizontal,
+        dismissThresholds: const {
+          DismissDirection.startToEnd: 0.28,
+          DismissDirection.endToStart: 0.28,
+        },
+        resizeDuration: const Duration(milliseconds: 220),
+        movementDuration: const Duration(milliseconds: 260),
+        onUpdate: (details) {
+          // Tactile haptic feedback WHILE dismissing instead of only after dismissed
+          if (details.reached && !_hasTriggeredHaptic) {
+            _hasTriggeredHaptic = true;
+            HapticFeedback.mediumImpact();
+          } else if (!details.reached && _hasTriggeredHaptic) {
+            _hasTriggeredHaptic = false;
+          }
+        },
+        onDismissed: (_) {
+          HapticFeedback.selectionClick();
+          widget.onDismissed();
+        },
+        background: _buildSwipeBackground(Alignment.centerLeft),
+        secondaryBackground: _buildSwipeBackground(Alignment.centerRight),
+        child: GestureDetector(
+          onTap: () {
+            HapticFeedback.selectionClick();
+            setState(() {
+              _isExpanded = !_isExpanded;
+            });
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(16.0),
+              border: Border.all(
+                color: context.ftPrimary.withValues(alpha: 0.16),
+                width: 1.0,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                child: Row(
+                  crossAxisAlignment: _isExpanded
+                      ? CrossAxisAlignment.start
+                      : CrossAxisAlignment.center,
                   children: [
-                    TextSpan(
-                      text: '${item.title} ',
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    Padding(
+                      padding: EdgeInsets.only(top: _isExpanded ? 2.0 : 0.0),
+                      child: _buildLeadingIcon(context, widget.item.type),
                     ),
-                    TextSpan(
-                      text: item.body,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: context.ftMuted,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _isExpanded
+                          ? _buildExpandedContent(context)
+                          : _buildCollapsedContent(context),
+                    ),
+                    const SizedBox(width: 6),
+                    AnimatedRotation(
+                      turns: _isExpanded ? 0.25 : 0.0,
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOutCubic,
+                      child: Icon(
+                        Icons.chevron_right_rounded,
+                        size: 16,
+                        color: context.ftMuted.withValues(alpha: 0.60),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
+    );
+  }
+
+  /// Collapsed view: Single compact line with title and body.
+  Widget _buildCollapsedContent(BuildContext context) {
+    return RichText(
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      text: TextSpan(
+        style: TextStyle(
+          fontFamily: FtText.fontFamily,
+          fontSize: 12,
+          color: context.ftInk,
+        ),
+        children: [
+          TextSpan(
+            text: '${widget.item.title} ',
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+          TextSpan(
+            text: widget.item.body,
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: context.ftMuted,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Expanded view: Separated distinct title and body lines with timestamp.
+  Widget _buildExpandedContent(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          widget.item.title,
+          style: TextStyle(
+            fontFamily: FtText.fontFamily,
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.2,
+            color: context.ftInk,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          widget.item.body,
+          style: TextStyle(
+            fontFamily: FtText.fontFamily,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            height: 1.35,
+            color: context.ftMuted,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          _formatTimeAgo(widget.item.timestamp),
+          style: TextStyle(
+            fontFamily: FtText.fontFamily,
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: context.ftPrimary,
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildSwipeBackground(Alignment alignment) {
     return Container(
       alignment: alignment,
-      padding: const EdgeInsets.symmetric(horizontal: 18),
-      decoration: BoxDecoration(
-        color: FtGlassTheme.rose.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(16.0),
-        border: Border.all(
-          color: FtGlassTheme.rose.withValues(alpha: 0.35),
-        ),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      color: FtGlassTheme.rose,
       child: const Icon(
         Icons.delete_outline_rounded,
-        size: 18,
-        color: FtGlassTheme.rose,
+        size: 20,
+        color: Colors.white,
       ),
     );
   }

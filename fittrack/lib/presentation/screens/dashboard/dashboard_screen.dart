@@ -8,7 +8,6 @@ import '../../widgets/ft_background_painter.dart';
 import '../../widgets/glass_surface.dart';
 import 'widgets/dashboard_header.dart';
 import 'widgets/dashboard_greeting.dart';
-import 'widgets/hydration_banner.dart';
 import 'widgets/notification_shade_overlay.dart';
 import 'widgets/telemetry_stack.dart';
 import 'widgets/featured_workout_card.dart';
@@ -67,7 +66,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
       const _NotificationTestStrip(),
       const DashboardHeader(),
       const DashboardGreeting(),
-      const HydrationBanner(initialVisible: true),
       const TelemetryStack(),
       const FeaturedWorkoutCard(),
       const HabitsRecoverySection(),
