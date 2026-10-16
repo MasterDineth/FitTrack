@@ -7,7 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../../theme/ft_glass.dart';
 import '../../../widgets/glass_surface.dart';
 import '../../../providers/user_profile_provider.dart';
-import '../../../providers/dashboard_providers.dart';
+import '../../../providers/notifications_provider.dart';
+import '../../../providers/notification_settings_provider.dart';
 import 'ft_pressable.dart';
 
 class DashboardHeader extends ConsumerStatefulWidget {
@@ -43,10 +44,21 @@ class _DashboardHeaderState extends ConsumerState<DashboardHeader>
     super.dispose();
   }
 
+  bool _isHapticsEnabled() {
+    try {
+      return ref.read(notificationSettingsProvider).hapticsEnabled;
+    } catch (_) {
+      return true;
+    }
+  }
+
   void _triggerIslandAnimations(FtNotificationItem? activeItem) {
+    final haptics = _isHapticsEnabled();
     if (activeItem != null && activeItem.id != _lastIslandItemId) {
       _lastIslandItemId = activeItem.id;
-      HapticFeedback.mediumImpact();
+      if (haptics) {
+        HapticFeedback.mediumImpact();
+      }
       _bellSwingController.repeat(reverse: true);
       _progressController.forward(from: 0.0);
     } else if (activeItem == null && _lastIslandItemId != null) {
@@ -54,18 +66,19 @@ class _DashboardHeaderState extends ConsumerState<DashboardHeader>
       _bellSwingController.stop();
       _bellSwingController.reset();
       _progressController.stop();
-      HapticFeedback.selectionClick();
+      if (haptics) {
+        HapticFeedback.selectionClick();
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final notifState = ref.watch(dashboardNotificationsProvider);
+    final activeIslandItem = ref.watch(notificationIslandProvider);
     final unreadCount = ref.watch(unreadNotificationCountProvider);
     final profileAsync = ref.watch(userProfileProvider);
     final profile = profileAsync.value;
 
-    final activeIslandItem = notifState.activeIslandItem;
     final isExpanded = activeIslandItem != null;
 
     _triggerIslandAnimations(activeIslandItem);
@@ -183,8 +196,20 @@ class _DashboardHeaderState extends ConsumerState<DashboardHeader>
                   height: isExpanded ? 52.0 : 40.0,
                   child: GestureDetector(
                     onTap: () {
-                      HapticFeedback.lightImpact();
-                      ref.read(dashboardNotificationsProvider.notifier).openShade();
+                      if (_isHapticsEnabled()) {
+                        HapticFeedback.lightImpact();
+                      }
+                      final renderBox =
+                          context.findRenderObject() as RenderBox?;
+                      Offset? origin;
+                      if (renderBox != null && renderBox.hasSize) {
+                        origin = renderBox.localToGlobal(
+                          renderBox.size.center(Offset.zero),
+                        );
+                      }
+                      ref
+                          .read(notificationShadeProvider.notifier)
+                          .open(origin: origin);
                     },
                     child: GlassSurface(
                       tier: isExpanded

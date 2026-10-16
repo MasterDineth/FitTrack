@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/dashboard_providers.dart';
+import '../providers/notifications_provider.dart';
 import '../providers/theme_provider.dart';
 import '../theme/ft_glass.dart';
 
@@ -88,7 +89,7 @@ class _AnimatedGlassDockState extends ConsumerState<AnimatedGlassDock> {
     bool isShadeOpen = false;
     try {
       isShadeOpen = ref.watch(
-        dashboardNotificationsProvider.select((s) => s.isShadeOpen),
+        notificationShadeProvider.select((s) => s.isOpen),
       );
     } catch (_) {}
 

@@ -4,35 +4,15 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/daily_bio_metrics.dart';
 import '../../domain/entities/daily_habit.dart';
 import '../../domain/entities/lifestyle_article.dart';
+import 'notifications_provider.dart';
 import 'repository_providers.dart';
 import 'workout_logic_providers.dart';
 
+export 'notifications_provider.dart';
+
 part 'dashboard_providers.g.dart';
 
-// ── Notification System Models & State ───────────────────────────────────────
-
-enum FtNotificationType {
-  hydration,
-  pr,
-  strain,
-  habit,
-}
-
-class FtNotificationItem {
-  final String id;
-  final FtNotificationType type;
-  final String title;
-  final String body;
-  final DateTime timestamp;
-
-  const FtNotificationItem({
-    required this.id,
-    required this.type,
-    required this.title,
-    required this.body,
-    required this.timestamp,
-  });
-}
+// ── Backward Compatibility Shim for Dashboard Notifications ────────────────
 
 class DashboardNotificationsState {
   final List<FtNotificationItem> items;
@@ -66,154 +46,64 @@ class DashboardNotificationsState {
 
 class DashboardNotificationsNotifier
     extends Notifier<DashboardNotificationsState> {
-  Timer? _islandAutoCollapseTimer;
-
-  static List<FtNotificationItem> _defaultItems() {
-    final now = DateTime.now();
-    return [
-      FtNotificationItem(
-        id: 'notif_1',
-        type: FtNotificationType.hydration,
-        title: 'Hydration check:',
-        body: '1.8L / 2.5L logged today',
-        timestamp: now.subtract(const Duration(minutes: 2)),
-      ),
-      FtNotificationItem(
-        id: 'notif_2',
-        type: FtNotificationType.habit,
-        title: 'Recovery optimal:',
-        body: '92% readiness after 7h 48m sleep',
-        timestamp: now.subtract(const Duration(minutes: 18)),
-      ),
-      FtNotificationItem(
-        id: 'notif_3',
-        type: FtNotificationType.pr,
-        title: 'New Bench PR:',
-        body: '85 kg x 8 reps completed',
-        timestamp: now.subtract(const Duration(hours: 1)),
-      ),
-      FtNotificationItem(
-        id: 'notif_4',
-        type: FtNotificationType.strain,
-        title: 'Daily Strain:',
-        body: '12.4 logged (Goal 14.5)',
-        timestamp: now.subtract(const Duration(hours: 2)),
-      ),
-    ];
-  }
-
   @override
   DashboardNotificationsState build() {
-    ref.onDispose(() {
-      _islandAutoCollapseTimer?.cancel();
-    });
-    return DashboardNotificationsState(items: _defaultItems());
+    final items = ref.watch(notificationFeedProvider);
+    final activeIslandItem = ref.watch(notificationIslandProvider);
+    final isShadeOpen =
+        ref.watch(notificationShadeProvider.select((s) => s.isOpen));
+    final loggedWater = ref.watch(hydrationProgressProvider);
+
+    return DashboardNotificationsState(
+      items: items,
+      activeIslandItem: activeIslandItem,
+      isShadeOpen: isShadeOpen,
+      loggedWaterLiters: loggedWater,
+    );
   }
 
-  /// Pushes a new notification, expands the Dynamic Island for 3.2s, and stores it in the shade.
   void pushNotification({
     required FtNotificationType type,
     required String title,
     required String body,
   }) {
-    _islandAutoCollapseTimer?.cancel();
-
-    final newItem = FtNotificationItem(
-      id: 'notif_${DateTime.now().microsecondsSinceEpoch}',
-      type: type,
-      title: title,
-      body: body,
-      timestamp: DateTime.now(),
-    );
-
-    state = state.copyWith(
-      items: [newItem, ...state.items],
-      activeIslandItem: newItem,
-      isShadeOpen: false,
-    );
-
-    _islandAutoCollapseTimer = Timer(const Duration(milliseconds: 3200), () {
-      collapseIsland();
-    });
+    ref.read(notificationFeedProvider.notifier).pushNotification(
+          type: type,
+          title: title,
+          body: body,
+        );
   }
 
-  /// Helper for quick testing via the Dashboard Test Bar.
   void pushPreset(FtNotificationType type) {
-    switch (type) {
-      case FtNotificationType.hydration:
-        final nextWater = (state.loggedWaterLiters + 0.25).clamp(0.0, 2.5);
-        state = state.copyWith(loggedWaterLiters: nextWater);
-        pushNotification(
-          type: FtNotificationType.hydration,
-          title: 'Hydration check:',
-          body: '${nextWater.toStringAsFixed(2)}L / 2.5L logged (+250ml)',
-        );
-      case FtNotificationType.pr:
-        pushNotification(
-          type: FtNotificationType.pr,
-          title: 'New PR Unlocked:',
-          body: 'Barbell Bench Press 85 kg x 8 reps',
-        );
-      case FtNotificationType.strain:
-        pushNotification(
-          type: FtNotificationType.strain,
-          title: 'Strain Alert:',
-          body: 'Day strain reached 13.8 / 14.5',
-        );
-      case FtNotificationType.habit:
-        pushNotification(
-          type: FtNotificationType.habit,
-          title: 'Habit Reminder:',
-          body: 'Post-workout 35g Whey + 5g Creatine due',
-        );
-    }
+    ref.read(notificationFeedProvider.notifier).pushPreset(type);
   }
 
   void collapseIsland() {
-    _islandAutoCollapseTimer?.cancel();
-    if (state.activeIslandItem != null) {
-      state = state.copyWith(clearActiveIsland: true);
-    }
+    ref.read(notificationIslandProvider.notifier).collapse();
   }
 
   void openShade() {
-    _islandAutoCollapseTimer?.cancel();
-    state = state.copyWith(
-      isShadeOpen: true,
-      clearActiveIsland: true,
-    );
+    ref.read(notificationShadeProvider.notifier).open();
   }
 
   void closeShade() {
-    if (state.isShadeOpen) {
-      state = state.copyWith(isShadeOpen: false);
-    }
+    ref.read(notificationShadeProvider.notifier).close();
   }
 
   void toggleShade() {
-    if (state.isShadeOpen) {
-      closeShade();
-    } else {
-      openShade();
-    }
+    ref.read(notificationShadeProvider.notifier).toggle();
   }
 
   void dismissItem(String id) {
-    state = state.copyWith(
-      items: state.items.where((item) => item.id != id).toList(),
-    );
+    ref.read(notificationFeedProvider.notifier).dismiss(id);
   }
 
   void clearAll() {
-    state = state.copyWith(items: const []);
+    ref.read(notificationFeedProvider.notifier).clearAll();
   }
 
   void resetDemoItems() {
-    _islandAutoCollapseTimer?.cancel();
-    state = DashboardNotificationsState(
-      items: _defaultItems(),
-      loggedWaterLiters: 1.8,
-    );
+    ref.read(notificationFeedProvider.notifier).resetDemo();
   }
 }
 
@@ -418,10 +308,4 @@ Future<WeeklyLoadData> weeklyLoad(Ref ref) async {
     trainingLoadIndex: 72,
     trainingLoadZone: 'Optimal Zone (72 / 100)',
   );
-}
-
-/// Unread notification count for the header bell badge (reactive to notification list).
-@riverpod
-int unreadNotificationCount(Ref ref) {
-  return ref.watch(dashboardNotificationsProvider.select((s) => s.items.length));
 }

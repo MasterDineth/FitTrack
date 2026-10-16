@@ -2,7 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../providers/dashboard_providers.dart';
+import '../../../providers/notifications_provider.dart';
+import '../../../providers/notification_settings_provider.dart';
 import '../../../theme/ft_glass.dart';
 import '../../../widgets/glass_surface.dart';
 import 'ft_pressable.dart';
@@ -23,8 +24,11 @@ class _NotificationShadeOverlayState
 
   void _closeShade() {
     if (_isClearingAll) return;
-    HapticFeedback.lightImpact();
-    ref.read(dashboardNotificationsProvider.notifier).closeShade();
+    final haptics = ref.read(notificationSettingsProvider).hapticsEnabled;
+    if (haptics) {
+      HapticFeedback.lightImpact();
+    }
+    ref.read(notificationShadeProvider.notifier).close();
   }
 
   /// Triggers Android-style staggered cascade dismissal with haptics for each card,
@@ -33,9 +37,16 @@ class _NotificationShadeOverlayState
     if (_isClearingAll || items.isEmpty) return;
     setState(() => _isClearingAll = true);
 
+    bool haptics = true;
+    try {
+      haptics = ref.read(notificationSettingsProvider).hapticsEnabled;
+    } catch (_) {}
+
     for (int i = 0; i < items.length; i++) {
       if (!mounted) return;
-      HapticFeedback.selectionClick();
+      if (haptics) {
+        HapticFeedback.selectionClick();
+      }
       setState(() {
         _clearingItemIds.add(items[i].id);
       });
@@ -46,10 +57,11 @@ class _NotificationShadeOverlayState
     await Future.delayed(const Duration(milliseconds: 220));
     if (!mounted) return;
 
-    final notifier = ref.read(dashboardNotificationsProvider.notifier);
-    notifier.clearAll();
-    HapticFeedback.mediumImpact();
-    notifier.closeShade();
+    ref.read(notificationFeedProvider.notifier).clearAll();
+    if (haptics) {
+      HapticFeedback.mediumImpact();
+    }
+    ref.read(notificationShadeProvider.notifier).close();
 
     if (mounted) {
       setState(() {
@@ -59,11 +71,23 @@ class _NotificationShadeOverlayState
     }
   }
 
+  Alignment _getAlignment(BuildContext context, Offset? origin) {
+    if (origin == null) return const Alignment(0.74, -0.94);
+    final size = MediaQuery.sizeOf(context);
+    if (size.width == 0 || size.height == 0) {
+      return const Alignment(0.74, -0.94);
+    }
+    final x = (origin.dx / size.width) * 2.0 - 1.0;
+    final y = (origin.dy / size.height) * 2.0 - 1.0;
+    return Alignment(x.clamp(-1.0, 1.0), y.clamp(-1.0, 1.0));
+  }
+
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(dashboardNotificationsProvider);
-    final notifier = ref.read(dashboardNotificationsProvider.notifier);
-    final isOpen = state.isShadeOpen;
+    final shadeState = ref.watch(notificationShadeProvider);
+    final items = ref.watch(notificationFeedProvider);
+    final feedNotifier = ref.read(notificationFeedProvider.notifier);
+    final isOpen = shadeState.isOpen;
 
     return IgnorePointer(
       ignoring: !isOpen,
@@ -112,7 +136,7 @@ class _NotificationShadeOverlayState
                       padding: const EdgeInsets.fromLTRB(14, 8, 14, 14),
                       child: Transform.scale(
                         scale: 0.12 + (0.88 * progress),
-                        alignment: const Alignment(0.74, -0.94),
+                        alignment: _getAlignment(context, shadeState.origin),
                         child: Opacity(
                           opacity: progress.clamp(0.0, 1.0),
                           child: child,
@@ -154,40 +178,46 @@ class _NotificationShadeOverlayState
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Notifications',
-                          style: TextStyle(
-                            fontFamily: FtText.fontFamily,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.4,
-                            color: context.ftInk,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        if (state.items.isNotEmpty)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: context.ftPrimary.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
+                    Flexible(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
                             child: Text(
-                              '${state.items.length}',
+                              'Notifications',
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontFamily: FtText.fontFamily,
-                                fontSize: 11,
+                                fontSize: 20,
                                 fontWeight: FontWeight.w800,
-                                color: context.ftPrimary,
+                                letterSpacing: -0.4,
+                                color: context.ftInk,
                               ),
                             ),
                           ),
-                      ],
+                          const SizedBox(width: 8),
+                          if (items.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: context.ftPrimary.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                '${items.length}',
+                                style: TextStyle(
+                                  fontFamily: FtText.fontFamily,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: context.ftPrimary,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                     // Close button in header (replaces top clear all)
                     FtPressable(
@@ -229,7 +259,7 @@ class _NotificationShadeOverlayState
 
                 // ── Notification Toast List (Swipe to Discard / Expandable) ─
                 Expanded(
-                  child: state.items.isEmpty
+                  child: items.isEmpty
                       ? _buildEmptyState(context)
                       : NotificationListener<ScrollNotification>(
                           onNotification: (notification) {
@@ -250,11 +280,11 @@ class _NotificationShadeOverlayState
                           child: ListView.separated(
                             physics: const BouncingScrollPhysics(),
                             padding: const EdgeInsets.only(top: 2, bottom: 8),
-                            itemCount: state.items.length,
+                            itemCount: items.length,
                             separatorBuilder: (_, _) =>
                                 const SizedBox(height: 10),
                             itemBuilder: (context, index) {
-                              final item = state.items[index];
+                              final item = items[index];
                               final isClearingThis =
                                   _clearingItemIds.contains(item.id);
 
@@ -272,7 +302,7 @@ class _NotificationShadeOverlayState
                                     key: ValueKey(item.id),
                                     item: item,
                                     onDismissed: () {
-                                      notifier.dismissItem(item.id);
+                                      feedNotifier.dismiss(item.id);
                                     },
                                   ),
                                 ),
@@ -283,12 +313,12 @@ class _NotificationShadeOverlayState
                 ),
 
                 // ── Bottom "Clear all" Button (moved to bottom) ────────────
-                if (state.items.isNotEmpty)
+                if (items.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 8, bottom: 4),
                     child: Center(
                       child: FtPressable(
-                        onTap: () => _handleClearAllAnimated(state.items),
+                        onTap: () => _handleClearAllAnimated(items),
                         pressedScale: 0.95,
                         child: GlassSurface(
                           tier: FtGlassTier.glass2,
@@ -405,7 +435,7 @@ class _NotificationShadeOverlayState
 /// - Clean clipping so delete color does not bleed around rounded corners.
 /// - Opaque card backing to prevent background color leakage through frosted glass.
 /// - Expandable on tap: closed by default, separates into title and full body when expanded.
-class _SwipeableToastNotificationTile extends StatefulWidget {
+class _SwipeableToastNotificationTile extends ConsumerStatefulWidget {
   final FtNotificationItem item;
   final VoidCallback onDismissed;
 
@@ -416,12 +446,12 @@ class _SwipeableToastNotificationTile extends StatefulWidget {
   });
 
   @override
-  State<_SwipeableToastNotificationTile> createState() =>
+  ConsumerState<_SwipeableToastNotificationTile> createState() =>
       _SwipeableToastNotificationTileState();
 }
 
 class _SwipeableToastNotificationTileState
-    extends State<_SwipeableToastNotificationTile> {
+    extends ConsumerState<_SwipeableToastNotificationTile> {
   bool _isExpanded = false;
   bool _hasTriggeredHaptic = false;
 
@@ -437,6 +467,10 @@ class _SwipeableToastNotificationTileState
   Widget build(BuildContext context) {
     final isDark = context.isDark;
     final cardColor = isDark ? const Color(0xFF1E1A34) : Colors.white;
+    bool haptics = true;
+    try {
+      haptics = ref.read(notificationSettingsProvider).hapticsEnabled;
+    } catch (_) {}
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(16.0),
@@ -453,20 +487,26 @@ class _SwipeableToastNotificationTileState
           // Tactile haptic feedback WHILE dismissing instead of only after dismissed
           if (details.reached && !_hasTriggeredHaptic) {
             _hasTriggeredHaptic = true;
-            HapticFeedback.mediumImpact();
+            if (haptics) {
+              HapticFeedback.mediumImpact();
+            }
           } else if (!details.reached && _hasTriggeredHaptic) {
             _hasTriggeredHaptic = false;
           }
         },
         onDismissed: (_) {
-          HapticFeedback.selectionClick();
+          if (haptics) {
+            HapticFeedback.selectionClick();
+          }
           widget.onDismissed();
         },
         background: _buildSwipeBackground(Alignment.centerLeft),
         secondaryBackground: _buildSwipeBackground(Alignment.centerRight),
         child: GestureDetector(
           onTap: () {
-            HapticFeedback.selectionClick();
+            if (haptics) {
+              HapticFeedback.selectionClick();
+            }
             setState(() {
               _isExpanded = !_isExpanded;
             });

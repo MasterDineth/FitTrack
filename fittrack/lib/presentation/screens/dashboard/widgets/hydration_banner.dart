@@ -57,9 +57,7 @@ class _HydrationBannerState extends ConsumerState<HydrationBanner>
   Widget build(BuildContext context) {
     if (_isDismissed) return const SizedBox.shrink();
 
-    final loggedLiters = ref.watch(
-      dashboardNotificationsProvider.select((s) => s.loggedWaterLiters),
-    );
+    final loggedLiters = ref.watch(hydrationProgressProvider);
 
     return SizeTransition(
       sizeFactor: _animation,
@@ -104,7 +102,7 @@ class _HydrationBannerState extends ConsumerState<HydrationBanner>
                                 widget.onLogTap!();
                               } else {
                                 ref
-                                    .read(dashboardNotificationsProvider.notifier)
+                                    .read(notificationFeedProvider.notifier)
                                     .pushPreset(FtNotificationType.hydration);
                               }
                             },

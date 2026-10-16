@@ -198,7 +198,7 @@ class _PingDotState extends ConsumerState<_PingDot>
     bool isShadeOpen = false;
     try {
       isShadeOpen = ref.watch(
-        dashboardNotificationsProvider.select((s) => s.isShadeOpen),
+        notificationShadeProvider.select((s) => s.isOpen),
       );
     } catch (_) {}
     _isShadeOpen = isShadeOpen;
