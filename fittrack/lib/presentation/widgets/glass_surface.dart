@@ -131,8 +131,17 @@ class GlassSurface extends ConsumerWidget {
             alpha: (spec.highlight.a * (0.65 + 0.65 * t)).clamp(0.0, 1.0),
           );
 
-    // Inner surface container with border, fill, and top specular highlight
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color sheenColor = isDark
+        ? const Color(0xFF5F3BDC).withValues(alpha: 0.08 * (0.65 + 0.65 * t))
+        : Colors.white.withValues(alpha: 0.22 * (0.65 + 0.65 * t));
+
+    // Inner surface container with border, fill, directional specular sheen, and top specular highlight
     Widget innerBox = CustomPaint(
+      painter: _SpecularSheenPainter(
+        sheenColor: sheenColor,
+        radius: effectiveRadius,
+      ),
       foregroundPainter: _TopHighlightPainter(
         highlightColor: effectiveHighlight,
         radius: effectiveRadius,
@@ -234,3 +243,47 @@ class _TopHighlightPainter extends CustomPainter {
     return oldDelegate.highlightColor != highlightColor || oldDelegate.radius != radius;
   }
 }
+
+/// Paints an inset directional specular gradient sheen from top-left across the glass surface.
+/// This simulates translucent light scattering across frosted acrylic over ambient gradient meshes
+/// without requiring an offscreen GPU blur pass.
+class _SpecularSheenPainter extends CustomPainter {
+  final Color sheenColor;
+  final double radius;
+
+  const _SpecularSheenPainter({
+    required this.sheenColor,
+    required this.radius,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.width <= 0 || size.height <= 0 || sheenColor.a <= 0) return;
+
+    final rrect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(radius),
+    );
+    canvas.clipRRect(rrect);
+
+    final paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          sheenColor,
+          sheenColor.withValues(alpha: (sheenColor.a * 0.35).clamp(0.0, 1.0)),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.40, 0.85],
+      ).createShader(Offset.zero & size);
+
+    canvas.drawRRect(rrect, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _SpecularSheenPainter oldDelegate) {
+    return oldDelegate.sheenColor != sheenColor || oldDelegate.radius != radius;
+  }
+}
+

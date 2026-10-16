@@ -135,18 +135,29 @@ class FrostedGlassBox extends ConsumerWidget {
 
     final shouldBlur = isLive && effectiveBlur > 0;
 
-    Widget content = Container(
-      width: width,
-      height: height,
-      padding: padding,
-      alignment: alignment,
-      constraints: constraints,
-      decoration: BoxDecoration(
-        color: effectiveFill,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color sheenColor = isDark
+        ? const Color(0xFF5F3BDC).withValues(alpha: 0.08 * (0.65 + 0.65 * t))
+        : Colors.white.withValues(alpha: 0.22 * (0.65 + 0.65 * t));
+
+    Widget content = CustomPaint(
+      painter: _FrostedSpecularSheenPainter(
+        sheenColor: sheenColor,
         borderRadius: resolvedRadius,
-        border: border ?? config.border,
       ),
-      child: child,
+      child: Container(
+        width: width,
+        height: height,
+        padding: padding,
+        alignment: alignment,
+        constraints: constraints,
+        decoration: BoxDecoration(
+          color: effectiveFill,
+          borderRadius: resolvedRadius,
+          border: border ?? config.border,
+        ),
+        child: child,
+      ),
     );
 
     if (onTap != null) {
@@ -195,3 +206,43 @@ class FrostedGlassBox extends ConsumerWidget {
     return glassCard;
   }
 }
+
+/// Paints an inset directional specular gradient sheen from top-left across the box.
+class _FrostedSpecularSheenPainter extends CustomPainter {
+  final Color sheenColor;
+  final BorderRadiusGeometry borderRadius;
+
+  const _FrostedSpecularSheenPainter({
+    required this.sheenColor,
+    required this.borderRadius,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.width <= 0 || size.height <= 0 || sheenColor.a <= 0) return;
+
+    final resolved = borderRadius.resolve(TextDirection.ltr);
+    final rrect = resolved.toRRect(Offset.zero & size);
+    canvas.clipRRect(rrect);
+
+    final paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          sheenColor,
+          sheenColor.withValues(alpha: (sheenColor.a * 0.35).clamp(0.0, 1.0)),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.40, 0.85],
+      ).createShader(Offset.zero & size);
+
+    canvas.drawRRect(rrect, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _FrostedSpecularSheenPainter oldDelegate) {
+    return oldDelegate.sheenColor != sheenColor || oldDelegate.borderRadius != borderRadius;
+  }
+}
+

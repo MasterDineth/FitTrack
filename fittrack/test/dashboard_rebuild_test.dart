@@ -117,7 +117,52 @@ void main() {
       await tester.pump(const Duration(milliseconds: 350));
       expect(find.text('Weekly Momentum'), findsOneWidget);
     });
+
+    testWidgets('TelemetryStack background cards do not render internal text at rest or during transition', (tester) async {
+      tester.view.physicalSize = const Size(393, 852);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: TelemetryStack(),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 700));
+
+      // At rest on Card 0: only Card 0's content is rendered
+      expect(find.text('Bio-Metrics Balance'), findsOneWidget);
+      // Background card contents must NOT be rendered (preventing bleed-through)
+      expect(find.text('Weekly Momentum'), findsNothing);
+      expect(find.text('Weekly Load & Volume'), findsNothing);
+
+      // Tap next: mid-transition check (100ms in)
+      final nextFinder = find.bySemanticsLabel('Next card');
+      await tester.tap(nextFinder);
+      await tester.pump(const Duration(milliseconds: 100));
+
+      // During transition: Card 1 is animating in, old Card 0/2 must not render background text
+      expect(find.text('Weekly Load & Volume'), findsNothing);
+
+      // Settle transition
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Weekly Momentum'), findsOneWidget);
+      expect(find.text('Bio-Metrics Balance'), findsNothing);
+      expect(find.text('Weekly Load & Volume'), findsNothing);
+    });
   });
+
 
   group('AnimatedGlassDock Navigation Tests', () {
     testWidgets('AnimatedGlassDock renders all tabs and triggers onTap callback with index', (tester) async {
