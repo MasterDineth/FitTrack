@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../providers/active_workout_provider.dart';
 import '../../../theme/ft_glass.dart';
@@ -56,13 +57,9 @@ class ActiveSetLoggingCard extends StatelessWidget {
             height: 145,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.85),
-                width: 1.5,
-              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: Colors.black.withValues(alpha: 0.12),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),
@@ -147,19 +144,25 @@ class ActiveSetLoggingCard extends StatelessWidget {
                           ],
                         ),
                         // Tutorial / Guide Info button
-                        Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: context.isDark
-                                ? Colors.black.withValues(alpha: 0.65)
-                                : Colors.white.withValues(alpha: 0.85),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.info_outline_rounded,
-                            size: 16,
-                            color: context.isDark ? Colors.white : context.ftInk,
+                        FtPressable(
+                          onTap: () {
+                            context.push('/workouts/guide/${entry.exercise.id}');
+                          },
+                          pressedScale: 0.92,
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: context.isDark
+                                  ? Colors.black.withValues(alpha: 0.65)
+                                  : Colors.white.withValues(alpha: 0.85),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.info_outline_rounded,
+                              size: 16,
+                              color: context.isDark ? Colors.white : context.ftInk,
+                            ),
                           ),
                         ),
                       ],
@@ -387,17 +390,17 @@ class ActiveSetLoggingCard extends StatelessWidget {
             child: Container(
               height: 52,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   colors: [
-                    Color(0xFF5F3BDC),
-                    Color(0xFF6F4BEB),
-                    Color(0xFF502BBD),
+                    context.ftPrimary,
+                    Color.lerp(context.ftPrimary, Colors.white, 0.12) ?? context.ftPrimary,
+                    Color.lerp(context.ftPrimary, Colors.black, 0.15) ?? context.ftPrimary,
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF5F3BDC).withValues(alpha: 0.40),
+                    color: context.ftPrimary.withValues(alpha: 0.40),
                     blurRadius: 18,
                     offset: const Offset(0, 8),
                   ),

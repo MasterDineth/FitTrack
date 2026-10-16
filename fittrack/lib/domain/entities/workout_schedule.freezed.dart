@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$WorkoutSchedule {
 
- String get id; String get title; String get description; String get focus; String get experience; String get equipment; int get durationWeeks; int get daysPerWeek; bool get isFavorite; bool get isCustom; List<String> get targetMuscles; int get exerciseCount; int get estimatedMinutes; List<ScheduleExercise> get exercises;
+ String get id; String get title; String get description; String get focus; String get experience; String get equipment; int get durationWeeks; int get daysPerWeek; bool get isFavorite; bool get isCustom; List<String> get targetMuscles; int get exerciseCount; int get estimatedMinutes; List<ScheduleExercise> get exercises; int get completionCount;
 /// Create a copy of WorkoutSchedule
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +30,20 @@ $WorkoutScheduleCopyWith<WorkoutSchedule> get copyWith => _$WorkoutScheduleCopyW
 @override
 bool operator ==(Object other) {
   final _this = this as WorkoutSchedule;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkoutSchedule&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.description, _this.description) || other.description == _this.description)&&(identical(other.focus, _this.focus) || other.focus == _this.focus)&&(identical(other.experience, _this.experience) || other.experience == _this.experience)&&(identical(other.equipment, _this.equipment) || other.equipment == _this.equipment)&&(identical(other.durationWeeks, _this.durationWeeks) || other.durationWeeks == _this.durationWeeks)&&(identical(other.daysPerWeek, _this.daysPerWeek) || other.daysPerWeek == _this.daysPerWeek)&&(identical(other.isFavorite, _this.isFavorite) || other.isFavorite == _this.isFavorite)&&(identical(other.isCustom, _this.isCustom) || other.isCustom == _this.isCustom)&&const DeepCollectionEquality().equals(other.targetMuscles, _this.targetMuscles)&&(identical(other.exerciseCount, _this.exerciseCount) || other.exerciseCount == _this.exerciseCount)&&(identical(other.estimatedMinutes, _this.estimatedMinutes) || other.estimatedMinutes == _this.estimatedMinutes)&&const DeepCollectionEquality().equals(other.exercises, _this.exercises));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkoutSchedule&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.description, _this.description) || other.description == _this.description)&&(identical(other.focus, _this.focus) || other.focus == _this.focus)&&(identical(other.experience, _this.experience) || other.experience == _this.experience)&&(identical(other.equipment, _this.equipment) || other.equipment == _this.equipment)&&(identical(other.durationWeeks, _this.durationWeeks) || other.durationWeeks == _this.durationWeeks)&&(identical(other.daysPerWeek, _this.daysPerWeek) || other.daysPerWeek == _this.daysPerWeek)&&(identical(other.isFavorite, _this.isFavorite) || other.isFavorite == _this.isFavorite)&&(identical(other.isCustom, _this.isCustom) || other.isCustom == _this.isCustom)&&const DeepCollectionEquality().equals(other.targetMuscles, _this.targetMuscles)&&(identical(other.exerciseCount, _this.exerciseCount) || other.exerciseCount == _this.exerciseCount)&&(identical(other.estimatedMinutes, _this.estimatedMinutes) || other.estimatedMinutes == _this.estimatedMinutes)&&const DeepCollectionEquality().equals(other.exercises, _this.exercises)&&(identical(other.completionCount, _this.completionCount) || other.completionCount == _this.completionCount));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as WorkoutSchedule;
-  return Object.hash(runtimeType,_this.id,_this.title,_this.description,_this.focus,_this.experience,_this.equipment,_this.durationWeeks,_this.daysPerWeek,_this.isFavorite,_this.isCustom,const DeepCollectionEquality().hash(_this.targetMuscles),_this.exerciseCount,_this.estimatedMinutes,const DeepCollectionEquality().hash(_this.exercises));
+  return Object.hash(runtimeType,_this.id,_this.title,_this.description,_this.focus,_this.experience,_this.equipment,_this.durationWeeks,_this.daysPerWeek,_this.isFavorite,_this.isCustom,const DeepCollectionEquality().hash(_this.targetMuscles),_this.exerciseCount,_this.estimatedMinutes,const DeepCollectionEquality().hash(_this.exercises),_this.completionCount);
 }
 
 @override
 String toString() {
   final _this = this as WorkoutSchedule;
-  return 'WorkoutSchedule(id: ${_this.id}, title: ${_this.title}, description: ${_this.description}, focus: ${_this.focus}, experience: ${_this.experience}, equipment: ${_this.equipment}, durationWeeks: ${_this.durationWeeks}, daysPerWeek: ${_this.daysPerWeek}, isFavorite: ${_this.isFavorite}, isCustom: ${_this.isCustom}, targetMuscles: ${_this.targetMuscles}, exerciseCount: ${_this.exerciseCount}, estimatedMinutes: ${_this.estimatedMinutes}, exercises: ${_this.exercises})';
+  return 'WorkoutSchedule(id: ${_this.id}, title: ${_this.title}, description: ${_this.description}, focus: ${_this.focus}, experience: ${_this.experience}, equipment: ${_this.equipment}, durationWeeks: ${_this.durationWeeks}, daysPerWeek: ${_this.daysPerWeek}, isFavorite: ${_this.isFavorite}, isCustom: ${_this.isCustom}, targetMuscles: ${_this.targetMuscles}, exerciseCount: ${_this.exerciseCount}, estimatedMinutes: ${_this.estimatedMinutes}, exercises: ${_this.exercises}, completionCount: ${_this.completionCount})';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $WorkoutScheduleCopyWith<$Res>  {
   factory $WorkoutScheduleCopyWith(WorkoutSchedule value, $Res Function(WorkoutSchedule) _then) = _$WorkoutScheduleCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, String description, String focus, String experience, String equipment, int durationWeeks, int daysPerWeek, bool isFavorite, bool isCustom, List<String> targetMuscles, int exerciseCount, int estimatedMinutes, List<ScheduleExercise> exercises
+ String id, String title, String description, String focus, String experience, String equipment, int durationWeeks, int daysPerWeek, bool isFavorite, bool isCustom, List<String> targetMuscles, int exerciseCount, int estimatedMinutes, List<ScheduleExercise> exercises, int completionCount
 });
 
 
@@ -71,7 +71,7 @@ class _$WorkoutScheduleCopyWithImpl<$Res>
 
 /// Create a copy of WorkoutSchedule
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? description = null,Object? focus = null,Object? experience = null,Object? equipment = null,Object? durationWeeks = null,Object? daysPerWeek = null,Object? isFavorite = null,Object? isCustom = null,Object? targetMuscles = null,Object? exerciseCount = null,Object? estimatedMinutes = null,Object? exercises = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? description = null,Object? focus = null,Object? experience = null,Object? equipment = null,Object? durationWeeks = null,Object? daysPerWeek = null,Object? isFavorite = null,Object? isCustom = null,Object? targetMuscles = null,Object? exerciseCount = null,Object? estimatedMinutes = null,Object? exercises = null,Object? completionCount = null,}) {
   return _then(WorkoutSchedule(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -87,7 +87,8 @@ as bool,targetMuscles: null == targetMuscles ? _self.targetMuscles : targetMuscl
 as List<String>,exerciseCount: null == exerciseCount ? _self.exerciseCount : exerciseCount // ignore: cast_nullable_to_non_nullable
 as int,estimatedMinutes: null == estimatedMinutes ? _self.estimatedMinutes : estimatedMinutes // ignore: cast_nullable_to_non_nullable
 as int,exercises: null == exercises ? _self.exercises : exercises // ignore: cast_nullable_to_non_nullable
-as List<ScheduleExercise>,
+as List<ScheduleExercise>,completionCount: null == completionCount ? _self.completionCount : completionCount // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -172,10 +173,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String description,  String focus,  String experience,  String equipment,  int durationWeeks,  int daysPerWeek,  bool isFavorite,  bool isCustom,  List<String> targetMuscles,  int exerciseCount,  int estimatedMinutes,  List<ScheduleExercise> exercises)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String description,  String focus,  String experience,  String equipment,  int durationWeeks,  int daysPerWeek,  bool isFavorite,  bool isCustom,  List<String> targetMuscles,  int exerciseCount,  int estimatedMinutes,  List<ScheduleExercise> exercises,  int completionCount)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WorkoutSchedule() when $default != null:
-return $default(_that.id,_that.title,_that.description,_that.focus,_that.experience,_that.equipment,_that.durationWeeks,_that.daysPerWeek,_that.isFavorite,_that.isCustom,_that.targetMuscles,_that.exerciseCount,_that.estimatedMinutes,_that.exercises);case _:
+return $default(_that.id,_that.title,_that.description,_that.focus,_that.experience,_that.equipment,_that.durationWeeks,_that.daysPerWeek,_that.isFavorite,_that.isCustom,_that.targetMuscles,_that.exerciseCount,_that.estimatedMinutes,_that.exercises,_that.completionCount);case _:
   return orElse();
 
 }
@@ -193,10 +194,10 @@ return $default(_that.id,_that.title,_that.description,_that.focus,_that.experie
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String description,  String focus,  String experience,  String equipment,  int durationWeeks,  int daysPerWeek,  bool isFavorite,  bool isCustom,  List<String> targetMuscles,  int exerciseCount,  int estimatedMinutes,  List<ScheduleExercise> exercises)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String description,  String focus,  String experience,  String equipment,  int durationWeeks,  int daysPerWeek,  bool isFavorite,  bool isCustom,  List<String> targetMuscles,  int exerciseCount,  int estimatedMinutes,  List<ScheduleExercise> exercises,  int completionCount)  $default,) {final _that = this;
 switch (_that) {
 case _WorkoutSchedule():
-return $default(_that.id,_that.title,_that.description,_that.focus,_that.experience,_that.equipment,_that.durationWeeks,_that.daysPerWeek,_that.isFavorite,_that.isCustom,_that.targetMuscles,_that.exerciseCount,_that.estimatedMinutes,_that.exercises);case _:
+return $default(_that.id,_that.title,_that.description,_that.focus,_that.experience,_that.equipment,_that.durationWeeks,_that.daysPerWeek,_that.isFavorite,_that.isCustom,_that.targetMuscles,_that.exerciseCount,_that.estimatedMinutes,_that.exercises,_that.completionCount);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -213,10 +214,10 @@ return $default(_that.id,_that.title,_that.description,_that.focus,_that.experie
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String description,  String focus,  String experience,  String equipment,  int durationWeeks,  int daysPerWeek,  bool isFavorite,  bool isCustom,  List<String> targetMuscles,  int exerciseCount,  int estimatedMinutes,  List<ScheduleExercise> exercises)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String description,  String focus,  String experience,  String equipment,  int durationWeeks,  int daysPerWeek,  bool isFavorite,  bool isCustom,  List<String> targetMuscles,  int exerciseCount,  int estimatedMinutes,  List<ScheduleExercise> exercises,  int completionCount)?  $default,) {final _that = this;
 switch (_that) {
 case _WorkoutSchedule() when $default != null:
-return $default(_that.id,_that.title,_that.description,_that.focus,_that.experience,_that.equipment,_that.durationWeeks,_that.daysPerWeek,_that.isFavorite,_that.isCustom,_that.targetMuscles,_that.exerciseCount,_that.estimatedMinutes,_that.exercises);case _:
+return $default(_that.id,_that.title,_that.description,_that.focus,_that.experience,_that.equipment,_that.durationWeeks,_that.daysPerWeek,_that.isFavorite,_that.isCustom,_that.targetMuscles,_that.exerciseCount,_that.estimatedMinutes,_that.exercises,_that.completionCount);case _:
   return null;
 
 }
@@ -228,7 +229,7 @@ return $default(_that.id,_that.title,_that.description,_that.focus,_that.experie
 @JsonSerializable()
 
 class _WorkoutSchedule extends WorkoutSchedule {
-  const _WorkoutSchedule({required this.id, required this.title, required this.description, required this.focus, required this.experience, required this.equipment, required this.durationWeeks, required this.daysPerWeek, this.isFavorite = false, this.isCustom = false,  List<String> targetMuscles = const <String>[], this.exerciseCount = 0, this.estimatedMinutes = 0,  List<ScheduleExercise> exercises = const <ScheduleExercise>[]}): _targetMuscles = targetMuscles,_exercises = exercises,super._();
+  const _WorkoutSchedule({required this.id, required this.title, required this.description, required this.focus, required this.experience, required this.equipment, required this.durationWeeks, required this.daysPerWeek, this.isFavorite = false, this.isCustom = false,  List<String> targetMuscles = const <String>[], this.exerciseCount = 0, this.estimatedMinutes = 0,  List<ScheduleExercise> exercises = const <ScheduleExercise>[], this.completionCount = 0}): _targetMuscles = targetMuscles,_exercises = exercises,super._();
   factory _WorkoutSchedule.fromJson(Map<String, dynamic> json) => _$WorkoutScheduleFromJson(json);
 
 @override final  String id;
@@ -257,6 +258,7 @@ class _WorkoutSchedule extends WorkoutSchedule {
   return EqualUnmodifiableListView(_exercises);
 }
 
+@override@JsonKey() final  int completionCount;
 
 /// Create a copy of WorkoutSchedule
 /// with the given fields replaced by the non-null parameter values.
@@ -271,18 +273,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkoutSchedule&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.focus, focus) || other.focus == focus)&&(identical(other.experience, experience) || other.experience == experience)&&(identical(other.equipment, equipment) || other.equipment == equipment)&&(identical(other.durationWeeks, durationWeeks) || other.durationWeeks == durationWeeks)&&(identical(other.daysPerWeek, daysPerWeek) || other.daysPerWeek == daysPerWeek)&&(identical(other.isFavorite, isFavorite) || other.isFavorite == isFavorite)&&(identical(other.isCustom, isCustom) || other.isCustom == isCustom)&&const DeepCollectionEquality().equals(other.targetMuscles, _targetMuscles)&&(identical(other.exerciseCount, exerciseCount) || other.exerciseCount == exerciseCount)&&(identical(other.estimatedMinutes, estimatedMinutes) || other.estimatedMinutes == estimatedMinutes)&&const DeepCollectionEquality().equals(other.exercises, _exercises));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkoutSchedule&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.focus, focus) || other.focus == focus)&&(identical(other.experience, experience) || other.experience == experience)&&(identical(other.equipment, equipment) || other.equipment == equipment)&&(identical(other.durationWeeks, durationWeeks) || other.durationWeeks == durationWeeks)&&(identical(other.daysPerWeek, daysPerWeek) || other.daysPerWeek == daysPerWeek)&&(identical(other.isFavorite, isFavorite) || other.isFavorite == isFavorite)&&(identical(other.isCustom, isCustom) || other.isCustom == isCustom)&&const DeepCollectionEquality().equals(other.targetMuscles, _targetMuscles)&&(identical(other.exerciseCount, exerciseCount) || other.exerciseCount == exerciseCount)&&(identical(other.estimatedMinutes, estimatedMinutes) || other.estimatedMinutes == estimatedMinutes)&&const DeepCollectionEquality().equals(other.exercises, _exercises)&&(identical(other.completionCount, completionCount) || other.completionCount == completionCount));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,title,description,focus,experience,equipment,durationWeeks,daysPerWeek,isFavorite,isCustom,const DeepCollectionEquality().hash(_targetMuscles),exerciseCount,estimatedMinutes,const DeepCollectionEquality().hash(_exercises));
+    return Object.hash(runtimeType,id,title,description,focus,experience,equipment,durationWeeks,daysPerWeek,isFavorite,isCustom,const DeepCollectionEquality().hash(_targetMuscles),exerciseCount,estimatedMinutes,const DeepCollectionEquality().hash(_exercises),completionCount);
 }
 
 @override
 String toString() {
-    return 'WorkoutSchedule(id: $id, title: $title, description: $description, focus: $focus, experience: $experience, equipment: $equipment, durationWeeks: $durationWeeks, daysPerWeek: $daysPerWeek, isFavorite: $isFavorite, isCustom: $isCustom, targetMuscles: $targetMuscles, exerciseCount: $exerciseCount, estimatedMinutes: $estimatedMinutes, exercises: $exercises)';
+    return 'WorkoutSchedule(id: $id, title: $title, description: $description, focus: $focus, experience: $experience, equipment: $equipment, durationWeeks: $durationWeeks, daysPerWeek: $daysPerWeek, isFavorite: $isFavorite, isCustom: $isCustom, targetMuscles: $targetMuscles, exerciseCount: $exerciseCount, estimatedMinutes: $estimatedMinutes, exercises: $exercises, completionCount: $completionCount)';
 }
 
 
@@ -293,7 +295,7 @@ abstract mixin class _$WorkoutScheduleCopyWith<$Res> implements $WorkoutSchedule
   factory _$WorkoutScheduleCopyWith(_WorkoutSchedule value, $Res Function(_WorkoutSchedule) _then) = __$WorkoutScheduleCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, String description, String focus, String experience, String equipment, int durationWeeks, int daysPerWeek, bool isFavorite, bool isCustom, List<String> targetMuscles, int exerciseCount, int estimatedMinutes, List<ScheduleExercise> exercises
+ String id, String title, String description, String focus, String experience, String equipment, int durationWeeks, int daysPerWeek, bool isFavorite, bool isCustom, List<String> targetMuscles, int exerciseCount, int estimatedMinutes, List<ScheduleExercise> exercises, int completionCount
 });
 
 
@@ -310,7 +312,7 @@ class __$WorkoutScheduleCopyWithImpl<$Res>
 
 /// Create a copy of WorkoutSchedule
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? description = null,Object? focus = null,Object? experience = null,Object? equipment = null,Object? durationWeeks = null,Object? daysPerWeek = null,Object? isFavorite = null,Object? isCustom = null,Object? targetMuscles = null,Object? exerciseCount = null,Object? estimatedMinutes = null,Object? exercises = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? description = null,Object? focus = null,Object? experience = null,Object? equipment = null,Object? durationWeeks = null,Object? daysPerWeek = null,Object? isFavorite = null,Object? isCustom = null,Object? targetMuscles = null,Object? exerciseCount = null,Object? estimatedMinutes = null,Object? exercises = null,Object? completionCount = null,}) {
   return _then(_WorkoutSchedule(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -326,7 +328,8 @@ as bool,targetMuscles: null == targetMuscles ? _self._targetMuscles : targetMusc
 as List<String>,exerciseCount: null == exerciseCount ? _self.exerciseCount : exerciseCount // ignore: cast_nullable_to_non_nullable
 as int,estimatedMinutes: null == estimatedMinutes ? _self.estimatedMinutes : estimatedMinutes // ignore: cast_nullable_to_non_nullable
 as int,exercises: null == exercises ? _self._exercises : exercises // ignore: cast_nullable_to_non_nullable
-as List<ScheduleExercise>,
+as List<ScheduleExercise>,completionCount: null == completionCount ? _self.completionCount : completionCount // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

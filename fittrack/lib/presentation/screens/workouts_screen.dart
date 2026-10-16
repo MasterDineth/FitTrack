@@ -405,16 +405,20 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
             separatorBuilder: (context, index) => const SizedBox(width: 14),
             itemBuilder: (context, index) {
               final program = trending[index];
-              return _TrendingProgramCard(
-                program: program,
-                onBookmarkTap: () {
-                  ref
-                      .read(schedulesNotifierProvider.notifier)
-                      .toggleBookmark(program.id);
-                },
-                onStartTap: () {
-                  context.push('/workouts/active/sch1');
-                },
+              return FtPressable(
+                onTap: () => context.push('/workouts/detail/${program.id}'),
+                pressedScale: 0.98,
+                child: _TrendingProgramCard(
+                  program: program,
+                  onBookmarkTap: () {
+                    ref
+                        .read(schedulesNotifierProvider.notifier)
+                        .toggleBookmark(program.id);
+                  },
+                  onStartTap: () {
+                    context.push('/workouts/detail/${program.id}');
+                  },
+                ),
               );
             },
           ),
@@ -502,9 +506,13 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
 
         // Spotlight Card
         spotlightAsync.when(
-          data: (spotlight) => _SpotlightCard(
-            spotlight: spotlight,
-            onPlayTap: () => context.push('/workouts/active/${spotlight.scheduleId}'),
+          data: (spotlight) => FtPressable(
+            onTap: () => context.push('/workouts/detail/${spotlight.scheduleId}'),
+            pressedScale: 0.98,
+            child: _SpotlightCard(
+              spotlight: spotlight,
+              onPlayTap: () => context.push('/workouts/detail/${spotlight.scheduleId}'),
+            ),
           ),
           loading: () => GlassSurface(
             tier: FtGlassTier.glass1,
@@ -612,7 +620,7 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
             final routine = customRoutines[index];
             return _CustomRoutineCard(
               routine: routine,
-              onTap: () => context.push('/workouts/detail/sch1'),
+              onTap: () => context.push('/workouts/detail/${routine.id}'),
               onBookmarkToggle: () {
                 ref
                     .read(schedulesNotifierProvider.notifier)

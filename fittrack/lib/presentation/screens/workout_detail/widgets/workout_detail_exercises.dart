@@ -20,10 +20,14 @@ class WorkoutDetailExercises extends StatefulWidget {
     super.key,
     required this.exercises,
     required this.onAddExerciseTap,
+    this.onRemoveExercise,
+    this.onReorderExercises,
   });
 
   final List<ScheduleExercise> exercises;
   final VoidCallback onAddExerciseTap;
+  final void Function(int index)? onRemoveExercise;
+  final void Function(int oldIndex, int newIndex)? onReorderExercises;
 
   @override
   State<WorkoutDetailExercises> createState() => _WorkoutDetailExercisesState();
@@ -68,6 +72,7 @@ class _WorkoutDetailExercisesState extends State<WorkoutDetailExercises> {
       final item = _exercises.removeAt(oldIndex);
       _exercises.insert(newIndex, item);
     });
+    widget.onReorderExercises?.call(oldIndex, newIndex);
     HapticFeedback.selectionClick();
   }
 
@@ -169,6 +174,9 @@ class _WorkoutDetailExercisesState extends State<WorkoutDetailExercises> {
                   onToggleExpanded: () => _toggleExpanded(_exercises[i].id),
                   onReorder: _onReorder,
                   onReorderDone: _onReorderDone,
+                  onRemove: widget.onRemoveExercise != null
+                      ? () => widget.onRemoveExercise!(i)
+                      : null,
                 ),
               ],
             ],

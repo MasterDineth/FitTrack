@@ -165,6 +165,22 @@ class _TestScheduleRepository implements IScheduleRepository {
   @override
   Future<List<Schedule>> searchSchedules(String query, {String? category}) async =>
       List.of(schedules);
+
+  @override
+  Future<void> incrementCompletionCount(String scheduleId) async {
+    final idx = schedules.indexWhere((s) => s.id == scheduleId);
+    if (idx != -1) {
+      final sched = schedules[idx];
+      schedules[idx] = sched.copyWith(completionCount: sched.completionCount + 1);
+    }
+  }
+
+  @override
+  Future<List<Schedule>> getTrendingSchedules({int limit = 5}) async {
+    final list = List<Schedule>.from(schedules)
+      ..sort((a, b) => b.completionCount.compareTo(a.completionCount));
+    return list.take(limit).toList();
+  }
 }
 
 class _TestExerciseRepository implements IExerciseRepository {

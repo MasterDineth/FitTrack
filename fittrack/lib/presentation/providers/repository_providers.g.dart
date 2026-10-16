@@ -329,7 +329,7 @@ final class ThemeRepositoryProvider
   }
 }
 
-String _$themeRepositoryHash() => r'aa306808d39cfec2ef6dfaefad3f853b25bee4db';
+String _$themeRepositoryHash() => r'b49118c9fa069ab2fc817471c420906554175126';
 
 @ProviderFor(bioMetricsRepository)
 final bioMetricsRepositoryProvider = BioMetricsRepositoryProvider._();

@@ -20,6 +20,7 @@ import '../screens/workout_search_screen.dart';
 import '../screens/workout_detail_screen.dart';
 import '../screens/create_schedule_screen.dart';
 import '../../domain/entities/workout_schedule.dart';
+import '../../domain/entities/schedule_exercise.dart';
 import '../screens/create_custom_exercise_screen.dart';
 import '../screens/active_workout_screen.dart';
 import '../screens/exercise_guide_details_screen.dart';
@@ -144,6 +145,7 @@ GoRouter router(Ref ref) {
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => ActiveWorkoutScreen(
           scheduleId: state.pathParameters['scheduleId']!,
+          customExercises: state.extra as List<ScheduleExercise>?,
         ),
       ),
       GoRoute(
@@ -151,6 +153,7 @@ GoRouter router(Ref ref) {
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => ActiveWorkoutScreen(
           scheduleId: state.pathParameters['id']!,
+          customExercises: state.extra as List<ScheduleExercise>?,
         ),
       ),
       GoRoute(

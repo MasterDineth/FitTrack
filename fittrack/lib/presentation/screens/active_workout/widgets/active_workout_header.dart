@@ -32,7 +32,7 @@ class ActiveWorkoutHeader extends StatelessWidget {
         : 'Push–Pull–Legs Split';
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,

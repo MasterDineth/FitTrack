@@ -29,14 +29,6 @@ class ActiveSessionDock extends StatelessWidget {
   Widget build(BuildContext context) {
     final completedSets = state.completedSets.length;
     final totalSets = state.totalSetCount > 0 ? state.totalSetCount : 21;
-    final volumeKg = state.completedSets.fold<double>(
-      0.0,
-      (sum, s) => sum + s.actualWeightKg * s.actualReps,
-    );
-    final volumeDisplay = volumeKg > 0
-        ? (volumeKg % 1 == 0 ? '${volumeKg.toInt()} kg' : '${volumeKg.toStringAsFixed(1)} kg')
-        : '680 kg';
-
     final calories = state.estimatedCalories > 0 ? state.estimatedCalories : 14;
 
     return Padding(
@@ -80,15 +72,17 @@ class ActiveSessionDock extends StatelessWidget {
                 Container(
                   width: 1,
                   height: 24,
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: context.isDark
+                      ? Colors.white.withValues(alpha: 0.12)
+                      : Colors.black.withValues(alpha: 0.08),
                 ),
 
-                // Stat 2: Total Volume
+                // Stat 2: Workout Timer
                 Expanded(
                   child: Column(
                     children: [
                       Text(
-                        'Volume',
+                        'Timer',
                         style: TextStyle(
                           fontFamily: FtText.fontFamily,
                           fontSize: 10,
@@ -98,7 +92,7 @@ class ActiveSessionDock extends StatelessWidget {
                       ),
                       const SizedBox(height: 1),
                       Text(
-                        volumeDisplay,
+                        state.formattedElapsed,
                         style: TextStyle(
                           fontFamily: FtText.fontFamily,
                           fontSize: 14.5,
@@ -112,7 +106,9 @@ class ActiveSessionDock extends StatelessWidget {
                 Container(
                   width: 1,
                   height: 24,
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: context.isDark
+                      ? Colors.white.withValues(alpha: 0.12)
+                      : Colors.black.withValues(alpha: 0.08),
                 ),
 
                 // Stat 3: Burned Energy
@@ -148,7 +144,7 @@ class ActiveSessionDock extends StatelessWidget {
             // ── Dock Action Buttons ─────────────────────────────────────────
             Row(
               children: [
-                // Pause Session Button
+                // Pause Session Button (Filled with Primary Brand Color)
                 Expanded(
                   child: FtPressable(
                     onTap: onPauseTap,
@@ -156,26 +152,25 @@ class ActiveSessionDock extends StatelessWidget {
                     child: Container(
                       height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.80),
+                        color: context.ftPrimary,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.white, width: 1),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
+                            color: context.ftPrimary.withValues(alpha: 0.35),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
-                      child: Row(
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
                             Icons.pause_rounded,
                             size: 18,
-                            color: context.ftInk,
+                            color: Colors.white,
                           ),
-                          const SizedBox(width: 6),
+                          SizedBox(width: 6),
                           Flexible(
                             child: Text(
                               'Pause',
@@ -183,7 +178,7 @@ class ActiveSessionDock extends StatelessWidget {
                                 fontFamily: FtText.fontFamily,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
-                                color: context.ftInk,
+                                color: Colors.white,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -196,7 +191,7 @@ class ActiveSessionDock extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
 
-                // End Workout Destructive Button
+                // End Workout Destructive Button (Completely filled, no red outline)
                 Expanded(
                   child: FtPressable(
                     onTap: onEndTap,
@@ -204,17 +199,13 @@ class ActiveSessionDock extends StatelessWidget {
                     child: Container(
                       height: 44,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF43F5E).withValues(alpha: 0.12),
+                        color: _resolveDestructiveColor(context),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: const Color(0xFFF43F5E).withValues(alpha: 0.40),
-                          width: 1,
-                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFF43F5E).withValues(alpha: 0.08),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
+                            color: _resolveDestructiveColor(context).withValues(alpha: 0.30),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
@@ -224,7 +215,7 @@ class ActiveSessionDock extends StatelessWidget {
                           Icon(
                             Icons.stop_rounded,
                             size: 18,
-                            color: Color(0xFFE11D48),
+                            color: Colors.white,
                           ),
                           SizedBox(width: 6),
                           Flexible(
@@ -234,7 +225,7 @@ class ActiveSessionDock extends StatelessWidget {
                                 fontFamily: FtText.fontFamily,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFFE11D48),
+                                color: Colors.white,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -251,5 +242,15 @@ class ActiveSessionDock extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Color _resolveDestructiveColor(BuildContext context) {
+    final primary = context.ftPrimary;
+    final hsl = HSLColor.fromColor(primary);
+    final isRedish = (hsl.hue <= 25 || hsl.hue >= 340) && hsl.saturation >= 0.35;
+    if (isRedish) {
+      return const Color(0xFF991B1B);
+    }
+    return const Color(0xFFE11D48);
   }
 }

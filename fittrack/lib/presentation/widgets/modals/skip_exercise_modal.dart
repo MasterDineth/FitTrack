@@ -308,13 +308,17 @@ class _SkipExerciseModalCardState extends ConsumerState<_SkipExerciseModalCard>
                   width: double.infinity,
                   height: 48,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF5F3BDC), Color(0xFF6F4BEB), Color(0xFF502BBD)],
+                    gradient: LinearGradient(
+                      colors: [
+                        context.ftPrimary,
+                        Color.lerp(context.ftPrimary, Colors.white, 0.12) ?? context.ftPrimary,
+                        Color.lerp(context.ftPrimary, Colors.black, 0.15) ?? context.ftPrimary,
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF5F3BDC).withValues(alpha: 0.35),
+                        color: context.ftPrimary.withValues(alpha: 0.35),
                         blurRadius: 16,
                         offset: const Offset(0, 6),
                       ),

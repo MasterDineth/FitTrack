@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,9 @@ import '../../../domain/entities/schedule.dart';
 import '../../providers/active_workout_provider.dart';
 import '../../providers/repository_providers.dart';
 import '../../providers/schedules_provider.dart';
+import '../../providers/theme_provider.dart';
+import '../../theme/ft_glass.dart';
+import '../../widgets/exercise_picker/add_exercise_picker_sheet.dart';
 import '../../widgets/ft_background_painter.dart';
 import 'widgets/workout_detail_bento.dart';
 import 'widgets/workout_detail_dock.dart';
@@ -18,15 +22,16 @@ import 'widgets/workout_detail_hero.dart';
 ///
 /// Features:
 /// - Dynamic mesh gradient background (`FtMeshBackground`) and frosted glass surfaces.
-/// - Top header with Back button, Title & Subtitle, 3-dot popup menu (Share, Edit, Settings),
-///   notification bell, and profile avatar matching Workout Library Search.
-/// - Routine focus badge with pulsating dot and hero schedule card with frosted tags.
+/// - Top header with Back button, Title & Subtitle, 3-dot popup menu.
+/// - Routine focus badge with hero schedule card with frosted tags.
 /// - 2x2 Telemetry Bento Grid (Exercises, Total sets, Est. time, Est. energy).
-/// - Complete exercises list with expand/collapse set details (Set, Weight, Reps, Rest - NO Tempo or PRE).
-/// - Dashed "+ Add an exercise" button.
-/// - Floating start workout dock calling `startWorkout` and navigating to active workout session.
-/// - Modular decomposition with all individual files strictly under 400 lines.
-class WorkoutDetailScreen extends ConsumerWidget {
+/// - Complete exercises list with expand/collapse set details and remove action.
+/// - Temporary add/remove/reorder of exercises for current session forwarded to active workout
+///   without mutating database records.
+/// - AddExercisePickerSheet modal bottom sheet for adding exercises.
+/// - Generous bottom scroll clearance (bottomPadding + 175) so "+ Add an exercise" is never eclipsed.
+/// - Floating start workout dock calling `startWorkout` with custom exercises.
+class WorkoutDetailScreen extends ConsumerStatefulWidget {
   const WorkoutDetailScreen({
     super.key,
     required this.scheduleId,
@@ -36,6 +41,21 @@ class WorkoutDetailScreen extends ConsumerWidget {
   final String scheduleId;
   final WorkoutSchedule? workoutSchedule;
 
+  @override
+  ConsumerState<WorkoutDetailScreen> createState() => _WorkoutDetailScreenState();
+}
+
+class _WorkoutDetailScreenState extends ConsumerState<WorkoutDetailScreen> {
+  List<ScheduleExercise>? _temporaryExercises;
+
+  @override
+  void didUpdateWidget(covariant WorkoutDetailScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.scheduleId != widget.scheduleId) {
+      _temporaryExercises = null;
+    }
+  }
+
   void _onBack(BuildContext context) {
     if (context.canPop()) {
       context.pop();
@@ -44,13 +64,104 @@ class WorkoutDetailScreen extends ConsumerWidget {
     }
   }
 
-  void _onStartWorkout(BuildContext context, WidgetRef ref) {
-    ref.read(activeWorkoutProvider.notifier).startWorkout(scheduleId);
-    context.push('/workouts/active/$scheduleId');
+  void _onStartWorkout(BuildContext context, List<ScheduleExercise> currentList) {
+    setState(() {
+      _temporaryExercises = null;
+    });
+    ref.read(activeWorkoutProvider.notifier).startWorkout(
+      widget.scheduleId,
+      customExercises: currentList,
+    );
+    context.push('/workouts/active/${widget.scheduleId}', extra: currentList);
   }
 
-  void _onAddExercise(BuildContext context) {
-    context.push('/exercises/create-custom');
+  void _onAddExercise(BuildContext context, List<ScheduleExercise> currentList) {
+    if (currentList.length >= 12) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Schedule is full (maximum 12 exercises reached)',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+              color: Colors.white,
+            ),
+          ),
+          backgroundColor: context.ftPrimary,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final themeSettings = ref.read(themeNotifierProvider);
+    final enableTransparency = themeSettings.enableGlassTransparency;
+    final blurIntensity = themeSettings.blurIntensity;
+    final double t = ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0);
+    final double scrimSigma = enableTransparency ? (6.0 + 10.0 * t) : 0.0;
+
+    final sheet = AddExercisePickerSheet(
+      currentExercisesCount: currentList.length,
+      existingExerciseIds: currentList.map((e) => e.exerciseId).toSet(),
+      onExercisesAdded: (selected) {
+        setState(() {
+          final updated = List<ScheduleExercise>.from(_temporaryExercises ?? currentList);
+          for (int i = 0; i < selected.length; i++) {
+            if (updated.length >= 12) break;
+            final item = selected[i];
+            if (updated.any((e) => e.exerciseId == item.exerciseId)) continue;
+            updated.add(
+              ScheduleExercise(
+                id: 'temp_${DateTime.now().microsecondsSinceEpoch}_$i',
+                scheduleId: widget.scheduleId,
+                exerciseId: item.exerciseId,
+                sortOrder: updated.length + 1,
+                targetSets: item.targetSets,
+                targetReps: item.targetReps,
+                targetWeightKg: item.targetWeightKg,
+                restDurationSeconds: item.restDurationSeconds,
+              ),
+            );
+          }
+          _temporaryExercises = updated;
+        });
+      },
+      onCreateNew: () => context.push('/exercises/create-custom'),
+    );
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.45),
+      builder: (_) => enableTransparency && scrimSigma > 0
+          ? BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: scrimSigma, sigmaY: scrimSigma),
+              child: sheet,
+            )
+          : sheet,
+    );
+  }
+
+  void _onRemoveExercise(int index, List<ScheduleExercise> currentList) {
+    setState(() {
+      final updated = List<ScheduleExercise>.from(_temporaryExercises ?? currentList);
+      if (index >= 0 && index < updated.length) {
+        updated.removeAt(index);
+        _temporaryExercises = updated;
+      }
+    });
+  }
+
+  void _onReorderExercises(int oldIndex, int newIndex, List<ScheduleExercise> currentList) {
+    setState(() {
+      final updated = List<ScheduleExercise>.from(_temporaryExercises ?? currentList);
+      if (oldIndex < updated.length && newIndex < updated.length) {
+        final item = updated.removeAt(oldIndex);
+        updated.insert(newIndex, item);
+        _temporaryExercises = updated;
+      }
+    });
   }
 
   Schedule _mapWorkoutSchedule(WorkoutSchedule ws) {
@@ -58,9 +169,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
       id: ws.id,
       name: ws.title,
       description: ws.description,
-      targetMuscles: ws.targetMuscles.isNotEmpty
-          ? ws.targetMuscles
-          : [ws.focus],
+      targetMuscles: ws.targetMuscles.isNotEmpty ? ws.targetMuscles : [ws.focus],
       assignedWeekdays: List.generate(
         ws.daysPerWeek.clamp(1, 7),
         (i) => i + 1,
@@ -70,140 +179,109 @@ class WorkoutDetailScreen extends ConsumerWidget {
   }
 
   List<ScheduleExercise> _fallbackExercises(String schedId) {
+    const specs = [
+      ('ex_barbell_bench_press', 4, 8, 85.0, 90),
+      ('ex_incline_dumbbell_press', 3, 10, 30.0, 75),
+      ('ex_standing_overhead_press', 4, 8, 52.5, 90),
+      ('ex_cable_lateral_raise', 4, 15, 10.0, 60),
+      ('ex_cable_chest_flyes', 3, 12, 15.0, 60),
+      ('ex_overhead_triceps_extension', 3, 12, 25.0, 60),
+    ];
     return [
-      ScheduleExercise(
-        id: '${schedId}_ex1',
-        scheduleId: schedId,
-        exerciseId: 'ex_barbell_bench_press',
-        sortOrder: 1,
-        targetSets: 4,
-        targetReps: 8,
-        targetWeightKg: 85.0,
-        restDurationSeconds: 90,
-      ),
-      ScheduleExercise(
-        id: '${schedId}_ex2',
-        scheduleId: schedId,
-        exerciseId: 'ex_incline_dumbbell_press',
-        sortOrder: 2,
-        targetSets: 3,
-        targetReps: 10,
-        targetWeightKg: 30.0,
-        restDurationSeconds: 75,
-      ),
-      ScheduleExercise(
-        id: '${schedId}_ex3',
-        scheduleId: schedId,
-        exerciseId: 'ex_standing_overhead_press',
-        sortOrder: 3,
-        targetSets: 4,
-        targetReps: 8,
-        targetWeightKg: 52.5,
-        restDurationSeconds: 90,
-      ),
-      ScheduleExercise(
-        id: '${schedId}_ex4',
-        scheduleId: schedId,
-        exerciseId: 'ex_cable_lateral_raise',
-        sortOrder: 4,
-        targetSets: 4,
-        targetReps: 15,
-        targetWeightKg: 10.0,
-        restDurationSeconds: 60,
-      ),
-      ScheduleExercise(
-        id: '${schedId}_ex5',
-        scheduleId: schedId,
-        exerciseId: 'ex_cable_chest_flyes',
-        sortOrder: 5,
-        targetSets: 3,
-        targetReps: 12,
-        targetWeightKg: 15.0,
-        restDurationSeconds: 60,
-      ),
-      ScheduleExercise(
-        id: '${schedId}_ex6',
-        scheduleId: schedId,
-        exerciseId: 'ex_overhead_triceps_extension',
-        sortOrder: 6,
-        targetSets: 3,
-        targetReps: 12,
-        targetWeightKg: 25.0,
-        restDurationSeconds: 60,
-      ),
+      for (int i = 0; i < specs.length; i++)
+        ScheduleExercise(
+          id: '${schedId}_ex${i + 1}',
+          scheduleId: schedId,
+          exerciseId: specs[i].$1,
+          sortOrder: i + 1,
+          targetSets: specs[i].$2,
+          targetReps: specs[i].$3,
+          targetWeightKg: specs[i].$4,
+          restDurationSeconds: specs[i].$5,
+        ),
     ];
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     // 1. If workoutSchedule is passed in directly, render it immediately
-    if (workoutSchedule != null) {
-      final effectiveSchedule = _mapWorkoutSchedule(workoutSchedule!);
-      final effectiveExercises = workoutSchedule!.exercises.isNotEmpty
-          ? workoutSchedule!.exercises
-          : _fallbackExercises(scheduleId);
+    if (widget.workoutSchedule != null) {
+      final effectiveSchedule = _mapWorkoutSchedule(widget.workoutSchedule!);
+      final baseExercises = widget.workoutSchedule!.exercises.isNotEmpty
+          ? widget.workoutSchedule!.exercises
+          : _fallbackExercises(widget.scheduleId);
+      final currentExercises = _temporaryExercises ?? baseExercises;
 
       return _WorkoutDetailScaffold(
         schedule: effectiveSchedule,
-        workoutSchedule: workoutSchedule,
-        exercises: effectiveExercises,
+        workoutSchedule: widget.workoutSchedule,
+        exercises: currentExercises,
         onBackTap: () => _onBack(context),
-        onStartTap: () => _onStartWorkout(context, ref),
-        onAddExerciseTap: () => _onAddExercise(context),
+        onStartTap: () => _onStartWorkout(context, currentExercises),
+        onAddExerciseTap: () => _onAddExercise(context, currentExercises),
+        onRemoveExercise: (idx) => _onRemoveExercise(idx, currentExercises),
+        onReorderExercises: (oldIdx, newIdx) => _onReorderExercises(oldIdx, newIdx, currentExercises),
       );
     }
 
     // 2. Otherwise load schedule & exercises from repositories or schedulesProvider
-    final scheduleRepo = ref.watch(scheduleRepositoryProvider);
     final inMemorySchedules = ref.watch(schedulesProvider).allSchedules;
     final matchedWs = inMemorySchedules
-        .where((s) => s.id == scheduleId)
+        .where((s) => s.id == widget.scheduleId)
         .firstOrNull;
 
     if (matchedWs != null) {
       final effectiveSchedule = _mapWorkoutSchedule(matchedWs);
-      final effectiveExercises = matchedWs.exercises.isNotEmpty
+      final baseExercises = matchedWs.exercises.isNotEmpty
           ? matchedWs.exercises
-          : _fallbackExercises(scheduleId);
+          : _fallbackExercises(widget.scheduleId);
+      final currentExercises = _temporaryExercises ?? baseExercises;
 
       return _WorkoutDetailScaffold(
         schedule: effectiveSchedule,
         workoutSchedule: matchedWs,
-        exercises: effectiveExercises,
+        exercises: currentExercises,
         onBackTap: () => _onBack(context),
-        onStartTap: () => _onStartWorkout(context, ref),
-        onAddExerciseTap: () => _onAddExercise(context),
+        onStartTap: () => _onStartWorkout(context, currentExercises),
+        onAddExerciseTap: () => _onAddExercise(context, currentExercises),
+        onRemoveExercise: (idx) => _onRemoveExercise(idx, currentExercises),
+        onReorderExercises: (oldIdx, newIdx) => _onReorderExercises(oldIdx, newIdx, currentExercises),
       );
     }
 
     // SQLite repository async loading
-    final scheduleAsync = ref.watch(_scheduleByIdProvider((scheduleRepo, scheduleId)));
-    final exercisesAsync = ref.watch(_scheduleExercisesDetailProvider((scheduleRepo, scheduleId)));
+    final scheduleAsync = ref.watch(_scheduleByIdProvider(widget.scheduleId));
+    final exercisesAsync = ref.watch(_scheduleExercisesDetailProvider(widget.scheduleId));
 
     return scheduleAsync.when(
       loading: () => const Scaffold(
         backgroundColor: Colors.transparent,
         body: Center(child: CircularProgressIndicator()),
       ),
-      error: (_, _) => _WorkoutDetailScaffold(
-        schedule: Schedule(
-          id: scheduleId,
-          name: 'Push–Pull–Legs Split',
-          description: '',
-          targetMuscles: const ['Chest', 'Shoulders', 'Triceps'],
-          assignedWeekdays: const [1, 3, 5],
-          orderIndex: 0,
-        ),
-        workoutSchedule: null,
-        exercises: _fallbackExercises(scheduleId),
-        onBackTap: () => _onBack(context),
-        onStartTap: () => _onStartWorkout(context, ref),
-        onAddExerciseTap: () => _onAddExercise(context),
-      ),
+      error: (_, _) {
+        final currentExercises = _temporaryExercises ?? _fallbackExercises(widget.scheduleId);
+        return _WorkoutDetailScaffold(
+          schedule: Schedule(
+            id: widget.scheduleId,
+            name: 'Push–Pull–Legs Split',
+            description: '',
+            targetMuscles: const ['Chest', 'Shoulders', 'Triceps'],
+            assignedWeekdays: const [1, 3, 5],
+            orderIndex: 0,
+          ),
+          workoutSchedule: null,
+          exercises: currentExercises,
+          onBackTap: () => _onBack(context),
+          onStartTap: () => _onStartWorkout(context, currentExercises),
+          onAddExerciseTap: () => _onAddExercise(context, currentExercises),
+          onRemoveExercise: (idx) => _onRemoveExercise(idx, currentExercises),
+          onReorderExercises: (oldIdx, newIdx) => _onReorderExercises(oldIdx, newIdx, currentExercises),
+        );
+      },
       data: (schedule) {
         final effectiveSchedule = schedule ??
             Schedule(
-              id: scheduleId,
+              id: widget.scheduleId,
               name: 'Push–Pull–Legs Split',
               description: '',
               targetMuscles: const ['Chest', 'Shoulders', 'Triceps'],
@@ -212,16 +290,19 @@ class WorkoutDetailScreen extends ConsumerWidget {
             );
 
         final exercises = exercisesAsync.value ?? const [];
-        final effectiveExercises =
-            exercises.isNotEmpty ? exercises : _fallbackExercises(scheduleId);
+        final baseExercises =
+            exercises.isNotEmpty ? exercises : _fallbackExercises(widget.scheduleId);
+        final currentExercises = _temporaryExercises ?? baseExercises;
 
         return _WorkoutDetailScaffold(
           schedule: effectiveSchedule,
           workoutSchedule: null,
-          exercises: effectiveExercises,
+          exercises: currentExercises,
           onBackTap: () => _onBack(context),
-          onStartTap: () => _onStartWorkout(context, ref),
-          onAddExerciseTap: () => _onAddExercise(context),
+          onStartTap: () => _onStartWorkout(context, currentExercises),
+          onAddExerciseTap: () => _onAddExercise(context, currentExercises),
+          onRemoveExercise: (idx) => _onRemoveExercise(idx, currentExercises),
+          onReorderExercises: (oldIdx, newIdx) => _onReorderExercises(oldIdx, newIdx, currentExercises),
         );
       },
     );
@@ -236,6 +317,8 @@ class _WorkoutDetailScaffold extends StatelessWidget {
     required this.onBackTap,
     required this.onStartTap,
     required this.onAddExerciseTap,
+    required this.onRemoveExercise,
+    required this.onReorderExercises,
   });
 
   final Schedule schedule;
@@ -244,6 +327,8 @@ class _WorkoutDetailScaffold extends StatelessWidget {
   final VoidCallback onBackTap;
   final VoidCallback onStartTap;
   final VoidCallback onAddExerciseTap;
+  final void Function(int index) onRemoveExercise;
+  final void Function(int oldIndex, int newIndex) onReorderExercises;
 
   @override
   Widget build(BuildContext context) {
@@ -289,7 +374,7 @@ class _WorkoutDetailScaffold extends StatelessWidget {
                           16,
                           8,
                           16,
-                          bottomPadding + 110, // Clearance for sticky start workout dock
+                          bottomPadding + 175, // Generous clearance so Add Exercise is fully visible above dock
                         ),
                         sliver: SliverList(
                           delegate: SliverChildListDelegate([
@@ -319,6 +404,8 @@ class _WorkoutDetailScaffold extends StatelessWidget {
                             WorkoutDetailExercises(
                               exercises: exercises,
                               onAddExerciseTap: onAddExerciseTap,
+                              onRemoveExercise: onRemoveExercise,
+                              onReorderExercises: onReorderExercises,
                             ),
                           ]),
                         ),
@@ -356,13 +443,11 @@ class _WorkoutDetailScaffold extends StatelessWidget {
 // ── Private SQLite Providers ──────────────────────────────────────────────────
 
 final _scheduleByIdProvider = FutureProvider.autoDispose
-    .family<Schedule?, (dynamic, String)>((ref, args) async {
-  final (repo, id) = args;
-  return repo.getScheduleById(id);
+    .family<Schedule?, String>((ref, id) async {
+  return ref.watch(scheduleRepositoryProvider).getScheduleById(id);
 });
 
 final _scheduleExercisesDetailProvider = FutureProvider.autoDispose
-    .family<List<ScheduleExercise>, (dynamic, String)>((ref, args) async {
-  final (repo, id) = args;
-  return repo.getScheduleExercises(id);
+    .family<List<ScheduleExercise>, String>((ref, id) async {
+  return ref.watch(scheduleRepositoryProvider).getScheduleExercises(id);
 });

@@ -60,6 +60,7 @@ class _WorkoutSummaryScreenState
         : _notesController.text.trim();
 
     await notifier.finishSession(notes: notes, intensity: intensity);
+    notifier.resetSession();
 
     if (mounted) {
       HapticFeedback.mediumImpact();
@@ -102,7 +103,10 @@ class _WorkoutSummaryScreenState
         if (didPop) return;
         final router = GoRouter.of(context);
         final leave = await _onWillPop();
-        if (leave && mounted) router.go('/dashboard');
+        if (leave && mounted) {
+          ref.read(activeWorkoutProvider.notifier).resetSession();
+          router.go('/dashboard');
+        }
       },
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,

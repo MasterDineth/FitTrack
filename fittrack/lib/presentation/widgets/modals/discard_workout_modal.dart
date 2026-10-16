@@ -208,13 +208,17 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
                   width: double.infinity,
                   height: 50,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF5F3BDC), Color(0xFF6F4BEB), Color(0xFF502BBD)],
+                    gradient: LinearGradient(
+                      colors: [
+                        context.ftPrimary,
+                        Color.lerp(context.ftPrimary, Colors.white, 0.12) ?? context.ftPrimary,
+                        Color.lerp(context.ftPrimary, Colors.black, 0.15) ?? context.ftPrimary,
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF5F3BDC).withValues(alpha: 0.35),
+                        color: context.ftPrimary.withValues(alpha: 0.35),
                         blurRadius: 16,
                         offset: const Offset(0, 6),
                       ),
@@ -284,59 +288,43 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF43F5E),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  const Text(
-                    'UNLOGGED PROGRESS',
-                    style: TextStyle(
-                      fontFamily: FtText.fontFamily,
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.6,
-                      color: Color(0xFFE11D48),
-                    ),
-                  ),
-                ],
+              Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF43F5E),
+                  shape: BoxShape.circle,
+                ),
               ),
-              Flexible(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: context.isDark
-                        ? const Color(0xFFBE123C).withValues(alpha: 0.25)
-                        : Colors.white.withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: context.isDark
-                          ? const Color(0xFFF43F5E).withValues(alpha: 0.3)
-                          : Colors.white,
-                    ),
-                  ),
-                  child: Text(
-                    scheduleTitle,
-                    style: TextStyle(
-                      fontFamily: FtText.fontFamily,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      color: context.isDark ? const Color(0xFFFDA4AF) : const Color(0xFFBE123C),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+              const SizedBox(width: 6),
+              const Text(
+                'UNLOGGED PROGRESS',
+                style: TextStyle(
+                  fontFamily: FtText.fontFamily,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.8,
+                  color: Color(0xFFE11D48),
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 6),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              scheduleTitle,
+              style: TextStyle(
+                fontFamily: FtText.fontFamily,
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.2,
+                color: context.ftInk,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           const SizedBox(height: 10),
 
@@ -381,6 +369,8 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
   }
 
   Widget _buildHoldButton(BuildContext context) {
+    final destructiveColor = _resolveDestructiveColor(context);
+
     return AnimatedBuilder(
       animation: _holdController,
       builder: (context, _) {
@@ -396,12 +386,15 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
             width: double.infinity,
             height: 54,
             decoration: BoxDecoration(
-              color: const Color(0xFFF43F5E).withValues(alpha: context.isDark ? 0.16 : 0.12),
+              color: destructiveColor,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: const Color(0xFFF43F5E).withValues(alpha: 0.65),
-                width: 1.5,
-              ),
+              boxShadow: [
+                BoxShadow(
+                  color: destructiveColor.withValues(alpha: 0.35),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             clipBehavior: Clip.antiAlias,
             child: Stack(
@@ -412,7 +405,7 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
                   child: Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xFFE11D48), Color(0xFFF43F5E), Color(0xFFFB7185)],
+                        colors: [Color(0xFF7F1D1D), Color(0xFF991B1B), Color(0xFF881337)],
                       ),
                     ),
                   ),
@@ -426,25 +419,21 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
                         Expanded(
                           child: Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.delete_forever_rounded,
                                 size: 19,
-                                color: progress > 0.5
-                                    ? Colors.white
-                                    : (context.isDark ? const Color(0xFFFDA4AF) : const Color(0xFFBE123C)),
+                                color: Colors.white,
                               ),
                               const SizedBox(width: 6),
                               Flexible(
                                 child: Text(
                                   _isHolding ? 'Hold to Discard...' : 'Hold to Discard (1.25s)',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontFamily: FtText.fontFamily,
                                     fontSize: 13.5,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: -0.2,
-                                    color: progress > 0.5
-                                        ? Colors.white
-                                        : (context.isDark ? const Color(0xFFFDA4AF) : const Color(0xFFBE123C)),
+                                    color: Colors.white,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -456,20 +445,16 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
-                            color: context.isDark
-                                ? Colors.black.withValues(alpha: 0.35)
-                                : Colors.white.withValues(alpha: 0.8),
+                            color: Colors.white.withValues(alpha: 0.22),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
                             '$percentage%',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontFamily: FtText.fontFamily,
                               fontSize: 10,
                               fontWeight: FontWeight.w900,
-                              color: progress > 0.5
-                                  ? Colors.white
-                                  : (context.isDark ? const Color(0xFFFDA4AF) : const Color(0xFFBE123C)),
+                              color: Colors.white,
                             ),
                           ),
                         ),
@@ -483,6 +468,16 @@ class _DiscardWorkoutCardState extends State<_DiscardWorkoutCard>
         );
       },
     );
+  }
+
+  Color _resolveDestructiveColor(BuildContext context) {
+    final primary = context.ftPrimary;
+    final hsl = HSLColor.fromColor(primary);
+    final isRedish = (hsl.hue <= 25 || hsl.hue >= 340) && hsl.saturation >= 0.35;
+    if (isRedish) {
+      return const Color(0xFF991B1B);
+    }
+    return const Color(0xFFE11D48);
   }
 
   Widget _buildMetricTile(

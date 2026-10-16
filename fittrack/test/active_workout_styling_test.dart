@@ -128,7 +128,7 @@ void main() {
 
     // Verify the footer metrics are rendered clearly
     expect(find.text('Sets'), findsOneWidget);
-    expect(find.text('Volume'), findsOneWidget);
+    expect(find.text('Timer'), findsOneWidget);
     expect(find.text('Energy'), findsOneWidget);
     expect(find.text('Pause'), findsOneWidget);
     expect(find.text('End workout'), findsOneWidget);

@@ -136,6 +136,8 @@ class ActiveWorkoutState {
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
+  String get formattedElapsed => elapsedFormatted;
+
   String get restRemainingFormatted {
     final m = restRemainingSeconds ~/ 60;
     final s = restRemainingSeconds % 60;
@@ -218,15 +220,20 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
 
   // ── Session Lifecycle ──────────────────────────────────────────────────────
 
-  Future<void> startWorkout(String scheduleId) => startSession(scheduleId);
+  Future<void> startWorkout(String scheduleId, {List<ScheduleExercise>? customExercises}) =>
+      startSession(scheduleId, customExercises: customExercises);
 
-  Future<void> startSession(String scheduleId) async {
+  Future<void> startSession(String scheduleId, {List<ScheduleExercise>? customExercises}) async {
     try {
       final scheduleRepo = ref.read(scheduleRepositoryProvider);
       final exerciseRepo = ref.read(exerciseRepositoryProvider);
 
       Schedule? schedule = await scheduleRepo.getScheduleById(scheduleId);
       List<ScheduleExercise> scheduleExercises = [];
+
+      if (customExercises != null && customExercises.isNotEmpty) {
+        scheduleExercises = List.from(customExercises);
+      }
 
       if (schedule == null) {
         // Fallback: search schedulesProvider for predefined / in-memory schedules
@@ -248,9 +255,11 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
             ),
             orderIndex: 0,
           );
-          scheduleExercises = ws.exercises;
+          if (scheduleExercises.isEmpty) {
+            scheduleExercises = ws.exercises;
+          }
         }
-      } else {
+      } else if (scheduleExercises.isEmpty) {
         scheduleExercises =
             await scheduleRepo.getScheduleExercises(scheduleId);
       }
@@ -339,7 +348,25 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
     ];
   }
 
+  static final Map<String, String> _seedExerciseNames = {
+    'ex1': 'BB Bench Press',
+    'ex2': 'Incline DB Press',
+    'ex3': 'Cable Flyes',
+    'ex4': 'Overhead Press',
+    'ex5': 'Lateral Raises',
+    'ex6': 'Tricep Pushdowns',
+    'ex7': 'Overhead Tricep Extension',
+    'ex8': 'Barbell Squat',
+    'ex9': 'Bent-Over Row',
+    'ex10': 'Deadlift',
+    'e1': 'BB Bench Press',
+    'e2': 'Incline DB Press',
+  };
+
   static String _resolveExerciseName(String exerciseId) {
+    if (_seedExerciseNames.containsKey(exerciseId)) {
+      return _seedExerciseNames[exerciseId]!;
+    }
     if (exerciseId.startsWith('ex_')) {
       final raw = exerciseId.substring(3).replaceAll('_', ' ');
       return raw.split(' ').map((w) {
@@ -618,16 +645,50 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
     _cancelTimers();
     _sessionStartTime = null;
     _skipReasons.clear();
-    state = state.copyWith(
-      phase: WorkoutPhase.loading,
+    state = const ActiveWorkoutState(
+      phase: WorkoutPhase.discarded,
+      schedule: Schedule(
+        id: '',
+        name: '',
+        description: '',
+        targetMuscles: [],
+        assignedWeekdays: [],
+        orderIndex: 0,
+      ),
+      entries: [],
       elapsedSeconds: 0,
       restRemainingSeconds: 0,
       currentExerciseIndex: 0,
       currentSetIndex: 0,
-      completedSets: const [],
-      skippedExerciseIds: const {},
+      completedSets: [],
+      skippedExerciseIds: {},
     );
     ref.read(sessionsRevisionProvider.notifier).bump();
+  }
+
+  /// Resets the active workout state completely to a clean, discarded state.
+  void resetSession() {
+    _cancelTimers();
+    _sessionStartTime = null;
+    _skipReasons.clear();
+    state = const ActiveWorkoutState(
+      phase: WorkoutPhase.discarded,
+      schedule: Schedule(
+        id: '',
+        name: '',
+        description: '',
+        targetMuscles: [],
+        assignedWeekdays: [],
+        orderIndex: 0,
+      ),
+      entries: [],
+      elapsedSeconds: 0,
+      restRemainingSeconds: 0,
+      currentExerciseIndex: 0,
+      currentSetIndex: 0,
+      completedSets: [],
+      skippedExerciseIds: {},
+    );
   }
 
   Future<void> stopSession() async {
@@ -742,6 +803,16 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
         ));
       }
       await repo.saveSetLogs(setLogs);
+
+      if (state.schedule.id.isNotEmpty) {
+        try {
+          await ref
+              .read(scheduleRepositoryProvider)
+              .incrementCompletionCount(state.schedule.id);
+          ref.read(schedulesProvider.notifier).loadFromDatabase();
+        } catch (_) {}
+      }
+
       ref.read(sessionsRevisionProvider.notifier).bump();
     } catch (_) {
       // Silently swallow — data is already in memory if needed

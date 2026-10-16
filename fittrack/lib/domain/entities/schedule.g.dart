@@ -26,6 +26,7 @@ _Schedule _$ScheduleFromJson(Map<String, dynamic> json) => _Schedule(
   daysPerWeek: (json['daysPerWeek'] as num?)?.toInt() ?? 4,
   estimatedMinutes: (json['estimatedMinutes'] as num?)?.toInt() ?? 45,
   isCustom: json['isCustom'] as bool? ?? false,
+  completionCount: (json['completionCount'] as num?)?.toInt() ?? 0,
 );
 
 Map<String, dynamic> _$ScheduleToJson(_Schedule instance) => <String, dynamic>{
@@ -44,4 +45,5 @@ Map<String, dynamic> _$ScheduleToJson(_Schedule instance) => <String, dynamic>{
   'daysPerWeek': instance.daysPerWeek,
   'estimatedMinutes': instance.estimatedMinutes,
   'isCustom': instance.isCustom,
+  'completionCount': instance.completionCount,
 };

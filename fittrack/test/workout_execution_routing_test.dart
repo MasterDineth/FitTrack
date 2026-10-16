@@ -65,6 +65,21 @@ class FakeScheduleRepository implements IScheduleRepository {
   }) async {
     return schedules.values.where((s) => s.name.contains(query)).toList();
   }
+
+  @override
+  Future<void> incrementCompletionCount(String scheduleId) async {
+    final sched = schedules[scheduleId];
+    if (sched != null) {
+      schedules[scheduleId] = sched.copyWith(completionCount: sched.completionCount + 1);
+    }
+  }
+
+  @override
+  Future<List<Schedule>> getTrendingSchedules({int limit = 5}) async {
+    final list = schedules.values.toList()
+      ..sort((a, b) => b.completionCount.compareTo(a.completionCount));
+    return list.take(limit).toList();
+  }
 }
 
 class FakeExerciseRepository implements IExerciseRepository {
@@ -224,8 +239,8 @@ void main() {
       expect(state.restRemainingSeconds, equals(0));
       expect(state.currentExerciseIndex, equals(0));
       expect(state.currentSetIndex, equals(0));
-      // Phase is loading (ready for fresh session)
-      expect(state.phase, equals(WorkoutPhase.loading));
+      // Phase is discarded (ready for fresh session)
+      expect(state.phase, equals(WorkoutPhase.discarded));
 
       // Restarting the workout should work cleanly without any forced redirect
       await notifier.startWorkout('sch1');
@@ -316,7 +331,7 @@ void main() {
       container.read(activeWorkoutProvider.notifier).discardSession();
 
       final state = container.read(activeWorkoutProvider);
-      expect(state.phase, equals(WorkoutPhase.loading));
+      expect(state.phase, equals(WorkoutPhase.discarded));
       expect(state.completedSets, isEmpty);
       expect(state.elapsedSeconds, equals(0));
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../domain/entities/schedule_exercise.dart';
 import '../../providers/active_workout_provider.dart';
 import '../../widgets/ft_background_painter.dart';
 import '../../widgets/modals/discard_workout_modal.dart';
@@ -32,8 +33,14 @@ import 'widgets/active_workout_header.dart';
 /// - End workout launches Discard Workout Warning modal with 1.25s hold-to-discard protection.
 /// - Modular decomposition with all files strictly under 400 lines.
 class ActiveWorkoutScreen extends ConsumerStatefulWidget {
-  const ActiveWorkoutScreen({super.key, required this.scheduleId});
+  const ActiveWorkoutScreen({
+    super.key,
+    required this.scheduleId,
+    this.customExercises,
+  });
+
   final String scheduleId;
+  final List<ScheduleExercise>? customExercises;
 
   @override
   ConsumerState<ActiveWorkoutScreen> createState() => _ActiveWorkoutScreenState();
@@ -49,12 +56,17 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       _initialized = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final current = ref.read(activeWorkoutProvider);
-        if (current.schedule.id != widget.scheduleId ||
-            current.phase == WorkoutPhase.loading ||
-            current.phase == WorkoutPhase.error ||
+        final isDifferent = current.schedule.id != widget.scheduleId;
+        final isDeadPhase = current.phase == WorkoutPhase.error ||
             current.phase == WorkoutPhase.discarded ||
-            current.phase == WorkoutPhase.finished) {
-          ref.read(activeWorkoutProvider.notifier).startWorkout(widget.scheduleId);
+            current.phase == WorkoutPhase.finished;
+        final needsInit = current.entries.isEmpty;
+
+        if (isDifferent || isDeadPhase || needsInit) {
+          ref.read(activeWorkoutProvider.notifier).startWorkout(
+            widget.scheduleId,
+            customExercises: widget.customExercises,
+          );
         }
       });
     }
@@ -123,9 +135,11 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
 
     // ── Phase 3: Finished ───────────────────────────────────────────────────
     if (state.phase == WorkoutPhase.finished) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) context.pushReplacement('/workouts/summary');
-      });
+      if (state.schedule.id == widget.scheduleId) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) context.pushReplacement('/workouts/summary');
+        });
+      }
       return const Scaffold(
         backgroundColor: Colors.transparent,
         body: Center(child: CircularProgressIndicator()),

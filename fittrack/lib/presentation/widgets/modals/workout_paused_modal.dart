@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../providers/active_workout_provider.dart';
 import '../../theme/ft_glass.dart';
@@ -59,6 +60,8 @@ class _WorkoutPausedModalCardState extends State<_WorkoutPausedModalCard>
     with TickerProviderStateMixin {
   late final AnimationController _orbitController;
   late final AnimationController _breatheController;
+  late final AnimationController _saveHoldController;
+  bool _isSavingHold = false;
 
   @override
   void initState() {
@@ -72,12 +75,28 @@ class _WorkoutPausedModalCardState extends State<_WorkoutPausedModalCard>
       vsync: this,
       duration: const Duration(milliseconds: 2400),
     )..repeat(reverse: true);
+
+    _saveHoldController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1250),
+    );
+    _saveHoldController.addListener(() {
+      final val = _saveHoldController.value;
+      if (val > 0.3 && val < 0.35) HapticFeedback.selectionClick();
+      if (val > 0.65 && val < 0.70) HapticFeedback.selectionClick();
+    });
+    _saveHoldController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _onSaveHoldCompleted();
+      }
+    });
   }
 
   @override
   void dispose() {
     _orbitController.dispose();
     _breatheController.dispose();
+    _saveHoldController.dispose();
     super.dispose();
   }
 
@@ -94,6 +113,25 @@ class _WorkoutPausedModalCardState extends State<_WorkoutPausedModalCard>
       state: widget.state,
       onDiscard: widget.onEndWorkout,
     );
+  }
+
+  void _onSaveHoldStart() {
+    setState(() => _isSavingHold = true);
+    _saveHoldController.forward(from: 0.0);
+    HapticFeedback.lightImpact();
+  }
+
+  void _onSaveHoldEnd() {
+    setState(() => _isSavingHold = false);
+    if (_saveHoldController.status != AnimationStatus.completed) {
+      _saveHoldController.reverse();
+    }
+  }
+
+  void _onSaveHoldCompleted() {
+    HapticFeedback.heavyImpact();
+    Navigator.of(context).pop();
+    widget.notifier.finishSession();
   }
 
   @override
@@ -255,11 +293,11 @@ class _WorkoutPausedModalCardState extends State<_WorkoutPausedModalCard>
                             height: 68,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              gradient: const LinearGradient(
+                              gradient: LinearGradient(
                                 colors: [
-                                  Color(0xFF5F3BDC),
-                                  Color(0xFF6F4BEB),
-                                  Color(0xFF4E2BC2),
+                                  context.ftPrimary,
+                                  Color.lerp(context.ftPrimary, Colors.white, 0.15) ?? context.ftPrimary,
+                                  Color.lerp(context.ftPrimary, Colors.black, 0.20) ?? context.ftPrimary,
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -270,7 +308,7 @@ class _WorkoutPausedModalCardState extends State<_WorkoutPausedModalCard>
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF5F3BDC).withValues(alpha: 0.45),
+                                  color: context.ftPrimary.withValues(alpha: 0.45),
                                   blurRadius: 18,
                                   offset: const Offset(0, 8),
                                 ),
@@ -655,17 +693,17 @@ class _WorkoutPausedModalCardState extends State<_WorkoutPausedModalCard>
                 width: double.infinity,
                 height: 48,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     colors: [
-                      Color(0xFF5F3BDC),
-                      Color(0xFF6F4BEB),
-                      Color(0xFF502BBD),
+                      context.ftPrimary,
+                      Color.lerp(context.ftPrimary, Colors.white, 0.12) ?? context.ftPrimary,
+                      Color.lerp(context.ftPrimary, Colors.black, 0.15) ?? context.ftPrimary,
                     ],
                   ),
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF5F3BDC).withValues(alpha: 0.35),
+                      color: context.ftPrimary.withValues(alpha: 0.35),
                       blurRadius: 16,
                       offset: const Offset(0, 6),
                     ),
@@ -696,48 +734,185 @@ class _WorkoutPausedModalCardState extends State<_WorkoutPausedModalCard>
             ),
             const SizedBox(height: 8),
 
-            FtPressable(
-              onTap: _onEndWorkout,
-              pressedScale: 0.98,
-              child: Container(
-                width: double.infinity,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF43F5E).withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: const Color(0xFFF43F5E).withValues(alpha: 0.40),
-                    width: 1,
-                  ),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.stop_rounded,
-                      size: 16,
-                      color: Color(0xFFE11D48),
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      'End Workout Session',
+            // Secondary Action: Hold to Save Session if timer >= 1 min (>60s), else End/Discard Workout
+            if (state.elapsedSeconds >= 60) ...[
+              _buildHoldSaveButton(context),
+              const SizedBox(height: 6),
+              Center(
+                child: FtPressable(
+                  onTap: _onEndWorkout,
+                  pressedScale: 0.95,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    child: Text(
+                      'Discard session instead',
                       style: TextStyle(
                         fontFamily: FtText.fontFamily,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.2,
-                        color: Color(0xFFE11D48),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _resolveDestructiveColor(context),
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ] else ...[
+              FtPressable(
+                onTap: _onEndWorkout,
+                pressedScale: 0.98,
+                child: Container(
+                  width: double.infinity,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: _resolveDestructiveColor(context),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _resolveDestructiveColor(context).withValues(alpha: 0.30),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.stop_rounded,
+                        size: 16,
+                        color: Colors.white,
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        'End Workout Session',
+                        style: TextStyle(
+                          fontFamily: FtText.fontFamily,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.2,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
     ),
   );
+  }
+
+  Widget _buildHoldSaveButton(BuildContext context) {
+    final primary = context.ftPrimary;
+
+    return AnimatedBuilder(
+      animation: _saveHoldController,
+      builder: (context, _) {
+        final progress = _saveHoldController.value;
+        final percentage = (progress * 100).toInt();
+
+        return Listener(
+          behavior: HitTestBehavior.opaque,
+          onPointerDown: (_) => _onSaveHoldStart(),
+          onPointerUp: (_) => _onSaveHoldEnd(),
+          onPointerCancel: (_) => _onSaveHoldEnd(),
+          child: Container(
+            width: double.infinity,
+            height: 48,
+            decoration: BoxDecoration(
+              color: primary,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: primary.withValues(alpha: 0.35),
+                  blurRadius: 14,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              children: [
+                FractionallySizedBox(
+                  alignment: Alignment.centerLeft,
+                  widthFactor: progress,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Color.lerp(primary, Colors.black, 0.25) ?? primary,
+                    ),
+                  ),
+                ),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.check_circle_rounded,
+                                size: 19,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  _isSavingHold ? 'Saving Session...' : 'Hold to Save Session (1.25s)',
+                                  style: const TextStyle(
+                                    fontFamily: FtText.fontFamily,
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -0.2,
+                                    color: Colors.white,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.22),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '$percentage%',
+                            style: const TextStyle(
+                              fontFamily: FtText.fontFamily,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Color _resolveDestructiveColor(BuildContext context) {
+    final primary = context.ftPrimary;
+    final hsl = HSLColor.fromColor(primary);
+    final isRedish = (hsl.hue <= 25 || hsl.hue >= 340) && hsl.saturation >= 0.35;
+    if (isRedish) {
+      return const Color(0xFF991B1B);
+    }
+    return const Color(0xFFE11D48);
   }
 
   Widget _buildMiniStat({

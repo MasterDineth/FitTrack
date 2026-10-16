@@ -249,17 +249,17 @@ class ActiveRestTimerCard extends StatelessWidget {
             child: Container(
               height: 52,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   colors: [
-                    Color(0xFF5F3BDC),
-                    Color(0xFF6F4BEB),
-                    Color(0xFF502BBD),
+                    context.ftPrimary,
+                    Color.lerp(context.ftPrimary, Colors.white, 0.12) ?? context.ftPrimary,
+                    Color.lerp(context.ftPrimary, Colors.black, 0.15) ?? context.ftPrimary,
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF5F3BDC).withValues(alpha: 0.40),
+                    color: context.ftPrimary.withValues(alpha: 0.40),
                     blurRadius: 18,
                     offset: const Offset(0, 8),
                   ),

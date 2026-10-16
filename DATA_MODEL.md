@@ -141,6 +141,7 @@ Used by `workouts_screen.dart`, `create_schedule_screen.dart`, and `workout_deta
 *   **weeklyDays** `TEXT`: Comma-separated list of scheduled days of week (e.g. `Tuesday,Friday`)
 *   **coverImagePath** `TEXT`: Optional local file path or bundled WebP asset path
 *   **isFavorite** `INTEGER DEFAULT 0`: Favorite/bookmark toggle flag (`0` or `1`)
+*   **completionCount** `INTEGER NOT NULL DEFAULT 0`: Number of times this schedule has been completed (used to dynamically rank trending programs)
 *   **createdAt** `TEXT NOT NULL`: ISO-8601 UTC timestamp
 
 ### `schedule_exercises` Table

@@ -44,7 +44,7 @@ final class SchedulesNotifierProvider
   }
 }
 
-String _$schedulesNotifierHash() => r'dd61957c4670de8894b78ce6b575cb3c45b93d15';
+String _$schedulesNotifierHash() => r'8f711c11feaaee82174650581468884c2cf7356d';
 
 /// Riverpod Notifier managing Workout Schedules, Filters, Search, and Bookmarks.
 
@@ -154,14 +154,16 @@ final class RoutineSpotlightProvider
   }
 }
 
-String _$routineSpotlightHash() => r'322ace1480488198197c59e2b70003ef7df11783';
+String _$routineSpotlightHash() => r'51f221b61336174cfcf1952d71715e9a9105b3b8';
 
-/// Provider providing Trending Programs for the Workout Library carousel.
+/// Provider providing Trending Programs for the Workout Library carousel,
+/// dynamically sorted by schedule completionCount.
 
 @ProviderFor(trendingPrograms)
 final trendingProgramsProvider = TrendingProgramsProvider._();
 
-/// Provider providing Trending Programs for the Workout Library carousel.
+/// Provider providing Trending Programs for the Workout Library carousel,
+/// dynamically sorted by schedule completionCount.
 
 final class TrendingProgramsProvider
     extends
@@ -171,7 +173,8 @@ final class TrendingProgramsProvider
           List<TrendingProgram>
         >
     with $Provider<List<TrendingProgram>> {
-  /// Provider providing Trending Programs for the Workout Library carousel.
+  /// Provider providing Trending Programs for the Workout Library carousel,
+  /// dynamically sorted by schedule completionCount.
   TrendingProgramsProvider._()
     : super(
         from: null,
@@ -206,7 +209,7 @@ final class TrendingProgramsProvider
   }
 }
 
-String _$trendingProgramsHash() => r'7cf0a629e8069d58da29d0a06791c9514cfd5841';
+String _$trendingProgramsHash() => r'002f2eb35dffcba74cfc41a003680ad9acf553b3';
 
 /// Provider providing user saved/custom routines for the "My Saved & Custom" section.
 

@@ -241,6 +241,59 @@ const _initialSeedSchedules = <WorkoutSchedule>[
     targetMuscles: ['Back', 'Core', 'Quads'],
     exerciseCount: 5,
     estimatedMinutes: 55,
+    completionCount: 5,
+    exercises: [
+      ScheduleExercise(
+        id: 'sch2_ex1',
+        scheduleId: 'sch2',
+        exerciseId: 'ex4',
+        sortOrder: 1,
+        targetSets: 5,
+        targetReps: 3,
+        targetWeightKg: 145.0,
+        restDurationSeconds: 180,
+      ),
+      ScheduleExercise(
+        id: 'sch2_ex2',
+        scheduleId: 'sch2',
+        exerciseId: 'ex1',
+        sortOrder: 2,
+        targetSets: 5,
+        targetReps: 3,
+        targetWeightKg: 105.0,
+        restDurationSeconds: 180,
+      ),
+      ScheduleExercise(
+        id: 'sch2_ex3',
+        scheduleId: 'sch2',
+        exerciseId: 'ex6',
+        sortOrder: 3,
+        targetSets: 3,
+        targetReps: 3,
+        targetWeightKg: 165.0,
+        restDurationSeconds: 180,
+      ),
+      ScheduleExercise(
+        id: 'sch2_ex4',
+        scheduleId: 'sch2',
+        exerciseId: 'ex10',
+        sortOrder: 4,
+        targetSets: 4,
+        targetReps: 5,
+        targetWeightKg: 15.0,
+        restDurationSeconds: 120,
+      ),
+      ScheduleExercise(
+        id: 'sch2_ex5',
+        scheduleId: 'sch2',
+        exerciseId: 'ex14',
+        sortOrder: 5,
+        targetSets: 3,
+        targetReps: 12,
+        targetWeightKg: 0.0,
+        restDurationSeconds: 60,
+      ),
+    ],
   ),
   WorkoutSchedule(
     id: 'sch3',
@@ -257,6 +310,69 @@ const _initialSeedSchedules = <WorkoutSchedule>[
     targetMuscles: ['Chest', 'Back', 'Arms'],
     exerciseCount: 6,
     estimatedMinutes: 70,
+    completionCount: 3,
+    exercises: [
+      ScheduleExercise(
+        id: 'sch3_ex1',
+        scheduleId: 'sch3',
+        exerciseId: 'ex1',
+        sortOrder: 1,
+        targetSets: 4,
+        targetReps: 8,
+        targetWeightKg: 80.0,
+        restDurationSeconds: 90,
+      ),
+      ScheduleExercise(
+        id: 'sch3_ex2',
+        scheduleId: 'sch3',
+        exerciseId: 'ex5',
+        sortOrder: 2,
+        targetSets: 4,
+        targetReps: 10,
+        targetWeightKg: 70.0,
+        restDurationSeconds: 90,
+      ),
+      ScheduleExercise(
+        id: 'sch3_ex3',
+        scheduleId: 'sch3',
+        exerciseId: 'ex3',
+        sortOrder: 3,
+        targetSets: 4,
+        targetReps: 10,
+        targetWeightKg: 50.0,
+        restDurationSeconds: 90,
+      ),
+      ScheduleExercise(
+        id: 'sch3_ex4',
+        scheduleId: 'sch3',
+        exerciseId: 'ex10',
+        sortOrder: 4,
+        targetSets: 3,
+        targetReps: 12,
+        targetWeightKg: 35.0,
+        restDurationSeconds: 60,
+      ),
+      ScheduleExercise(
+        id: 'sch3_ex5',
+        scheduleId: 'sch3',
+        exerciseId: 'ex8',
+        sortOrder: 5,
+        targetSets: 4,
+        targetReps: 15,
+        targetWeightKg: 12.0,
+        restDurationSeconds: 60,
+      ),
+      ScheduleExercise(
+        id: 'sch3_ex6',
+        scheduleId: 'sch3',
+        exerciseId: 'ex9',
+        sortOrder: 6,
+        targetSets: 3,
+        targetReps: 12,
+        targetWeightKg: 30.0,
+        restDurationSeconds: 60,
+      ),
+    ],
   ),
   WorkoutSchedule(
     id: 'sch4',
@@ -273,6 +389,39 @@ const _initialSeedSchedules = <WorkoutSchedule>[
     targetMuscles: ['Quads', 'Chest', 'Lats'],
     exerciseCount: 3,
     estimatedMinutes: 60,
+    completionCount: 1,
+    exercises: [
+      ScheduleExercise(
+        id: 'sch4_ex1',
+        scheduleId: 'sch4',
+        exerciseId: 'ex4',
+        sortOrder: 1,
+        targetSets: 10,
+        targetReps: 10,
+        targetWeightKg: 90.0,
+        restDurationSeconds: 90,
+      ),
+      ScheduleExercise(
+        id: 'sch4_ex2',
+        scheduleId: 'sch4',
+        exerciseId: 'ex13',
+        sortOrder: 2,
+        targetSets: 10,
+        targetReps: 10,
+        targetWeightKg: 75.0,
+        restDurationSeconds: 90,
+      ),
+      ScheduleExercise(
+        id: 'sch4_ex3',
+        scheduleId: 'sch4',
+        exerciseId: 'ex18',
+        sortOrder: 3,
+        targetSets: 3,
+        targetReps: 12,
+        targetWeightKg: 20.0,
+        restDurationSeconds: 60,
+      ),
+    ],
   ),
   WorkoutSchedule(
     id: 'sch5',
@@ -289,6 +438,274 @@ const _initialSeedSchedules = <WorkoutSchedule>[
     targetMuscles: ['Upper Body', 'Arms'],
     exerciseCount: 4,
     estimatedMinutes: 45,
+    completionCount: 2,
+    exercises: [
+      ScheduleExercise(
+        id: 'sch5_ex1',
+        scheduleId: 'sch5',
+        exerciseId: 'ex2',
+        sortOrder: 1,
+        targetSets: 4,
+        targetReps: 10,
+        targetWeightKg: 32.0,
+        restDurationSeconds: 90,
+      ),
+      ScheduleExercise(
+        id: 'sch5_ex2',
+        scheduleId: 'sch5',
+        exerciseId: 'ex5',
+        sortOrder: 2,
+        targetSets: 4,
+        targetReps: 10,
+        targetWeightKg: 65.0,
+        restDurationSeconds: 90,
+      ),
+      ScheduleExercise(
+        id: 'sch5_ex3',
+        scheduleId: 'sch5',
+        exerciseId: 'ex11',
+        sortOrder: 3,
+        targetSets: 3,
+        targetReps: 12,
+        targetWeightKg: 16.0,
+        restDurationSeconds: 60,
+      ),
+      ScheduleExercise(
+        id: 'sch5_ex4',
+        scheduleId: 'sch5',
+        exerciseId: 'ex19',
+        sortOrder: 4,
+        targetSets: 3,
+        targetReps: 12,
+        targetWeightKg: 18.0,
+        restDurationSeconds: 60,
+      ),
+    ],
+  ),
+  WorkoutSchedule(
+    id: 'trend_1',
+    title: 'Posterior Chain & Pull Focus',
+    description:
+        'Engineered for structural density, hinge power, and progressive trap & lat hypertrophy.',
+    focus: 'Hypertrophy',
+    experience: 'Advanced',
+    equipment: 'Full Gym',
+    durationWeeks: 4,
+    daysPerWeek: 4,
+    isFavorite: true,
+    isCustom: false,
+    targetMuscles: ['Back', 'Posterior Chain'],
+    exerciseCount: 4,
+    estimatedMinutes: 50,
+    completionCount: 15,
+    exercises: [
+      ScheduleExercise(
+        id: 'trend1_ex1',
+        scheduleId: 'trend_1',
+        exerciseId: 'ex6',
+        sortOrder: 1,
+        targetSets: 4,
+        targetReps: 6,
+        targetWeightKg: 140.0,
+        restDurationSeconds: 150,
+      ),
+      ScheduleExercise(
+        id: 'trend1_ex2',
+        scheduleId: 'trend_1',
+        exerciseId: 'ex13',
+        sortOrder: 2,
+        targetSets: 3,
+        targetReps: 8,
+        targetWeightKg: 100.0,
+        restDurationSeconds: 120,
+      ),
+      ScheduleExercise(
+        id: 'trend1_ex3',
+        scheduleId: 'trend_1',
+        exerciseId: 'ex10',
+        sortOrder: 3,
+        targetSets: 4,
+        targetReps: 8,
+        targetWeightKg: 10.0,
+        restDurationSeconds: 90,
+      ),
+      ScheduleExercise(
+        id: 'trend1_ex4',
+        scheduleId: 'trend_1',
+        exerciseId: 'ex14',
+        sortOrder: 4,
+        targetSets: 3,
+        targetReps: 15,
+        targetWeightKg: 0.0,
+        restDurationSeconds: 60,
+      ),
+    ],
+  ),
+  WorkoutSchedule(
+    id: 'trend_2',
+    title: 'Upper Body Power / Tension',
+    description:
+        'Explosive bench speed sets paired with heavy horizontal pulls and rotator cuff resilience.',
+    focus: 'Strength',
+    experience: 'Intermediate',
+    equipment: 'Full Gym',
+    durationWeeks: 6,
+    daysPerWeek: 3,
+    isFavorite: false,
+    isCustom: false,
+    targetMuscles: ['Chest', 'Shoulders', 'Arms'],
+    exerciseCount: 4,
+    estimatedMinutes: 45,
+    completionCount: 12,
+    exercises: [
+      ScheduleExercise(
+        id: 'trend2_ex1',
+        scheduleId: 'trend_2',
+        exerciseId: 'ex1',
+        sortOrder: 1,
+        targetSets: 5,
+        targetReps: 5,
+        targetWeightKg: 95.0,
+        restDurationSeconds: 120,
+      ),
+      ScheduleExercise(
+        id: 'trend2_ex2',
+        scheduleId: 'trend_2',
+        exerciseId: 'ex2',
+        sortOrder: 2,
+        targetSets: 4,
+        targetReps: 8,
+        targetWeightKg: 34.0,
+        restDurationSeconds: 90,
+      ),
+      ScheduleExercise(
+        id: 'trend2_ex3',
+        scheduleId: 'trend_2',
+        exerciseId: 'ex3',
+        sortOrder: 3,
+        targetSets: 4,
+        targetReps: 6,
+        targetWeightKg: 60.0,
+        restDurationSeconds: 120,
+      ),
+      ScheduleExercise(
+        id: 'trend2_ex4',
+        scheduleId: 'trend_2',
+        exerciseId: 'ex8',
+        sortOrder: 4,
+        targetSets: 4,
+        targetReps: 12,
+        targetWeightKg: 14.0,
+        restDurationSeconds: 60,
+      ),
+    ],
+  ),
+  WorkoutSchedule(
+    id: 'trend_3',
+    title: 'High Intensity Wave (HIW)',
+    description:
+        'Rapid neurological adaptation with descending rest periods and cluster set finishers.',
+    focus: 'Agility & Speed',
+    experience: 'Intermediate',
+    equipment: 'Kettlebells & Bodyweight',
+    durationWeeks: 4,
+    daysPerWeek: 5,
+    isFavorite: false,
+    isCustom: false,
+    targetMuscles: ['Full Body', 'Cardio'],
+    exerciseCount: 4,
+    estimatedMinutes: 35,
+    completionCount: 9,
+    exercises: [
+      ScheduleExercise(
+        id: 'trend3_ex1',
+        scheduleId: 'trend_3',
+        exerciseId: 'ex7',
+        sortOrder: 1,
+        targetSets: 5,
+        targetReps: 20,
+        targetWeightKg: 24.0,
+        restDurationSeconds: 60,
+      ),
+      ScheduleExercise(
+        id: 'trend3_ex2',
+        scheduleId: 'trend_3',
+        exerciseId: 'ex12',
+        sortOrder: 2,
+        targetSets: 4,
+        targetReps: 15,
+        targetWeightKg: 28.0,
+        restDurationSeconds: 60,
+      ),
+      ScheduleExercise(
+        id: 'trend3_ex3',
+        scheduleId: 'trend_3',
+        exerciseId: 'ex16',
+        sortOrder: 3,
+        targetSets: 4,
+        targetReps: 25,
+        targetWeightKg: 0.0,
+        restDurationSeconds: 45,
+      ),
+      ScheduleExercise(
+        id: 'trend3_ex4',
+        scheduleId: 'trend_3',
+        exerciseId: 'ex20',
+        sortOrder: 4,
+        targetSets: 4,
+        targetReps: 12,
+        targetWeightKg: 0.0,
+        restDurationSeconds: 60,
+      ),
+    ],
+  ),
+  WorkoutSchedule(
+    id: 'spotlight_today',
+    title: 'Kettlebell Power Flow',
+    description: 'Follow 3 explosive conditioning circuits for metabolic conditioning.',
+    focus: 'HIIT',
+    experience: 'Intermediate',
+    equipment: 'Kettlebells',
+    durationWeeks: 4,
+    daysPerWeek: 3,
+    isFavorite: false,
+    isCustom: false,
+    targetMuscles: ['Core', 'Full Body'],
+    exerciseCount: 3,
+    estimatedMinutes: 32,
+    completionCount: 7,
+    exercises: [
+      ScheduleExercise(
+        id: 'spot_ex1',
+        scheduleId: 'spotlight_today',
+        exerciseId: 'ex7',
+        sortOrder: 1,
+        targetSets: 4,
+        targetReps: 20,
+        targetWeightKg: 24.0,
+        restDurationSeconds: 60,
+      ),
+      ScheduleExercise(
+        id: 'spot_ex2',
+        scheduleId: 'spotlight_today',
+        exerciseId: 'ex12',
+        sortOrder: 2,
+        targetSets: 4,
+        targetReps: 12,
+        targetWeightKg: 24.0,
+        restDurationSeconds: 60,
+      ),
+      ScheduleExercise(
+        id: 'spot_ex3',
+        scheduleId: 'spotlight_today',
+        exerciseId: 'ex17',
+        sortOrder: 3,
+        targetSets: 3,
+        targetReps: 12,
+        targetWeightKg: 16.0,
+        restDurationSeconds: 45,
+      ),
+    ],
   ),
   WorkoutSchedule(
     id: 'sched_ppl_hypertrophy',
@@ -1002,8 +1419,11 @@ class SchedulesNotifier extends _$SchedulesNotifier {
       final repo = ref.read(scheduleRepositoryProvider);
       final dbSchedules = await repo.getAllSchedules();
       if (dbSchedules.isNotEmpty) {
-        final dbWorkoutSchedules =
-            dbSchedules.map(WorkoutSchedule.fromSchedule).toList();
+        final dbWorkoutSchedules = <WorkoutSchedule>[];
+        for (final s in dbSchedules) {
+          final exercises = await repo.getScheduleExercises(s.id);
+          dbWorkoutSchedules.add(WorkoutSchedule.fromSchedule(s, exercises));
+        }
         final map = <String, WorkoutSchedule>{};
         for (final s in dbWorkoutSchedules) {
           map[s.id] = s;
@@ -1070,7 +1490,7 @@ Future<RoutineSpotlight> routineSpotlight(Ref ref) async {
 
   List<SpotlightDrill> drills = [];
   try {
-    final scheduleExercises = await scheduleRepo.getScheduleExercises('sch1');
+    final scheduleExercises = await scheduleRepo.getScheduleExercises('spotlight_today');
     if (scheduleExercises.isNotEmpty) {
       final top3 = scheduleExercises.take(3).toList();
       for (int i = 0; i < top3.length; i++) {
@@ -1111,7 +1531,7 @@ Future<RoutineSpotlight> routineSpotlight(Ref ref) async {
 
   return RoutineSpotlight(
     id: 'spotlight_today',
-    scheduleId: 'sch1',
+    scheduleId: 'spotlight_today',
     title: 'Kettlebell Power Flow',
     subtitle: 'Follow 3 explosive conditioning circuits',
     categoryTag: 'METABOLIC HIIT',
@@ -1123,59 +1543,87 @@ Future<RoutineSpotlight> routineSpotlight(Ref ref) async {
   );
 }
 
-/// Provider providing Trending Programs for the Workout Library carousel.
+/// Provider providing Trending Programs for the Workout Library carousel,
+/// dynamically sorted by schedule completionCount.
 @riverpod
 List<TrendingProgram> trendingPrograms(Ref ref) {
   final schedulesState = ref.watch(schedulesProvider);
+  final all = schedulesState.allSchedules;
   final bookmarkedIds = schedulesState.bookmarkedIds;
 
-  return [
-    TrendingProgram(
-      id: 'trend_1',
-      title: 'Posterior Chain & Pull Focus',
-      description:
-          'Engineered for structural density, hinge power, and progressive trap & lat hypertrophy.',
+  const meta = {
+    'trend_1': (
       categoryTag: 'HYPERTROPHY PRO',
       rating: 4.9,
       reviewCount: '1.4k',
-      durationWeeks: 4,
-      daysPerWeek: 4,
-      equipment: 'Full Gym',
-      tags: const ['Full Gym', 'Barbell', 'Deadlift Wave'],
+      tags: ['Full Gym', 'Barbell', 'Deadlift Wave'],
       intensityLabel: 'High Intensity',
-      isBookmarked: bookmarkedIds.contains('trend_1'),
     ),
-    TrendingProgram(
-      id: 'trend_2',
-      title: 'Upper Body Power / Tension',
-      description:
-          'Explosive bench speed sets paired with heavy horizontal pulls and rotator cuff resilience.',
+    'trend_2': (
       categoryTag: 'STRENGTH PEAK',
       rating: 4.8,
       reviewCount: '980',
-      durationWeeks: 6,
-      daysPerWeek: 3,
-      equipment: 'Full Gym',
-      tags: const ['Full Gym', 'Barbell & Dumbbells', 'Power Cleans'],
+      tags: ['Full Gym', 'Barbell & Dumbbells', 'Power Cleans'],
       intensityLabel: 'Maximum Power',
-      isBookmarked: bookmarkedIds.contains('trend_2'),
     ),
-    TrendingProgram(
-      id: 'trend_3',
-      title: 'High Intensity Wave (HIW)',
-      description:
-          'Rapid neurological adaptation with descending rest periods and cluster set finishers.',
+    'trend_3': (
       categoryTag: 'AGILITY & SPEED',
       rating: 4.9,
       reviewCount: '2.1k',
-      durationWeeks: 4,
-      daysPerWeek: 5,
-      equipment: 'Kettlebells & Bodyweight',
-      tags: const ['Kettlebells', 'Plyo', 'Cardio Waves'],
+      tags: ['Kettlebells', 'Plyo', 'Cardio Waves'],
       intensityLabel: 'Peak Conditioning',
-      isBookmarked: bookmarkedIds.contains('trend_3'),
     ),
-  ];
+    'sch1': (
+      categoryTag: 'HYPERTROPHY PRO',
+      rating: 4.9,
+      reviewCount: '1.1k',
+      tags: ['Full Gym', 'Push Pull Legs', 'Hypertrophy'],
+      intensityLabel: 'High Intensity',
+    ),
+    'sch2': (
+      categoryTag: 'STRENGTH PEAK',
+      rating: 4.8,
+      reviewCount: '750',
+      tags: ['Full Gym', 'Plateau Breaker', 'Strength'],
+      intensityLabel: 'Maximum Power',
+    ),
+  };
+
+  // Sort schedules by completionCount descending to calculate trending programs
+  final sorted = List<WorkoutSchedule>.from(all)
+    ..sort((a, b) => b.completionCount.compareTo(a.completionCount));
+
+  final topSchedules = sorted
+      .where((s) => !s.isCustom && s.id != 'spotlight_today')
+      .take(5)
+      .toList();
+
+  return topSchedules.map((s) {
+    final m = meta[s.id];
+    final categoryTag = m?.categoryTag ??
+        (s.focus.toUpperCase() == 'HYPERTROPHY' ? 'HYPERTROPHY PRO' : 'STRENGTH PEAK');
+    final rating = m?.rating ?? 4.8;
+    final reviews = m?.reviewCount ??
+        '${s.completionCount > 0 ? (s.completionCount * 120) : 500}';
+    final tags = m?.tags ??
+        (s.targetMuscles.isNotEmpty ? s.targetMuscles : [s.equipment, s.focus]);
+    final intensityLabel = m?.intensityLabel ?? 'High Intensity';
+
+    return TrendingProgram(
+      id: s.id,
+      title: s.title,
+      description: s.description,
+      categoryTag: categoryTag,
+      rating: rating,
+      reviewCount: reviews,
+      durationWeeks: s.durationWeeks,
+      daysPerWeek: s.daysPerWeek,
+      equipment: s.equipment,
+      tags: tags,
+      intensityLabel: intensityLabel,
+      isBookmarked: bookmarkedIds.contains(s.id),
+    );
+  }).toList();
 }
 
 /// Provider providing user saved/custom routines for the "My Saved & Custom" section.

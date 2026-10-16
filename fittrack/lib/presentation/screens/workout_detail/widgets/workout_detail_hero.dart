@@ -115,10 +115,6 @@ class WorkoutDetailHero extends StatelessWidget {
           width: double.infinity,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.85),
-              width: 1.5,
-            ),
             boxShadow: [
               BoxShadow(
                 color: context.ftPrimary.withValues(alpha: 0.15),

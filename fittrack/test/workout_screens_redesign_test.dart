@@ -80,6 +80,12 @@ class _FakeScheduleRepo implements IScheduleRepository {
     String? experience,
     String? equipment,
   }) async => [];
+
+  @override
+  Future<void> incrementCompletionCount(String scheduleId) async {}
+
+  @override
+  Future<List<Schedule>> getTrendingSchedules({int limit = 5}) async => [];
 }
 
 class _FakeExerciseRepo implements IExerciseRepository {
@@ -313,9 +319,9 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 350));
 
-      // Header
+      // Header & Dock timer
       expect(find.text('Day 1 – Chest, Shoulders & Triceps'), findsOneWidget);
-      expect(find.text('00:48'), findsOneWidget);
+      expect(find.text('00:48'), findsWidgets);
 
       // Active logging card
       expect(find.text('Barbell Bench Press'), findsWidgets);
@@ -333,7 +339,7 @@ void main() {
 
       // Session dock
       expect(find.text('Sets'), findsOneWidget);
-      expect(find.text('Volume'), findsOneWidget);
+      expect(find.text('Timer'), findsOneWidget);
       expect(find.text('Energy'), findsOneWidget);
       expect(find.text('Pause'), findsOneWidget);
       expect(find.text('End workout'), findsOneWidget);
@@ -515,7 +521,7 @@ class _TestWorkoutNotifier extends ActiveWorkoutNotifier {
   ActiveWorkoutState build() => _initial;
 
   @override
-  Future<void> startWorkout(String scheduleId) async {}
+  Future<void> startWorkout(String scheduleId, {List<ScheduleExercise>? customExercises}) async {}
 
   @override
   void addSet() {

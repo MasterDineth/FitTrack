@@ -36,42 +36,54 @@ class ActiveSetTracker extends StatelessWidget {
     return GlassSurface(
       tier: FtGlassTier.glass1,
       radius: 24,
+      alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Background Connecting Line
-          Positioned(
-            left: 20,
-            right: 20,
-            top: 15,
-            child: Container(
-              height: 2,
-              color: context.isDark
-                  ? Colors.white.withValues(alpha: 0.15)
-                  : Colors.white.withValues(alpha: 0.75),
-            ),
-          ),
-
-          // Nodes Row
-          SingleChildScrollView(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                for (int i = 0; i < totalSets; i++) ...[
-                  if (i > 0) const SizedBox(width: 14),
-                  _buildNodeForIndex(context, i),
-                ],
-                const SizedBox(width: 14),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minWidth: constraints.maxWidth),
+              child: Center(
+                child: Stack(
+                  alignment: Alignment.centerLeft,
+                  children: [
+                    // Background Connecting Line (strictly between 1st circle and last circle)
+                    if (totalSets > 1)
+                      Positioned(
+                        left: 16,
+                        top: 15,
+                        width: (totalSets - 1) * 46.0,
+                        child: Container(
+                          height: 2,
+                          color: context.isDark
+                              ? Colors.white.withValues(alpha: 0.15)
+                              : Colors.white.withValues(alpha: 0.75),
+                        ),
+                      ),
 
-                // "+ Set" Action Node
-                _buildAddSetNode(context),
-              ],
+                    // Nodes Row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (int i = 0; i < totalSets; i++) ...[
+                          if (i > 0) const SizedBox(width: 14),
+                          _buildNodeForIndex(context, i),
+                        ],
+                        const SizedBox(width: 14),
+
+                        // "+ Set" Action Node
+                        _buildAddSetNode(context),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

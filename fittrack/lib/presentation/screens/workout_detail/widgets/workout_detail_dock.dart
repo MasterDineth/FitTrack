@@ -78,17 +78,17 @@ class WorkoutDetailDock extends StatelessWidget {
                 width: double.infinity,
                 height: 52,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     colors: [
-                      Color(0xFF5F3BDC),
-                      Color(0xFF7551FA),
-                      Color(0xFF4E2BC2),
+                      context.ftPrimary,
+                      Color.lerp(context.ftPrimary, Colors.white, 0.12) ?? context.ftPrimary,
+                      Color.lerp(context.ftPrimary, Colors.black, 0.15) ?? context.ftPrimary,
                     ],
                   ),
                   borderRadius: BorderRadius.circular(26),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF5F3BDC).withValues(alpha: 0.45),
+                      color: context.ftPrimary.withValues(alpha: 0.45),
                       blurRadius: 18,
                       offset: const Offset(0, 8),
                     ),

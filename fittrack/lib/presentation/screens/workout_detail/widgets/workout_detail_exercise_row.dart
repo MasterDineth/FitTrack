@@ -18,6 +18,7 @@ class WorkoutDetailExerciseRow extends StatelessWidget {
     required this.onToggleExpanded,
     required this.onReorder,
     required this.onReorderDone,
+    this.onRemove,
   });
 
   final ScheduleExercise exercise;
@@ -26,6 +27,7 @@ class WorkoutDetailExerciseRow extends StatelessWidget {
   final VoidCallback onToggleExpanded;
   final void Function(int oldIndex, int newIndex) onReorder;
   final VoidCallback onReorderDone;
+  final VoidCallback? onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -107,16 +109,10 @@ class WorkoutDetailExerciseRow extends StatelessWidget {
                         height: 48,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(13),
-                          border: Border.all(
-                            color: context.isDark
-                                ? Colors.white.withValues(alpha: 0.15)
-                                : Colors.white.withValues(alpha: 0.9),
-                            width: 1,
-                          ),
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: Image.asset(
-                          'assets/images/dashboard/hero_workout.webp',
+                          _resolveImage(exercise.exerciseId),
                           fit: BoxFit.cover,
                           cacheWidth: 96,
                           cacheHeight: 96,
@@ -351,6 +347,47 @@ class WorkoutDetailExerciseRow extends StatelessWidget {
                                   ],
                                 ),
                               ),
+                            if (onRemove != null) ...[
+                              const SizedBox(height: 10),
+                              Divider(
+                                height: 1,
+                                thickness: 1,
+                                color: context.isDark
+                                    ? Colors.white.withValues(alpha: 0.08)
+                                    : Colors.black.withValues(alpha: 0.06),
+                              ),
+                              const SizedBox(height: 8),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: InkWell(
+                                  onTap: onRemove,
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.delete_outline_rounded,
+                                          size: 15,
+                                          color: Color(0xFFF43F5E),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'Remove exercise',
+                                          style: TextStyle(
+                                            fontFamily: FtText.fontFamily,
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.w700,
+                                            color: const Color(0xFFF43F5E),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       )
@@ -416,9 +453,25 @@ class WorkoutDetailExerciseRow extends StatelessWidget {
     );
   }
 
+  static const Map<String, (String, String, String)> _exerciseMetadata = {
+    'ex1': ('BB Bench Press', 'Chest', 'assets/images/dashboard/hero_workout.webp'),
+    'ex2': ('Incline DB Press', 'Shoulders', 'assets/images/dashboard/coaching_bench.webp'),
+    'ex3': ('Cable Flyes', 'Chest', 'assets/images/dashboard/hero_workout.webp'),
+    'ex4': ('Overhead Press', 'Shoulders', 'assets/images/dashboard/coaching_bench.webp'),
+    'ex5': ('Lateral Raises', 'Shoulders', 'assets/images/dashboard/coaching_bench.webp'),
+    'ex6': ('Tricep Pushdowns', 'Triceps', 'assets/images/dashboard/hero_workout.webp'),
+    'ex7': ('Overhead Tricep Extension', 'Triceps', 'assets/images/dashboard/coaching_bench.webp'),
+    'ex8': ('Barbell Squat', 'Legs', 'assets/images/dashboard/hero_workout.webp'),
+    'ex9': ('Bent-Over Row', 'Back', 'assets/images/dashboard/coaching_bench.webp'),
+    'ex10': ('Deadlift', 'Back', 'assets/images/dashboard/hero_workout.webp'),
+    'e1': ('Barbell Bench Press', 'Chest', 'assets/images/dashboard/hero_workout.webp'),
+    'e2': ('Incline DB Press', 'Shoulders', 'assets/images/dashboard/coaching_bench.webp'),
+  };
+
   String _resolveName(String exerciseId) {
-    if (exerciseId == 'e1') return 'Barbell Bench Press';
-    if (exerciseId == 'e2') return 'Incline Dumbbell Press';
+    if (_exerciseMetadata.containsKey(exerciseId)) {
+      return _exerciseMetadata[exerciseId]!.$1;
+    }
     if (exerciseId.startsWith('ex_')) {
       final raw = exerciseId.substring(3).replaceAll('_', ' ');
       return raw.split(' ').map((w) {
@@ -430,6 +483,9 @@ class WorkoutDetailExerciseRow extends StatelessWidget {
   }
 
   String _resolveMuscle(String exerciseId) {
+    if (_exerciseMetadata.containsKey(exerciseId)) {
+      return _exerciseMetadata[exerciseId]!.$2;
+    }
     final lower = exerciseId.toLowerCase();
     if (lower.contains('bench') || lower.contains('chest') || lower.contains('fly')) {
       return 'Chest';
@@ -447,6 +503,17 @@ class WorkoutDetailExerciseRow extends StatelessWidget {
       return 'Legs';
     }
     return 'Full Body';
+  }
+
+  String _resolveImage(String exerciseId) {
+    if (_exerciseMetadata.containsKey(exerciseId)) {
+      return _exerciseMetadata[exerciseId]!.$3;
+    }
+    final muscle = _resolveMuscle(exerciseId);
+    if (muscle == 'Chest' || muscle == 'Back' || muscle == 'Legs') {
+      return 'assets/images/dashboard/hero_workout.webp';
+    }
+    return 'assets/images/dashboard/coaching_bench.webp';
   }
 
   Color _resolveMuscleColor(String muscle) {
