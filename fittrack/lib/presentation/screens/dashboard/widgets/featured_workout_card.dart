@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../domain/entities/schedule.dart';
@@ -357,6 +358,7 @@ class _FeaturedWorkoutCardState extends ConsumerState<FeaturedWorkoutCard> {
               // Primary CTA Button
               FtPressable(
                 onTap: () {
+                  HapticFeedback.mediumImpact();
                   // Navigate to workouts tab or start active session
                   context.go('/workouts');
                 },

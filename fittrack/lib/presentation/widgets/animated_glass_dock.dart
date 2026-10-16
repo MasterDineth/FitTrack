@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/dashboard_providers.dart';
 import '../providers/theme_provider.dart';
 import '../theme/ft_glass.dart';
 
@@ -84,6 +85,13 @@ class _AnimatedGlassDockState extends ConsumerState<AnimatedGlassDock> {
       blurIntensity = themeSettings.blurIntensity;
     } catch (_) {}
 
+    bool isShadeOpen = false;
+    try {
+      isShadeOpen = ref.watch(
+        dashboardNotificationsProvider.select((s) => s.isShadeOpen),
+      );
+    } catch (_) {}
+
     final double t = ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0);
 
     // Resolved floating dock glass spec matching Stitch showcase
@@ -155,95 +163,108 @@ class _AnimatedGlassDockState extends ConsumerState<AnimatedGlassDock> {
         ? const Color(0x26FFFFFF)
         : (isDark ? const Color(0x29FFFFFF) : const Color(0xF2FFFFFF));
 
-    return Align(
-      alignment: Alignment.bottomCenter,
-      heightFactor: 1.0,
-      child: Padding(
-        padding: EdgeInsets.only(bottom: 16.0 + bottomInset),
-        child: RepaintBoundary(
-          child: SizedBox(
-            width: dockWidth,
-            height: 58.0,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                // 1. Frosted Glass Floating Dock Shell (The ONLY BackdropFilter on this screen)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
-                  child: blurSigma > 0
-                      ? BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: dockFill,
-                              borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
-                              border: Border.all(
-                                color: dockBorder,
-                                width: 1.0,
+    return AnimatedSlide(
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeInOutCubic,
+      offset: isShadeOpen ? const Offset(0, 1.8) : Offset.zero,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+        opacity: isShadeOpen ? 0.0 : 1.0,
+        child: IgnorePointer(
+          ignoring: isShadeOpen,
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            heightFactor: 1.0,
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 16.0 + bottomInset),
+              child: RepaintBoundary(
+                child: SizedBox(
+                  width: dockWidth,
+                  height: 58.0,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      // 1. Frosted Glass Floating Dock Shell (The ONLY BackdropFilter on this screen)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
+                        child: blurSigma > 0
+                            ? BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: dockFill,
+                                    borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
+                                    border: Border.all(
+                                      color: dockBorder,
+                                      width: 1.0,
+                                    ),
+                                    boxShadow: dockShadow,
+                                  ),
+                                ),
+                              )
+                            : Container(
+                                decoration: BoxDecoration(
+                                  color: dockFill,
+                                  borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
+                                  border: Border.all(
+                                    color: dockBorder,
+                                    width: 1.0,
+                                  ),
+                                  boxShadow: dockShadow,
+                                ),
                               ),
-                              boxShadow: dockShadow,
-                            ),
-                          ),
-                        )
-                      : Container(
+                      ),
+
+                      // Inset specular rim highlight at the top edge
+                      Positioned(
+                        top: 0,
+                        left: 20,
+                        right: 20,
+                        height: 1.5,
+                        child: DecoratedBox(
                           decoration: BoxDecoration(
-                            color: dockFill,
-                            borderRadius: BorderRadius.circular(FtGlassTheme.radiusPill),
-                            border: Border.all(
-                              color: dockBorder,
-                              width: 1.0,
+                            gradient: LinearGradient(
+                              colors: [
+                                rimHighlight.withValues(alpha: 0.15),
+                                rimHighlight,
+                                rimHighlight.withValues(alpha: 0.15),
+                              ],
                             ),
-                            boxShadow: dockShadow,
                           ),
                         ),
-                ),
-
-                // Inset specular rim highlight at the top edge
-                Positioned(
-                  top: 0,
-                  left: 20,
-                  right: 20,
-                  height: 1.5,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          rimHighlight.withValues(alpha: 0.15),
-                          rimHighlight,
-                          rimHighlight.withValues(alpha: 0.15),
-                        ],
                       ),
-                    ),
-                  ),
-                ),
 
-                // 2. Interactive Navigation Tabs Row spanning full 58px height
-                Positioned.fill(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: List.generate(_tabs.length, (index) {
-                        final tab = _tabs[index];
-                        final isActive = index == widget.currentIndex;
-                        final isPressed = _pressedTabIndex == index;
+                      // 2. Interactive Navigation Tabs Row spanning full 58px height
+                      Positioned.fill(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: List.generate(_tabs.length, (index) {
+                              final tab = _tabs[index];
+                              final isActive = index == widget.currentIndex;
+                              final isPressed = _pressedTabIndex == index;
 
-                        return Expanded(
-                          flex: isActive ? 2 : 1,
-                          child: _buildDockTab(
-                            index: index,
-                            tab: tab,
-                            isActive: isActive,
-                            isPressed: isPressed,
-                            isDark: isDark,
-                            primary: primary,
+                              return Expanded(
+                                flex: isActive ? 2 : 1,
+                                child: _buildDockTab(
+                                  index: index,
+                                  tab: tab,
+                                  isActive: isActive,
+                                  isPressed: isPressed,
+                                  isDark: isDark,
+                                  primary: primary,
+                                ),
+                              );
+                            }),
                           ),
-                        );
-                      }),
-                    ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ),
