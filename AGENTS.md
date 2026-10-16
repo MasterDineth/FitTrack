@@ -76,7 +76,7 @@ UI-only tasks touch only `presentation/` unless data changes are explicitly requ
 *   **Frosted Glass Design System (Appearance Settings Driven):**
     *   **Visual Parity:** All newly built screens (Schedule Details, Active Workout, Rest Timer, Pause/Discard/Confirm Modals, Workout Summary, and all Settings sub-screens) MUST match the frosted glass aesthetic of the finalized screens (Dashboard, Workouts, History, Create Schedule, Appearance).
     *   **Shared Glass Components:** Always use `GlassSurface` (`lib/presentation/widgets/glass_surface.dart` with `FtGlassTier.glass1`, `FtGlassTier.glass2`, `FtGlassTier.glassFloating`) or `FrostedGlassBox` / `FtSettingsCard` consistently—NEVER build ad-hoc inline `Container` + `BackdropFilter` glass by hand inside screen files.
-    *   **Appearance Screen Authority:** Do NOT hardcode `enableBlur: false` on cards or alter the existing blur sigma multipliers. Frosted glass enable/disable and blur intensity MUST remain dynamically controlled by `ThemeSettings` (`themeNotifierProvider`) from the Appearance screen so toggling or sliding blur intensity updates all glass surfaces across the app.
+    *   **Appearance Screen Authority:** Frosted glass enable/disable and blur intensity are controlled by ThemeSettings (themeNotifierProvider). GlassSurface decides where a real BackdropFilter is created via GlassBackdrop: glassFloating and any surface over scrolling or non-uniform content are live; in-flow glass1/glass2 cards over the static mesh are flat (identical fill, border, highlight and shadow). Do not hardcode enableBlur: false at call sites to opt out; use the backdrop parameter and justify live vs flat. Never alter the blur sigma/alpha multipliers. Never place Opacity/FadeTransition above a live glass surface.
     *   **Modals & Dialogs:** Use `modal_backdrop_helper.dart` and shared glass modal containers for all confirmation, pause, discard, skip, and picker sheets so they match the finalized glass dialog style.
 *   **Reuse:** Check `presentation/widgets/` (`GlassSurface`, `GlassIconButton`, `GlassPillChip`, ` GlassHairlineDivider`, `FtPrimaryButton`, `FtTextField`, `FtSettingsCard`, `SettingsGroupCard`, `SettingsTileRow`) before creating new widgets.
 *   **Images:** Bundled as sized WebP/PNG assets under `assets/images/` and declared in `pubspec.yaml`. NEVER hot-link Stitch or other signed URLs.
@@ -93,6 +93,7 @@ To keep new screens clean, modular, and easy to optimize later:
 *   **Images:** Every `Image.file` or `FileImage` (such as the user avatar in `account_details_screen.dart`) MUST use `cacheWidth` or `ResizeImage` to display size x device pixel ratio.
 *   **Animations:** Every `AnimationController` MUST be disposed in `dispose()` and paused when `TickerMode.of(context)` is false.
 *   **No synchronous file I/O** (`existsSync`, `readAsBytesSync`) in `build`.
+*   Any infinite animation must pause when the app is backgrounded or an overlay fully covers it.
 
 ## 10. Data Integrity, Honesty & Security
 *   **No fake UI:** NEVER leave `onPressed: () {}` / `onTap: () {}`. A control is either implemented, disabled (null handler with a disabled style), or removed. A temporary stub carries `// TODO(<issue>)` and is listed in the PR.

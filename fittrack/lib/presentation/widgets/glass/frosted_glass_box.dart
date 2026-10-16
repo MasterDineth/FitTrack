@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers/theme_provider.dart';
 import '../../theme/glass_tokens.dart';
+import 'glass_backdrop.dart';
+
+export 'glass_backdrop.dart';
 
 /// A reusable frosted glass container applying calibrated blur, semi-translucent
 /// fill, specular border highlights, and ambient drop shadows based on [GlassTier].
@@ -26,6 +29,7 @@ class FrostedGlassBox extends ConsumerWidget {
     this.clipBehavior = Clip.antiAlias,
     this.onTap,
     this.enableBlur = true,
+    this.backdrop = GlassBackdrop.auto,
   });
 
   final Widget? child;
@@ -44,10 +48,10 @@ class FrostedGlassBox extends ConsumerWidget {
   final Clip clipBehavior;
   final VoidCallback? onTap;
 
-  /// Whether to apply BackdropFilter blur. Defaults to `false` for card layouts
-  /// to eliminate offscreen GPU blur passes and avoid saveLayer allocations.
-  /// Only the floating dock sets this to `true`.
+  /// Whether to apply BackdropFilter blur. Kept for backward compatibility:
+  /// `false` forces flat; `true` defers to [backdrop] (which defaults to `auto`).
   final bool enableBlur;
+  final GlassBackdrop backdrop;
 
   BorderRadius _defaultRadius(GlassTier tier) {
     switch (tier) {
@@ -65,9 +69,13 @@ class FrostedGlassBox extends ConsumerWidget {
     bool enableTransparency = true;
     double blurIntensity = 16.0;
     try {
-      final themeSettings = ref.watch(themeNotifierProvider);
-      enableTransparency = themeSettings.enableGlassTransparency;
-      blurIntensity = themeSettings.blurIntensity;
+      final (transparency, intensity) = ref.watch(
+        themeNotifierProvider.select(
+          (s) => (s.enableGlassTransparency, s.blurIntensity),
+        ),
+      );
+      enableTransparency = transparency;
+      blurIntensity = intensity;
     } catch (_) {}
 
     final config = GlassTokens.resolve(
@@ -81,9 +89,25 @@ class FrostedGlassBox extends ConsumerWidget {
     final resolvedRadius = borderRadius ?? _defaultRadius(tier);
     final baseBlur = blur ?? config.blur;
 
+    // Resolve whether this surface creates a real live BackdropFilter.
+    // enableBlur: false forces flat for backward compatibility; enableBlur: true defers to backdrop.
+    final bool isLive;
+    if (!enableTransparency || !enableBlur) {
+      isLive = false;
+    } else {
+      switch (backdrop) {
+        case GlassBackdrop.flat:
+          isLive = false;
+        case GlassBackdrop.live:
+          isLive = true;
+        case GlassBackdrop.auto:
+          isLive = tier == GlassTier.floating;
+      }
+    }
+
     final double t = ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0);
     final double effectiveBlur;
-    if (!enableTransparency || !enableBlur) {
+    if (!enableTransparency || !isLive) {
       effectiveBlur = 0.0;
     } else if (t <= 0.42857) {
       final progress = t / 0.42857;
@@ -109,7 +133,7 @@ class FrostedGlassBox extends ConsumerWidget {
     }
     final Color effectiveFill = config.fillColor.withValues(alpha: effectiveAlpha);
 
-    final shouldBlur = enableBlur && enableTransparency && effectiveBlur > 0;
+    final shouldBlur = isLive && effectiveBlur > 0;
 
     Widget content = Container(
       width: width,

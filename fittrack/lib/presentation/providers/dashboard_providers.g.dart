@@ -193,7 +193,7 @@ final class WeeklyMomentumProvider
   }
 }
 
-String _$weeklyMomentumHash() => r'8480408ceed7fe08f8884b544dda773c006cb17b';
+String _$weeklyMomentumHash() => r'0e379542f1723f4e1fe9b2e8efed5f1158c24dc6';
 
 /// Aggregates weekly tonnage load and strain status.
 
@@ -237,19 +237,19 @@ final class WeeklyLoadProvider
   }
 }
 
-String _$weeklyLoadHash() => r'f36aabf237934927e7b08531a6595b8cfe113815';
+String _$weeklyLoadHash() => r'ec9d5a37a38cb2411afc5ff0908534d32f689ee0';
 
-/// Unread notification count for the header bell badge.
+/// Unread notification count for the header bell badge (reactive to notification list).
 
 @ProviderFor(unreadNotificationCount)
 final unreadNotificationCountProvider = UnreadNotificationCountProvider._();
 
-/// Unread notification count for the header bell badge.
+/// Unread notification count for the header bell badge (reactive to notification list).
 
 final class UnreadNotificationCountProvider
     extends $FunctionalProvider<int, int, int>
     with $Provider<int> {
-  /// Unread notification count for the header bell badge.
+  /// Unread notification count for the header bell badge (reactive to notification list).
   UnreadNotificationCountProvider._()
     : super(
         from: null,
@@ -284,4 +284,4 @@ final class UnreadNotificationCountProvider
 }
 
 String _$unreadNotificationCountHash() =>
-    r'37355ec703f2392ebf6610e5bf1b7b808f7a6038';
+    r'28ba1ddff2b4c33fd17e90b1f83dc57a8b06eeef';

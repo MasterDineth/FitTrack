@@ -28,8 +28,17 @@ void main() {
           container: container,
           child: const MaterialApp(
             home: Scaffold(
-              body: GlassSurface(
-                child: Text('Test Glass Card'),
+              body: Column(
+                children: [
+                  GlassSurface(
+                    backdrop: GlassBackdrop.live,
+                    child: Text('Test Live Glass Card'),
+                  ),
+                  GlassSurface(
+                    // Default flat surface
+                    child: Text('Test Flat Glass Card'),
+                  ),
+                ],
               ),
             ),
           ),
@@ -37,43 +46,83 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      // Only the live surface has a BackdropFilter
+      expect(find.byType(BackdropFilter), findsOneWidget);
+
       // Find BackdropFilter for 4px Subtle
-      final subtleFilter = tester.widget<BackdropFilter>(find.byType(BackdropFilter));
+      final subtleFilter =
+          tester.widget<BackdropFilter>(find.byType(BackdropFilter));
       final ImageFilter? subtleImageFilter = subtleFilter.filter;
       // In Flutter ImageFilter.toString() or inspection: verify blur is low
       expect(subtleImageFilter.toString(), contains('3.0'));
 
-      // Find inner container decoration to verify high translucency at Subtle
-      final subtleBoxes = tester.widgetList<Container>(find.descendant(
-        of: find.byType(GlassSurface),
+      // Find live and flat container decorations to verify high translucency at Subtle
+      final liveCards = find.widgetWithText(GlassSurface, 'Test Live Glass Card');
+      final flatCards = find.widgetWithText(GlassSurface, 'Test Flat Glass Card');
+
+      final subtleLiveBoxes = tester.widgetList<Container>(find.descendant(
+        of: liveCards,
         matching: find.byType(Container),
       ));
-      final Container subtleBox = subtleBoxes.firstWhere(
-        (c) => c.decoration is BoxDecoration && (c.decoration as BoxDecoration).color != null,
+      final Container subtleLiveBox = subtleLiveBoxes.firstWhere(
+        (c) =>
+            c.decoration is BoxDecoration &&
+            (c.decoration as BoxDecoration).color != null,
       );
-      final subtleColor = (subtleBox.decoration as BoxDecoration).color!;
-      // At Subtle, alpha is significantly reduced (~0.27)
+      final subtleColor = (subtleLiveBox.decoration as BoxDecoration).color!;
       expect(subtleColor.a, lessThan(0.35));
+
+      final subtleFlatBoxes = tester.widgetList<Container>(find.descendant(
+        of: flatCards,
+        matching: find.byType(Container),
+      ));
+      final Container subtleFlatBox = subtleFlatBoxes.firstWhere(
+        (c) =>
+            c.decoration is BoxDecoration &&
+            (c.decoration as BoxDecoration).color != null,
+      );
+      final subtleFlatColor = (subtleFlatBox.decoration as BoxDecoration).color!;
+      expect(subtleFlatColor.a, lessThan(0.35));
 
       // Now update to Intense (32px)
       await container.read(themeProvider.notifier).setBlurIntensity(32.0);
       await tester.pumpAndSettle();
 
-      final intenseFilter = tester.widget<BackdropFilter>(find.byType(BackdropFilter));
+      // Still only the live surface has a BackdropFilter
+      expect(find.byType(BackdropFilter), findsOneWidget);
+
+      final intenseFilter =
+          tester.widget<BackdropFilter>(find.byType(BackdropFilter));
       final ImageFilter? intenseImageFilter = intenseFilter.filter;
       // Verify blur is heavy (at least 35px)
       expect(intenseImageFilter.toString(), contains('36.0'));
 
-      // Verify fill opacity is dense frosted acrylic (~0.81)
-      final intenseBoxes = tester.widgetList<Container>(find.descendant(
-        of: find.byType(GlassSurface),
+      // Verify fill opacity is dense frosted acrylic (~0.81) for both live and flat
+      final intenseLiveBoxes = tester.widgetList<Container>(find.descendant(
+        of: liveCards,
         matching: find.byType(Container),
       ));
-      final Container intenseBox = intenseBoxes.firstWhere(
-        (c) => c.decoration is BoxDecoration && (c.decoration as BoxDecoration).color != null,
+      final Container intenseLiveBox = intenseLiveBoxes.firstWhere(
+        (c) =>
+            c.decoration is BoxDecoration &&
+            (c.decoration as BoxDecoration).color != null,
       );
-      final intenseColor = (intenseBox.decoration as BoxDecoration).color!;
+      final intenseColor = (intenseLiveBox.decoration as BoxDecoration).color!;
       expect(intenseColor.a, greaterThan(0.75));
+
+      final intenseFlatBoxes = tester.widgetList<Container>(find.descendant(
+        of: flatCards,
+        matching: find.byType(Container),
+      ));
+      final Container intenseFlatBox = intenseFlatBoxes.firstWhere(
+        (c) =>
+            c.decoration is BoxDecoration &&
+            (c.decoration as BoxDecoration).color != null,
+      );
+      final intenseFlatColor = (intenseFlatBox.decoration as BoxDecoration).color!;
+      // Flat surface fill alpha also scales to dense acrylic following the slider
+      expect(intenseFlatColor.a, greaterThan(0.75));
+      expect(intenseFlatColor.a, equals(intenseColor.a));
 
       // Check distinct difference between Subtle and Intense opacity
       expect(intenseColor.a, greaterThan(subtleColor.a * 2.0));
