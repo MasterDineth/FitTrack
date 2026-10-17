@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../theme/ft_glass.dart';
 import '../../../widgets/header/ft_dynamic_header.dart';
-import '../../../widgets/header/ft_header_avatar.dart';
 
-/// Top header for FitTrack Settings matching the dashboard header layout & UI consistency,
-/// featuring universal in-header dynamic island notifications morphing.
+/// Top header for FitTrack Settings featuring universal in-header
+/// dynamic island notifications morphing and far-right notification bell.
 class SettingsHeader extends StatelessWidget {
   const SettingsHeader({super.key});
 
@@ -45,7 +44,7 @@ class SettingsHeader extends StatelessWidget {
           ),
         ],
       ),
-      trailing: const FtHeaderAvatar(),
     );
   }
 }
+

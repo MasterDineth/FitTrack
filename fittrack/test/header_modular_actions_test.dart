@@ -6,6 +6,7 @@ import 'package:fittrack/presentation/providers/notifications_provider.dart';
 import 'package:fittrack/presentation/screens/create_exercise/widgets/create_exercise_header.dart';
 import 'package:fittrack/presentation/screens/create_schedule/widgets/create_schedule_header.dart';
 import 'package:fittrack/presentation/screens/dashboard/widgets/dashboard_header.dart';
+import 'package:fittrack/presentation/screens/settings/appearance/appearance_header.dart';
 import 'package:fittrack/presentation/screens/settings/widgets/settings_header.dart';
 import 'package:fittrack/presentation/screens/workout_detail/widgets/workout_detail_header.dart'
     as sched_detail;
@@ -286,7 +287,7 @@ void main() {
       expect(find.byType(FtHeaderAvatar), findsOneWidget);
     });
 
-    testWidgets('SettingsHeader renders title, subtitle, bell and avatar',
+    testWidgets('SettingsHeader renders title, subtitle, bell and no avatar',
         (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
@@ -305,8 +306,32 @@ void main() {
         findsOneWidget,
       );
       expect(find.byType(FtNotificationBell), findsOneWidget);
-      expect(find.byType(FtHeaderAvatar), findsOneWidget);
+      expect(find.byType(FtHeaderAvatar), findsNothing);
     });
+
+    testWidgets('AppearanceHeader renders back button, title, bell and no avatar',
+        (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: AppearanceHeader(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Appearance'), findsOneWidget);
+      expect(
+        find.text('Customize your visual theme, kinetic accents, and display ergonomics'),
+        findsOneWidget,
+      );
+      expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
+      expect(find.byType(FtNotificationBell), findsOneWidget);
+      expect(find.byType(FtHeaderAvatar), findsNothing);
+    });
+
 
     testWidgets('CreateScheduleHeader renders back button, title, and actions',
         (tester) async {

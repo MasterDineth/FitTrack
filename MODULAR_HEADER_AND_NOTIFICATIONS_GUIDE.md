@@ -42,14 +42,15 @@ Every screen in FitTrack falls into one of two categories:
 
 ### Category A: Screens WITH Notification Bells (MUST Use `FtDynamicHeader`)
 Any screen featuring notifications, navigation actions, or user avatars **MUST** wrap its header row with `FtDynamicHeader`:
-* **Main Tab / Dashboard Screens:** `DashboardHeader`, `_WorkoutsHeader`, `WorkoutHistoryHeader`, `SettingsHeader`.
-* **Flow / Creation Screens:** `CreateScheduleHeader`, `CreateExerciseHeader`, `WorkoutSearchScreen` header, `WorkoutDetailHeader`.
+* **Main Tab / Dashboard Screens:** `DashboardHeader`, `_WorkoutsHeader`, `WorkoutHistoryHeader`, `SettingsHeader` (notification bell anchored far right, no avatar).
+* **Flow / Creation Screens:** `CreateScheduleHeader`, `CreateExerciseHeader`, `WorkoutSearchScreen` header, `WorkoutDetailHeader` (history detail), `AppearanceHeader` (back button, title, notification bell anchored far right, no avatar).
 
 ### Category B: Screens WITHOUT Notification Bells (NEVER Use `FtDynamicHeader`)
 The following screens do not carry notification bells and **MUST NOT** be wrapped with `FtDynamicHeader`:
 * `ActiveWorkoutHeader` (Active workout: timer, stopwatch, and pause controls only).
 * `WorkoutDetails` preview screen (Library preview: back button and 3-dot context menu only).
-* Appearance and Settings sub-screens (Simple back button + section title).
+* Other Settings sub-screens (Simple back button + section title, without notification bell).
+
 
 ---
 

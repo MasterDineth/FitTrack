@@ -89,7 +89,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // 1. Header (Stitch lockup & Dashboard icons)
+      // 1. Header (Back button, Title & Notification icon)
       expect(find.text('Appearance'), findsOneWidget);
       expect(find.text('v3.4'), findsNothing);
       expect(
@@ -97,7 +97,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.notifications_outlined), findsNothing);
+      expect(find.byIcon(Icons.notifications_outlined), findsOneWidget);
 
       // 2. Live Preview
       expect(find.text('LIVE PREVIEW'), findsOneWidget);

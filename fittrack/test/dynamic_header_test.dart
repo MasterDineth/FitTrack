@@ -5,6 +5,7 @@ import 'package:fittrack/presentation/providers/notifications_provider.dart';
 import 'package:fittrack/presentation/screens/create_exercise/widgets/create_exercise_header.dart';
 import 'package:fittrack/presentation/screens/create_schedule/widgets/create_schedule_header.dart';
 import 'package:fittrack/presentation/screens/dashboard/widgets/dashboard_header.dart';
+import 'package:fittrack/presentation/screens/settings/appearance/appearance_header.dart';
 import 'package:fittrack/presentation/screens/settings/widgets/settings_header.dart';
 import 'package:fittrack/presentation/screens/workout_history/widgets/workout_history_header.dart';
 import 'package:fittrack/presentation/screens/workout_history_detail/widgets/workout_detail_header.dart'
@@ -460,7 +461,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.byType(FtNotificationBell), findsOneWidget);
-      expect(find.byType(FtHeaderAvatar), findsOneWidget);
+      expect(find.byType(FtHeaderAvatar), findsNothing);
 
       container.read(notificationIslandProvider.notifier).show(
             FtNotificationItem(
@@ -641,5 +642,48 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(FtNotificationBell), findsOneWidget);
     });
+
+    testWidgets('AppearanceHeader works seamlessly with FtDynamicHeader (no avatar) and expands on notification',
+        (tester) async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            home: Scaffold(
+              body: AppearanceHeader(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Appearance'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
+      expect(find.byType(FtNotificationBell), findsOneWidget);
+      expect(find.byType(FtHeaderAvatar), findsNothing);
+
+      container.read(notificationIslandProvider.notifier).show(
+            FtNotificationItem(
+              id: 'appearance_island_test',
+              type: FtNotificationType.habit,
+              title: 'Theme Applied',
+              body: 'Electric Blue accent active',
+              timestamp: DateTime.now(),
+            ),
+          );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('Theme Applied '), findsOneWidget);
+      expect(find.byType(FtHeaderAvatar), findsNothing);
+
+      await tester.pump(const Duration(milliseconds: 2000));
+      await tester.pumpAndSettle();
+      expect(find.byType(FtNotificationBell), findsOneWidget);
+    });
   });
 }
+
