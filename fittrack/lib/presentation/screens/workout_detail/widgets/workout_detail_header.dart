@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../theme/ft_glass.dart';
 import '../../../widgets/glass_surface.dart';
+import '../../../widgets/header/ft_header_actions.dart';
 import '../../dashboard/widgets/ft_pressable.dart';
 
 /// Top navigation header for Workout Details matching Stitch Screen `fc32d4d5a15441178564c24cb5dad0f4`
@@ -200,24 +201,30 @@ class WorkoutDetailHeader extends StatelessWidget {
           const SizedBox(width: 8),
 
           // Right: 3-Dot More Button only (Profile and notification removed per spec)
-          Builder(
-            builder: (btnContext) => FtPressable(
-              onTap: () => _showMenu(btnContext),
-              pressedScale: 0.90,
-              child: GlassSurface(
-                tier: FtGlassTier.glass2,
-                radius: 20,
-                width: 38,
-                height: 38,
-                shadow: false,
-                alignment: Alignment.center,
-                child: Icon(
-                  Icons.more_vert_rounded,
-                  size: 20,
-                  color: context.ftInk,
+          FtHeaderActions(
+            showBell: false,
+            showAvatar: false,
+            extraActions: [
+              Builder(
+                builder: (btnContext) => FtPressable(
+                  onTap: () => _showMenu(btnContext),
+                  pressedScale: 0.90,
+                  child: GlassSurface(
+                    tier: FtGlassTier.glass2,
+                    radius: 20,
+                    width: 38,
+                    height: 38,
+                    shadow: false,
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.more_vert_rounded,
+                      size: 20,
+                      color: context.ftInk,
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ],
       ),

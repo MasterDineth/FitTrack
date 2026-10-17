@@ -1,15 +1,12 @@
-import 'dart:io';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../theme/ft_glass.dart';
 import '../../../widgets/glass_surface.dart';
-import '../../../providers/user_profile_provider.dart';
+import '../../../widgets/header/ft_header_avatar.dart';
 import '../../../providers/notifications_provider.dart';
 import '../../../providers/notification_settings_provider.dart';
-import 'ft_pressable.dart';
 
 class DashboardHeader extends ConsumerStatefulWidget {
   const DashboardHeader({super.key});
@@ -76,8 +73,6 @@ class _DashboardHeaderState extends ConsumerState<DashboardHeader>
   Widget build(BuildContext context) {
     final activeIslandItem = ref.watch(notificationIslandProvider);
     final unreadCount = ref.watch(unreadNotificationCountProvider);
-    final profileAsync = ref.watch(userProfileProvider);
-    final profile = profileAsync.value;
 
     final isExpanded = activeIslandItem != null;
 
@@ -151,37 +146,7 @@ class _DashboardHeaderState extends ConsumerState<DashboardHeader>
                       scale: isExpanded ? 0.85 : 1.0,
                       child: IgnorePointer(
                         ignoring: isExpanded,
-                        child: FtPressable(
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            context.push('/settings/profile');
-                          },
-                          pressedScale: 0.95,
-                          child: Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 2,
-                              ),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x1A000000),
-                                  blurRadius: 4,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: ClipOval(
-                              child: _buildAvatarImage(
-                                profile?.profileImagePath,
-                                profile?.name,
-                              ),
-                            ),
-                          ),
-                        ),
+                        child: const FtHeaderAvatar(),
                       ),
                     ),
                   ),
@@ -194,24 +159,25 @@ class _DashboardHeaderState extends ConsumerState<DashboardHeader>
                   right: isExpanded ? 0.0 : 44.0,
                   width: isExpanded ? maxHeaderWidth : 40.0,
                   height: isExpanded ? 52.0 : 40.0,
-                  child: GestureDetector(
-                    onTap: () {
-                      if (_isHapticsEnabled()) {
-                        HapticFeedback.lightImpact();
-                      }
-                      final renderBox =
-                          context.findRenderObject() as RenderBox?;
-                      Offset? origin;
-                      if (renderBox != null && renderBox.hasSize) {
-                        origin = renderBox.localToGlobal(
-                          renderBox.size.center(Offset.zero),
-                        );
-                      }
-                      ref
-                          .read(notificationShadeProvider.notifier)
-                          .open(origin: origin);
-                    },
-                    child: GlassSurface(
+                  child: Builder(
+                    builder: (bellContext) => GestureDetector(
+                      onTap: () {
+                        if (_isHapticsEnabled()) {
+                          HapticFeedback.lightImpact();
+                        }
+                        final renderBox =
+                            bellContext.findRenderObject() as RenderBox?;
+                        Offset? origin;
+                        if (renderBox != null && renderBox.hasSize) {
+                          origin = renderBox.localToGlobal(
+                            renderBox.size.center(Offset.zero),
+                          );
+                        }
+                        ref
+                            .read(notificationShadeProvider.notifier)
+                            .open(origin: origin);
+                      },
+                      child: GlassSurface(
                       tier: isExpanded
                           ? FtGlassTier.glassFloating
                           : FtGlassTier.glass2,
@@ -241,6 +207,7 @@ class _DashboardHeaderState extends ConsumerState<DashboardHeader>
                         ),
                       ),
                     ),
+                  ),
                   ),
                 ),
               ],
@@ -389,30 +356,6 @@ class _DashboardHeaderState extends ConsumerState<DashboardHeader>
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildAvatarImage(String? path, String? name) {
-    if (path != null && path.isNotEmpty) {
-      return Image.file(
-        File(path),
-        width: 36,
-        height: 36,
-        fit: BoxFit.cover,
-        cacheWidth: 72,
-        errorBuilder: (_, _, _) => _buildFallbackAvatar(),
-      );
-    }
-    return _buildFallbackAvatar();
-  }
-
-  Widget _buildFallbackAvatar() {
-    return Image.asset(
-      'assets/images/dashboard/sample_avatar.webp',
-      width: 36,
-      height: 36,
-      fit: BoxFit.cover,
-      cacheWidth: 72,
     );
   }
 }

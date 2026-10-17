@@ -1,28 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../providers/dashboard_providers.dart';
-import '../../../providers/user_profile_provider.dart';
 import '../../../theme/ft_glass.dart';
 import '../../../widgets/glass_surface.dart';
+import '../../../widgets/header/ft_header_actions.dart';
 import '../../dashboard/widgets/ft_pressable.dart';
 
 /// Top header for Workout History Details screen with back button, title,
 /// unread notification bell, and user profile avatar matching Dashboard.
-class WorkoutDetailHeader extends ConsumerWidget {
+class WorkoutDetailHeader extends StatelessWidget {
   const WorkoutDetailHeader({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final unreadCount = ref.watch(unreadNotificationCountProvider);
-    final avatarAsync = ref.watch(userAvatarFileProvider);
-    final userName = ref.watch(
-      userProfileProvider.select((p) => p.value?.name.trim() ?? ''),
-    );
-    final dpr = MediaQuery.devicePixelRatioOf(context);
-    final cacheWidth = (36 * dpr).ceil();
-
+  Widget build(BuildContext context) {
     return RepaintBoundary(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -92,102 +82,9 @@ class WorkoutDetailHeader extends ConsumerWidget {
           ),
           const SizedBox(width: 8),
 
-          // Right: Notification Bell & Profile Avatar
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Notification bell with unread badge
-              FtPressable(
-                onTap: () {
-                  // TODO(notifications): Leave empty for dedicated notifications screen
-                },
-                pressedScale: 0.92,
-                child: GlassSurface(
-                  tier: FtGlassTier.glass2,
-                  radius: FtGlassTheme.radiusPill,
-                  padding: const EdgeInsets.all(8),
-                  shadow: false,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Icon(
-                        Icons.notifications_none_rounded,
-                        size: 20,
-                        color: context.ftInk,
-                      ),
-                      if (unreadCount > 0)
-                        Positioned(
-                          top: -2,
-                          right: -2,
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFF5252),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Theme.of(context).scaffoldBackgroundColor,
-                                width: 1.5,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-
-              // Profile Avatar
-              FtPressable(
-                onTap: () => context.push('/profile'),
-                pressedScale: 0.92,
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: context.ftPrimary.withValues(alpha: 0.35),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: ClipOval(
-                    child: avatarAsync.value != null
-                        ? Image(
-                            image: ResizeImage(
-                              FileImage(avatarAsync.value!),
-                              width: cacheWidth,
-                            ),
-                            width: 36,
-                            height: 36,
-                            fit: BoxFit.cover,
-                            gaplessPlayback: true,
-                          )
-                        : _fallbackAvatar(userName, context),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          // Right: Standard Header Actions (Bell & Profile Avatar)
+          const FtHeaderActions(),
         ],
-      ),
-    );
-  }
-
-  Widget _fallbackAvatar(String userName, BuildContext context) {
-    final initial = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
-    return Container(
-      color: context.ftPrimary.withValues(alpha: 0.15),
-      alignment: Alignment.center,
-      child: Text(
-        initial,
-        style: TextStyle(
-          fontFamily: FtText.fontFamily,
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-          color: context.ftPrimary,
-        ),
       ),
     );
   }
