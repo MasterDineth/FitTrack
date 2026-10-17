@@ -38,37 +38,29 @@ class FtHeaderAvatar extends ConsumerWidget {
           context.push('/settings/profile');
         },
         pressedScale: 0.95,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minWidth: FtHeaderTokens.minTouchTarget,
-            minHeight: FtHeaderTokens.minTouchTarget,
+        child: Container(
+          width: FtHeaderTokens.avatarVisualSize,
+          height: FtHeaderTokens.avatarVisualSize,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white,
+              width: 2.0,
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x1A000000),
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
-          child: Center(
-            child: Container(
-              width: FtHeaderTokens.avatarVisualSize,
-              height: FtHeaderTokens.avatarVisualSize,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white,
-                  width: 2.0,
-                ),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x1A000000),
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: ClipOval(
-                child: _buildAvatarImage(
-                  context,
-                  profileImagePath,
-                  name,
-                  cacheWidth,
-                ),
-              ),
+          child: ClipOval(
+            child: _buildAvatarImage(
+              context,
+              profileImagePath,
+              name,
+              cacheWidth,
             ),
           ),
         ),

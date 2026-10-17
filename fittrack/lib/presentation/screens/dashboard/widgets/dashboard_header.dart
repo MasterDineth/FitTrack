@@ -30,7 +30,7 @@ class _DashboardHeaderState extends ConsumerState<DashboardHeader>
     );
     _progressController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3200),
+      duration: const Duration(milliseconds: 2000),
     );
   }
 
@@ -199,6 +199,7 @@ class _DashboardHeaderState extends ConsumerState<DashboardHeader>
                               ? _buildExpandedIslandContent(
                                   context,
                                   activeIslandItem,
+                                  maxHeaderWidth,
                                 )
                               : _buildCollapsedBellContent(
                                   context,
@@ -256,6 +257,7 @@ class _DashboardHeaderState extends ConsumerState<DashboardHeader>
   Widget _buildExpandedIslandContent(
     BuildContext context,
     FtNotificationItem item,
+    double maxHeaderWidth,
   ) {
     return Stack(
       key: ValueKey('island_expanded_${item.id}'),
@@ -263,68 +265,105 @@ class _DashboardHeaderState extends ConsumerState<DashboardHeader>
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: Center(
-            child: Row(
-              children: [
-                // Animated Swinging Bell / Category Badge
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: context.ftPrimary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: context.ftPrimary.withValues(alpha: 0.22),
-                    ),
-                  ),
-                  child: AnimatedBuilder(
-                    animation: _bellSwingController,
-                    builder: (context, child) {
-                      final angle =
-                          math.sin(_bellSwingController.value * math.pi * 2) *
-                              0.26;
-                      return Transform.rotate(
-                        angle: angle,
-                        alignment: Alignment.topCenter,
-                        child: child,
-                      );
-                    },
-                    child: Icon(
-                      Icons.notifications_active_rounded,
-                      size: 16,
-                      color: context.ftPrimary,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-
-                // Single-Line Toast Content
-                Expanded(
-                  child: RichText(
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    text: TextSpan(
-                      style: TextStyle(
-                        fontFamily: FtText.fontFamily,
-                        fontSize: 12,
-                        color: context.ftInk,
-                      ),
-                      children: [
-                        TextSpan(
-                          text: '${item.title} ',
-                          style: const TextStyle(fontWeight: FontWeight.w800),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              child: SizedBox(
+                width: math.max(0.0, maxHeaderWidth - 24.0),
+                child: Row(
+                  children: [
+                    // Animated Swinging Bell / Category Badge
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: context.ftPrimary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: context.ftPrimary.withValues(alpha: 0.22),
                         ),
-                        TextSpan(
-                          text: item.body,
+                      ),
+                      child: AnimatedBuilder(
+                        animation: _bellSwingController,
+                        builder: (context, child) {
+                          final angle =
+                              math.sin(_bellSwingController.value * math.pi * 2) *
+                                  0.26;
+                          return Transform.rotate(
+                            angle: angle,
+                            alignment: Alignment.topCenter,
+                            child: child,
+                          );
+                        },
+                        child: Icon(
+                          Icons.notifications_active_rounded,
+                          size: 16,
+                          color: context.ftPrimary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+
+                    // Single-Line Toast Content
+                    Expanded(
+                      child: RichText(
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        text: TextSpan(
                           style: TextStyle(
-                            fontWeight: FontWeight.w500,
+                            fontFamily: FtText.fontFamily,
+                            fontSize: 12,
+                            color: context.ftInk,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: '${item.title} ',
+                              style: const TextStyle(fontWeight: FontWeight.w800),
+                            ),
+                            TextSpan(
+                              text: item.body,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: context.ftMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // Manual Dismiss Button
+                    Semantics(
+                      button: true,
+                      label: 'Dismiss notification',
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          if (_isHapticsEnabled()) {
+                            HapticFeedback.selectionClick();
+                          }
+                          ref.read(notificationIslandProvider.notifier).collapse();
+                        },
+                        child: Container(
+                          width: 28,
+                          height: 28,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: context.ftInk.withValues(alpha: 0.06),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.close_rounded,
+                            size: 16,
                             color: context.ftMuted,
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),

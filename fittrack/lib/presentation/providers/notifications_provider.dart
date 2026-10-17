@@ -83,7 +83,7 @@ class NotificationShadeState {
 }
 
 /// Manages the active notification item for the in-header Dynamic Island morph.
-/// Drives the 3.2s auto-collapse countdown (Timer). Cancel timer in ref.onDispose.
+/// Drives the 2.0s auto-collapse countdown (Timer). Cancel timer in ref.onDispose.
 /// Cleared on user dismissal or shade open.
 @Riverpod(keepAlive: true)
 class NotificationIsland extends _$NotificationIsland {
@@ -100,7 +100,7 @@ class NotificationIsland extends _$NotificationIsland {
   void show(FtNotificationItem item) {
     _autoCollapseTimer?.cancel();
     state = item;
-    _autoCollapseTimer = Timer(const Duration(milliseconds: 3200), () {
+    _autoCollapseTimer = Timer(const Duration(milliseconds: 2000), () {
       collapse();
     });
   }
@@ -233,7 +233,7 @@ class NotificationFeed extends _$NotificationFeed {
   /// Pushes a new notification item.
   /// If shade is open, appends to feed without closing shade or expanding island.
   /// If current route is suppressed, updates feed without expanding island.
-  /// Otherwise, expands island for 3.2s.
+  /// Otherwise, expands island for 2.0s.
   void push(FtNotificationItem item) {
     state = [item, ...state];
 

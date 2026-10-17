@@ -42,15 +42,9 @@ class FtNotificationBell extends ConsumerWidget {
       child: FtPressable(
         onTap: () => _handleTap(context, ref),
         pressedScale: 0.95,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minWidth: FtHeaderTokens.minTouchTarget,
-            minHeight: FtHeaderTokens.minTouchTarget,
-          ),
-          child: Center(
-            child: SizedBox(
-              width: FtHeaderTokens.bellVisualSize,
-              height: FtHeaderTokens.bellVisualSize,
+        child: SizedBox(
+          width: FtHeaderTokens.bellVisualSize,
+          height: FtHeaderTokens.bellVisualSize,
               child: Stack(
                 clipBehavior: Clip.none,
                 alignment: Alignment.center,
@@ -85,9 +79,7 @@ class FtNotificationBell extends ConsumerWidget {
                         ),
                       ),
                     ),
-                ],
-              ),
-            ),
+            ],
           ),
         ),
       ),

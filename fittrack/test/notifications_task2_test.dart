@@ -73,7 +73,7 @@ void main() {
       expect(container.read(unreadNotificationCountProvider), 4);
     });
 
-    test('notificationIslandProvider sets active item and auto-collapses after 3.2s', () async {
+    test('notificationIslandProvider sets active item and auto-collapses after 2.0s', () async {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
@@ -88,8 +88,8 @@ void main() {
       container.read(notificationIslandProvider.notifier).show(item);
       expect(container.read(notificationIslandProvider)?.id, 'island_test_1');
 
-      // Fast-forward 3.2 seconds
-      await Future.delayed(const Duration(milliseconds: 3250));
+      // Fast-forward 2.0 seconds
+      await Future.delayed(const Duration(milliseconds: 2050));
       expect(container.read(notificationIslandProvider), isNull);
     });
 

@@ -9,19 +9,19 @@ part of 'notifications_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// Manages the active notification item for the in-header Dynamic Island morph.
-/// Drives the 3.2s auto-collapse countdown (Timer). Cancel timer in ref.onDispose.
+/// Drives the 2.0s auto-collapse countdown (Timer). Cancel timer in ref.onDispose.
 /// Cleared on user dismissal or shade open.
 
 @ProviderFor(NotificationIsland)
 final notificationIslandProvider = NotificationIslandProvider._();
 
 /// Manages the active notification item for the in-header Dynamic Island morph.
-/// Drives the 3.2s auto-collapse countdown (Timer). Cancel timer in ref.onDispose.
+/// Drives the 2.0s auto-collapse countdown (Timer). Cancel timer in ref.onDispose.
 /// Cleared on user dismissal or shade open.
 final class NotificationIslandProvider
     extends $NotifierProvider<NotificationIsland, FtNotificationItem?> {
   /// Manages the active notification item for the in-header Dynamic Island morph.
-  /// Drives the 3.2s auto-collapse countdown (Timer). Cancel timer in ref.onDispose.
+  /// Drives the 2.0s auto-collapse countdown (Timer). Cancel timer in ref.onDispose.
   /// Cleared on user dismissal or shade open.
   NotificationIslandProvider._()
     : super(
@@ -51,10 +51,10 @@ final class NotificationIslandProvider
 }
 
 String _$notificationIslandHash() =>
-    r'685a711ec54e3048ff87fdf03f1d9e3e2acd86d8';
+    r'124b2d74886489b544faaa5e0de3dafa1597ceb2';
 
 /// Manages the active notification item for the in-header Dynamic Island morph.
-/// Drives the 3.2s auto-collapse countdown (Timer). Cancel timer in ref.onDispose.
+/// Drives the 2.0s auto-collapse countdown (Timer). Cancel timer in ref.onDispose.
 /// Cleared on user dismissal or shade open.
 
 abstract class _$NotificationIsland extends $Notifier<FtNotificationItem?> {

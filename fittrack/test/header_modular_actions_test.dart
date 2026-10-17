@@ -57,8 +57,8 @@ void main() {
       expect(bellFinder, findsOneWidget);
 
       final bellSize = tester.getSize(bellFinder);
-      expect(bellSize.width, greaterThanOrEqualTo(48.0));
-      expect(bellSize.height, greaterThanOrEqualTo(48.0));
+      expect(bellSize.width, equals(40.0));
+      expect(bellSize.height, equals(40.0));
 
       // Visual GlassSurface is 40x40
       final glassFinder = find.descendant(
@@ -158,8 +158,8 @@ void main() {
       expect(avatarFinder, findsOneWidget);
 
       final avatarSize = tester.getSize(avatarFinder);
-      expect(avatarSize.width, greaterThanOrEqualTo(48.0));
-      expect(avatarSize.height, greaterThanOrEqualTo(48.0));
+      expect(avatarSize.width, equals(36.0));
+      expect(avatarSize.height, equals(36.0));
 
       expect(find.bySemanticsLabel('Profile settings'), findsOneWidget);
     });
@@ -431,6 +431,107 @@ void main() {
       expect(find.text('FitTrack'), findsOneWidget);
       expect(find.byType(FtHeaderAvatar), findsOneWidget);
       expect(find.byIcon(Icons.notifications_outlined), findsOneWidget);
+    });
+
+    testWidgets('DashboardHeader and FtHeaderActions both have exact 8.0dp spacing between bell and avatar',
+        (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Column(
+                children: [
+                  DashboardHeader(),
+                  FtHeaderActions(),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 1. In FtHeaderActions:
+      final bellInActions = find.descendant(
+        of: find.byType(FtHeaderActions),
+        matching: find.byType(FtNotificationBell),
+      );
+      final avatarInActions = find.descendant(
+        of: find.byType(FtHeaderActions),
+        matching: find.byType(FtHeaderAvatar),
+      );
+      final bellRectActions = tester.getRect(bellInActions);
+      final avatarRectActions = tester.getRect(avatarInActions);
+
+      final gapInActions = avatarRectActions.left - bellRectActions.right;
+      expect(gapInActions, equals(8.0));
+
+      // 2. In DashboardHeader:
+      final avatarInDash = find.descendant(
+        of: find.byType(DashboardHeader),
+        matching: find.byType(FtHeaderAvatar),
+      );
+      final avatarRectDash = tester.getRect(avatarInDash);
+      final bellFinderDash = find.descendant(
+        of: find.byType(DashboardHeader),
+        matching: find.byIcon(Icons.notifications_outlined),
+      );
+      final bellRectDash = tester.getRect(bellFinderDash);
+
+      // Avatar is 36x36 at right: 0. Bell is 40x40 at right: 44.
+      // Visual distance between bell circle right edge and avatar circle left edge is 44 - 36 = 8.0dp
+      final gapInDash = avatarRectDash.left - (bellRectDash.center.dx + 20.0);
+      expect(gapInDash, equals(8.0));
+    });
+
+    testWidgets('DashboardHeader dynamic island displays dismiss button and dismisses on tap without opening shade',
+        (tester) async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: SizedBox(
+                  width: 393,
+                  child: DashboardHeader(),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Trigger a dynamic notification island
+      container.read(notificationIslandProvider.notifier).show(
+            FtNotificationItem(
+              id: 'test_dismiss_tap',
+              type: FtNotificationType.hydration,
+              title: 'Hydration Target',
+              body: 'Drink 250ml water',
+              timestamp: DateTime.now(),
+            ),
+          );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Dismiss button is visible
+      final dismissFinder = find.byIcon(Icons.close_rounded);
+      expect(dismissFinder, findsOneWidget);
+
+      // Tap dismiss button
+      await tester.tap(dismissFinder);
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // Island collapsed immediately
+      expect(container.read(notificationIslandProvider), isNull);
+      // Shade did NOT open
+      expect(container.read(notificationShadeProvider).isOpen, isFalse);
     });
   });
 }
