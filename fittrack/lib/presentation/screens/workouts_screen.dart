@@ -6,7 +6,7 @@ import '../providers/schedules_provider.dart';
 import '../theme/ft_glass.dart';
 import '../widgets/ft_background_painter.dart';
 import '../widgets/glass_surface.dart';
-import '../widgets/header/ft_header_actions.dart';
+import '../widgets/header/header.dart';
 import 'dashboard/widgets/ft_pressable.dart';
 
 /// Completely redesigned FitTrack Workout Library screen adhering strictly to
@@ -796,48 +796,38 @@ class _WorkoutsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 12.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
+    return FtDynamicHeader(
+      leftChild: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Left: Screen Title & Subtitle
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Workouts',
-                  style: TextStyle(
-                    fontFamily: FtText.fontFamily,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.55,
-                    color: context.ftInk,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Explore splits, routines & programs',
-                  style: TextStyle(
-                    fontFamily: FtText.fontFamily,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: context.ftMuted,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+          Text(
+            'Workouts',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontFamily: FtText.fontFamily,
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.55,
+              color: context.ftInk,
             ),
           ),
-          const SizedBox(width: 8),
-
-          // Right: Standard Header Actions (Bell + Avatar)
-          const FtHeaderActions(),
+          const SizedBox(height: 2),
+          Text(
+            'Explore splits, routines & programs',
+            style: TextStyle(
+              fontFamily: FtText.fontFamily,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: context.ftMuted,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
+      trailing: const FtHeaderAvatar(),
     );
   }
 }

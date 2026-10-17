@@ -6,7 +6,7 @@ import '../providers/schedules_provider.dart';
 import '../theme/ft_glass.dart';
 import '../widgets/ft_background_painter.dart';
 import '../widgets/glass_surface.dart';
-import '../widgets/header/ft_header_actions.dart';
+import '../widgets/header/header.dart';
 import 'dashboard/widgets/ft_pressable.dart';
 
 /// Completely redesigned FitTrack Workout Library Search Results screen adhering
@@ -608,72 +608,62 @@ class _SearchHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 12.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
+    return FtDynamicHeader(
+      leftChild: Row(
         children: [
-          // Left: Back button + Title & Subtitle
+          FtPressable(
+            onTap: onBackTap,
+            pressedScale: 0.90,
+            child: GlassSurface(
+              tier: FtGlassTier.glass2,
+              radius: 18,
+              width: 40,
+              height: 40,
+              shadow: false,
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.arrow_back_rounded,
+                size: 20,
+                color: context.ftInk,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
           Expanded(
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                FtPressable(
-                  onTap: onBackTap,
-                  pressedScale: 0.90,
-                  child: GlassSurface(
-                    tier: FtGlassTier.glass2,
-                    radius: 18,
-                    width: 40,
-                    height: 40,
-                    shadow: false,
-                    alignment: Alignment.center,
-                    child: Icon(
-                      Icons.arrow_back_rounded,
-                      size: 20,
-                      color: context.ftInk,
-                    ),
+                Text(
+                  'Search Workouts',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: FtText.fontFamily,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.4,
+                    color: context.ftInk,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Search Workouts',
-                        style: TextStyle(
-                          fontFamily: FtText.fontFamily,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.4,
-                          color: context.ftInk,
-                        ),
-                      ),
-                      const SizedBox(height: 1),
-                      Text(
-                        'Explore splits, routines & programs',
-                        style: TextStyle(
-                          fontFamily: FtText.fontFamily,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: context.ftMuted,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                const SizedBox(height: 1),
+                Text(
+                  'Explore splits, routines & programs',
+                  style: TextStyle(
+                    fontFamily: FtText.fontFamily,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: context.ftMuted,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
-
-          // Right: Standard Header Actions (Bell + Avatar)
-          const FtHeaderActions(),
         ],
       ),
+      trailing: const FtHeaderAvatar(),
     );
   }
 }
