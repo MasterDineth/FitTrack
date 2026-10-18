@@ -49,7 +49,7 @@ final class NotificationSettingsNotifierProvider
 }
 
 String _$notificationSettingsNotifierHash() =>
-    r'5ec6fb2f6d74a287add8604e40fa59f4b8e7467b';
+    r'629d242e9a8c7410f6f47dd2ef89bd98e753d7d3';
 
 /// Riverpod notifier managing [NotificationSettingsState] lifecycle and persistence.
 

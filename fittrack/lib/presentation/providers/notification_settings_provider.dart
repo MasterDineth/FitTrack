@@ -14,21 +14,45 @@ abstract class NotificationSettingsState with _$NotificationSettingsState {
     // Section 1: System Notifications (Master)
     @Default(true) bool systemNotifications,
 
-    // Section 2: Live Activities
+    // Section 2: Live Activities & In-App Dynamic Island
     @Default(true) bool liveWorkoutStatus,
     @Default(true) bool showScheduleProgress,
     @Default(true) bool showSetProgress,
     @Default(true) bool showRestTimerControls,
+    @Default(true) bool showLockScreenDetails,
 
-    // Section 3: Standard Notifications
+    // In-app Dynamic Island Banners
+    @Default(true) bool inAppBanners,
+    @Default(2) int bannerDurationSeconds, // 1s, 2s, 3s
+    @Default(true) bool keepLiveWorkoutPill,
+
+    // Section 3: Standard & Device Notifications
     @Default(true) bool routineWorkoutReminders,
+    @Default(['Mon', 'Wed', 'Fri']) List<String> reminderDays,
+    @Default('18:30') String reminderTime,
+    @Default(true) bool skipIfTrainedToday,
+
     @Default(true) bool hydrationReminders,
-    @Default('Every 2 hrs') String hydrationInterval,
-    @Default(true) bool scheduleStatusAlerts,
+    @Default('2 hrs') String hydrationInterval,
+
+    @Default(true) bool summariesEnabled,
     @Default(true) bool workoutScheduleCompletion,
+    @Default(true) bool weeklyRecap,
+
+    @Default(true) bool achievementsEnabled,
+    @Default(true) bool prAchievements,
+    @Default(false) bool streakMilestones,
+
+    @Default(true) bool scheduleStatusAlerts,
     @Default(true) bool historyRecordedSaved,
 
-    // Section 4: Haptic Feedback
+    // Section 4: Quiet Hours
+    @Default(true) bool quietHoursEnabled,
+    @Default('22:00') String quietHoursFrom,
+    @Default('06:30') String quietHoursTo,
+    @Default(true) bool quietHoursShowLive,
+
+    // Section 5: Haptic Feedback
     @Default(true) bool hapticsEnabled,
     @Default(true) bool hapticAppNav,
     @Default(true) bool hapticWorkoutStatus,
@@ -36,7 +60,7 @@ abstract class NotificationSettingsState with _$NotificationSettingsState {
     @Default(true) bool hapticWorkoutCompletion,
     @Default(true) bool hapticTimerCountdowns,
 
-    // Section 5: Audio Notifications
+    // Section 6: Audio Notifications
     @Default(true) bool audioEnabled,
     @Default(true) bool audioScheduleStatus,
     @Default(true) bool audioWorkoutStartFinish,
@@ -63,9 +87,9 @@ class NotificationSettingsNotifier extends _$NotificationSettingsNotifier {
     try {
       final prefs = ref.watch(sharedPreferencesProvider);
 
-      String rawInterval = prefs.getString('${_keyPrefix}hydrationInterval') ?? 'Every 2 hrs';
-      if (!rawInterval.startsWith('Every ') && rawInterval.endsWith('hrs')) {
-        rawInterval = 'Every $rawInterval';
+      String rawInterval = prefs.getString('${_keyPrefix}hydrationInterval') ?? '2 hrs';
+      if (rawInterval.startsWith('Every ')) {
+        rawInterval = rawInterval.replaceFirst('Every ', '');
       }
 
       return NotificationSettingsState(
@@ -74,12 +98,28 @@ class NotificationSettingsNotifier extends _$NotificationSettingsNotifier {
         showScheduleProgress: prefs.getBool('${_keyPrefix}showScheduleProgress') ?? true,
         showSetProgress: prefs.getBool('${_keyPrefix}showSetProgress') ?? true,
         showRestTimerControls: prefs.getBool('${_keyPrefix}showRestTimerControls') ?? true,
+        showLockScreenDetails: prefs.getBool('${_keyPrefix}showLockScreenDetails') ?? true,
+        inAppBanners: prefs.getBool('${_keyPrefix}inAppBanners') ?? true,
+        bannerDurationSeconds: prefs.getInt('${_keyPrefix}bannerDurationSeconds') ?? 2,
+        keepLiveWorkoutPill: prefs.getBool('${_keyPrefix}keepLiveWorkoutPill') ?? true,
         routineWorkoutReminders: prefs.getBool('${_keyPrefix}routineWorkoutReminders') ?? true,
+        reminderDays: prefs.getStringList('${_keyPrefix}reminderDays') ?? const ['Mon', 'Wed', 'Fri'],
+        reminderTime: prefs.getString('${_keyPrefix}reminderTime') ?? '18:30',
+        skipIfTrainedToday: prefs.getBool('${_keyPrefix}skipIfTrainedToday') ?? true,
         hydrationReminders: prefs.getBool('${_keyPrefix}hydrationReminders') ?? true,
         hydrationInterval: rawInterval,
-        scheduleStatusAlerts: prefs.getBool('${_keyPrefix}scheduleStatusAlerts') ?? true,
+        summariesEnabled: prefs.getBool('${_keyPrefix}summariesEnabled') ?? true,
         workoutScheduleCompletion: prefs.getBool('${_keyPrefix}workoutScheduleCompletion') ?? true,
+        weeklyRecap: prefs.getBool('${_keyPrefix}weeklyRecap') ?? true,
+        achievementsEnabled: prefs.getBool('${_keyPrefix}achievementsEnabled') ?? true,
+        prAchievements: prefs.getBool('${_keyPrefix}prAchievements') ?? true,
+        streakMilestones: prefs.getBool('${_keyPrefix}streakMilestones') ?? false,
+        scheduleStatusAlerts: prefs.getBool('${_keyPrefix}scheduleStatusAlerts') ?? true,
         historyRecordedSaved: prefs.getBool('${_keyPrefix}historyRecordedSaved') ?? true,
+        quietHoursEnabled: prefs.getBool('${_keyPrefix}quietHoursEnabled') ?? true,
+        quietHoursFrom: prefs.getString('${_keyPrefix}quietHoursFrom') ?? '22:00',
+        quietHoursTo: prefs.getString('${_keyPrefix}quietHoursTo') ?? '06:30',
+        quietHoursShowLive: prefs.getBool('${_keyPrefix}quietHoursShowLive') ?? true,
         hapticsEnabled: prefs.getBool('${_keyPrefix}hapticsEnabled') ?? true,
         hapticAppNav: prefs.getBool('${_keyPrefix}hapticAppNav') ?? true,
         hapticWorkoutStatus: prefs.getBool('${_keyPrefix}hapticWorkoutStatus') ?? true,
@@ -122,9 +162,50 @@ class NotificationSettingsNotifier extends _$NotificationSettingsNotifier {
     await _prefs?.setBool('${_keyPrefix}showRestTimerControls', value);
   }
 
+  Future<void> toggleShowLockScreenDetails(bool value) async {
+    state = state.copyWith(showLockScreenDetails: value);
+    await _prefs?.setBool('${_keyPrefix}showLockScreenDetails', value);
+  }
+
+  Future<void> toggleInAppBanners(bool value) async {
+    state = state.copyWith(inAppBanners: value);
+    await _prefs?.setBool('${_keyPrefix}inAppBanners', value);
+  }
+
+  Future<void> setBannerDurationSeconds(int seconds) async {
+    state = state.copyWith(bannerDurationSeconds: seconds);
+    await _prefs?.setInt('${_keyPrefix}bannerDurationSeconds', seconds);
+  }
+
+  Future<void> toggleKeepLiveWorkoutPill(bool value) async {
+    state = state.copyWith(keepLiveWorkoutPill: value);
+    await _prefs?.setBool('${_keyPrefix}keepLiveWorkoutPill', value);
+  }
+
   Future<void> toggleRoutineWorkoutReminders(bool value) async {
     state = state.copyWith(routineWorkoutReminders: value);
     await _prefs?.setBool('${_keyPrefix}routineWorkoutReminders', value);
+  }
+
+  Future<void> toggleReminderDay(String day) async {
+    final days = List<String>.from(state.reminderDays);
+    if (days.contains(day)) {
+      days.remove(day);
+    } else {
+      days.add(day);
+    }
+    state = state.copyWith(reminderDays: days);
+    await _prefs?.setStringList('${_keyPrefix}reminderDays', days);
+  }
+
+  Future<void> setReminderTime(String time) async {
+    state = state.copyWith(reminderTime: time);
+    await _prefs?.setString('${_keyPrefix}reminderTime', time);
+  }
+
+  Future<void> toggleSkipIfTrainedToday(bool value) async {
+    state = state.copyWith(skipIfTrainedToday: value);
+    await _prefs?.setBool('${_keyPrefix}skipIfTrainedToday', value);
   }
 
   Future<void> toggleHydrationReminders(bool value) async {
@@ -137,9 +218,9 @@ class NotificationSettingsNotifier extends _$NotificationSettingsNotifier {
     await _prefs?.setString('${_keyPrefix}hydrationInterval', interval);
   }
 
-  Future<void> toggleScheduleStatusAlerts(bool value) async {
-    state = state.copyWith(scheduleStatusAlerts: value);
-    await _prefs?.setBool('${_keyPrefix}scheduleStatusAlerts', value);
+  Future<void> toggleSummariesEnabled(bool value) async {
+    state = state.copyWith(summariesEnabled: value);
+    await _prefs?.setBool('${_keyPrefix}summariesEnabled', value);
   }
 
   Future<void> toggleWorkoutScheduleCompletion(bool value) async {
@@ -147,9 +228,50 @@ class NotificationSettingsNotifier extends _$NotificationSettingsNotifier {
     await _prefs?.setBool('${_keyPrefix}workoutScheduleCompletion', value);
   }
 
+  Future<void> toggleWeeklyRecap(bool value) async {
+    state = state.copyWith(weeklyRecap: value);
+    await _prefs?.setBool('${_keyPrefix}weeklyRecap', value);
+  }
+
+  Future<void> toggleAchievementsEnabled(bool value) async {
+    state = state.copyWith(achievementsEnabled: value);
+    await _prefs?.setBool('${_keyPrefix}achievementsEnabled', value);
+  }
+
+  Future<void> togglePrAchievements(bool value) async {
+    state = state.copyWith(prAchievements: value);
+    await _prefs?.setBool('${_keyPrefix}prAchievements', value);
+  }
+
+  Future<void> toggleStreakMilestones(bool value) async {
+    state = state.copyWith(streakMilestones: value);
+    await _prefs?.setBool('${_keyPrefix}streakMilestones', value);
+  }
+
+  Future<void> toggleScheduleStatusAlerts(bool value) async {
+    state = state.copyWith(scheduleStatusAlerts: value);
+    await _prefs?.setBool('${_keyPrefix}scheduleStatusAlerts', value);
+  }
+
   Future<void> toggleHistoryRecordedSaved(bool value) async {
     state = state.copyWith(historyRecordedSaved: value);
     await _prefs?.setBool('${_keyPrefix}historyRecordedSaved', value);
+  }
+
+  Future<void> toggleQuietHoursEnabled(bool value) async {
+    state = state.copyWith(quietHoursEnabled: value);
+    await _prefs?.setBool('${_keyPrefix}quietHoursEnabled', value);
+  }
+
+  Future<void> setQuietHoursRange(String from, String to) async {
+    state = state.copyWith(quietHoursFrom: from, quietHoursTo: to);
+    await _prefs?.setString('${_keyPrefix}quietHoursFrom', from);
+    await _prefs?.setString('${_keyPrefix}quietHoursTo', to);
+  }
+
+  Future<void> toggleQuietHoursShowLive(bool value) async {
+    state = state.copyWith(quietHoursShowLive: value);
+    await _prefs?.setBool('${_keyPrefix}quietHoursShowLive', value);
   }
 
   Future<void> toggleHapticsEnabled(bool value) async {
