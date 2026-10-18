@@ -139,52 +139,57 @@ class AccountPersonalSection extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-                decoration: BoxDecoration(
-                  color: isDark
+              TextField(
+                controller: nameController,
+                onChanged: onNameChanged,
+                style: TextStyle(
+                  fontFamily: FtText.fontFamily,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: ink,
+                ),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: isDark
                       ? Colors.white.withValues(alpha: 0.05)
                       : Colors.white.withValues(alpha: 0.70),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.12)
-                        : const Color(0xFFE2E8F0),
+                  hintText: 'Enter your name',
+                  hintStyle: TextStyle(
+                    fontFamily: FtText.fontFamily,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: muted.withValues(alpha: 0.5),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: nameController,
-                        onChanged: onNameChanged,
-                        style: TextStyle(
-                          fontFamily: FtText.fontFamily,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: ink,
-                        ),
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: 'Enter your name',
-                          hintStyle: TextStyle(
-                            fontFamily: FtText.fontFamily,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: muted.withValues(alpha: 0.5),
-                          ),
-                          isDense: true,
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
+                  suffixIcon: Icon(
+                    Icons.badge_rounded,
+                    size: 19,
+                    color: muted.withValues(alpha: 0.6),
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.12)
+                          : const Color(0xFFE2E8F0),
                     ),
-                    Icon(
-                      Icons.badge_rounded,
-                      size: 19,
-                      color: muted.withValues(alpha: 0.6),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.12)
+                          : const Color(0xFFE2E8F0),
                     ),
-                  ],
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: primary,
+                      width: 1.5,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 5),
@@ -267,7 +272,7 @@ class AccountPersonalSection extends StatelessWidget {
                 pressedScale: 0.99,
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   decoration: BoxDecoration(
                     color: isDark
                         ? Colors.white.withValues(alpha: 0.05)

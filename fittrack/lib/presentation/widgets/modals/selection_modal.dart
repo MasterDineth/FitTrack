@@ -1,8 +1,11 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fittrack/presentation/screens/dashboard/widgets/ft_pressable.dart';
+import 'package:fittrack/presentation/theme/ft_glass.dart';
+import 'package:fittrack/presentation/widgets/modals/modal_backdrop_helper.dart';
 
-/// Modern reusable selection modal bottom sheet with frosted-glass backdrop,
-/// selectable option tiles with dynamic accent, and a full-width save button.
+/// Modern reusable selection modal with frosted-glass backdrop,
+/// selectable option tiles with dynamic accent, and a full-width confirm button.
 class SelectionModal extends StatefulWidget {
   final String title;
   final String? subtitle;
@@ -24,12 +27,9 @@ class SelectionModal extends StatefulWidget {
     required List<String> options,
     required String selectedOption,
   }) {
-    return showModalBottomSheet<String>(
+    return showBlurBottomSheet<String>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.45),
-      builder: (context) => SelectionModal(
+      child: SelectionModal(
         title: title,
         subtitle: subtitle,
         options: options,
@@ -57,200 +57,270 @@ class _SelectionModalState extends State<SelectionModal> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    final isDark = context.isDark;
+    final ink = context.ftInk;
+    final muted = context.ftMuted;
+    final primary = context.ftPrimary;
+    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
 
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-      child: Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.sizeOf(context).height * 0.75,
-        ),
-        padding: EdgeInsets.fromLTRB(24, 12, 24, bottomPadding + 20),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.12),
-              blurRadius: 30,
-              offset: const Offset(0, -6),
+    final modalFill = isDark
+        ? const Color(0xEB1D1735)
+        : Colors.white.withValues(alpha: 0.90);
+
+    return Container(
+      width: double.infinity,
+      constraints: BoxConstraints(
+        maxWidth: 420,
+        maxHeight: MediaQuery.sizeOf(context).height * 0.82,
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: EdgeInsets.fromLTRB(20, 16, 20, bottomInset + 16),
+      decoration: FtGlassTheme.cardDecoration(
+        context,
+        radius: 32,
+        settings: settings,
+        customShadows: [
+          BoxShadow(
+            color: primary.withValues(alpha: 0.18),
+            blurRadius: 32,
+            offset: const Offset(0, 12),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.50 : 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ).copyWith(color: modalFill),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ── Top Drag Handle ──────────────────────────────────────────
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white24 : Colors.black12,
+              borderRadius: BorderRadius.circular(2),
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Drag Handle
-            Center(
-              child: Container(
-                width: 42,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: colorScheme.outlineVariant,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
+          ),
+          const SizedBox(height: 14),
 
-            // Modal Header Row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.title,
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                      if (widget.subtitle != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          widget.subtitle!,
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontSize: 12,
-                            color: colorScheme.onSurface.withValues(alpha: 0.6),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: Icon(
-                    Icons.close_rounded,
-                    color: colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Scrollable List of Selectable Option Tiles
-            Flexible(
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const BouncingScrollPhysics(),
-                itemCount: widget.options.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 8),
-                itemBuilder: (context, index) {
-                  final option = widget.options[index];
-                  final isSelected = _currentSelection == option;
-
-                  return InkWell(
-                    onTap: () {
-                      setState(() => _currentSelection = option);
-                    },
-                    borderRadius: BorderRadius.circular(14),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? colorScheme.primaryContainer
-                            : colorScheme.surfaceContainerLow,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isSelected
-                              ? colorScheme.primary
-                              : colorScheme.outlineVariant,
-                          width: isSelected ? 1.5 : 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              option,
-                              style: TextStyle(
-                                fontFamily: 'Plus Jakarta Sans',
-                                fontSize: 14,
-                                fontWeight: isSelected
-                                    ? FontWeight.w700
-                                    : FontWeight.w600,
-                                color: isSelected
-                                    ? colorScheme.onPrimaryContainer
-                                    : colorScheme.onSurface,
-                              ),
-                            ),
-                          ),
-                          if (isSelected)
-                            Container(
-                              width: 22,
-                              height: 22,
-                              decoration: BoxDecoration(
-                                color: colorScheme.primary,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.check_rounded,
-                                size: 15,
-                                color: colorScheme.onPrimary,
-                              ),
-                            )
-                          else
-                            Container(
-                              width: 22,
-                              height: 22,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: colorScheme.outlineVariant,
-                                  width: 1.5,
-                                ),
-                              ),
-                            ),
-                        ],
+          // ── Header Row ───────────────────────────────────────────────
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.title,
+                      style: TextStyle(
+                        fontFamily: FtText.fontFamily,
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.3,
+                        color: ink,
                       ),
                     ),
-                  );
-                },
+                    if (widget.subtitle != null) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        widget.subtitle!,
+                        style: TextStyle(
+                          fontFamily: FtText.fontFamily,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: muted,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 18),
+              const SizedBox(width: 8),
+              FtPressable(
+                onTap: () => Navigator.of(context).pop(),
+                pressedScale: 0.90,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white12
+                        : Colors.black.withValues(alpha: 0.05),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: muted,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
 
-            // Full-Width Dynamic Accent Save Button
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colorScheme.primary,
-                  foregroundColor: colorScheme.onPrimary,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+          // ── Scrollable Option Tiles ──────────────────────────────────
+          Flexible(
+            child: ListView.separated(
+              shrinkWrap: true,
+              physics: const BouncingScrollPhysics(),
+              itemCount: widget.options.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 10),
+              itemBuilder: (context, index) {
+                final option = widget.options[index];
+                final isSelected = _currentSelection == option;
+
+                return FtPressable(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _currentSelection = option);
+                  },
+                  pressedScale: 0.985,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? primary.withValues(alpha: isDark ? 0.28 : 0.12)
+                          : (isDark
+                              ? Colors.white.withValues(alpha: 0.06)
+                              : Colors.white.withValues(alpha: 0.70)),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: isSelected
+                            ? primary
+                            : (isDark
+                                ? Colors.white.withValues(alpha: 0.12)
+                                : const Color(0xFFE2E8F0)),
+                        width: isSelected ? 1.5 : 1,
+                      ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: primary
+                                    .withValues(alpha: isDark ? 0.25 : 0.15),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            option,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: FtText.fontFamily,
+                              fontSize: 14.5,
+                              fontWeight: isSelected
+                                  ? FontWeight.w800
+                                  : FontWeight.w600,
+                              color: isSelected
+                                  ? (isDark ? Colors.white : primary)
+                                  : ink,
+                              height: 1.25,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        if (isSelected)
+                          Container(
+                            width: 22,
+                            height: 22,
+                            decoration: BoxDecoration(
+                              color: primary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.check_rounded,
+                              size: 15,
+                              color: Colors.white,
+                            ),
+                          )
+                        else
+                          Container(
+                            width: 22,
+                            height: 22,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isDark
+                                    ? Colors.white30
+                                    : const Color(0xFFCBD5E1),
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          // ── Full-Width Confirm Button ────────────────────────────────
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: FtPressable(
+              onTap: () {
+                HapticFeedback.mediumImpact();
+                _submit();
+              },
+              pressedScale: 0.98,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [primary, primary.withValues(alpha: 0.85)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primary.withValues(alpha: isDark ? 0.40 : 0.28),
+                      blurRadius: 18,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
                 ),
-                child: const Text(
-                  'Confirm Selection',
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
+                alignment: Alignment.center,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.check_circle_rounded,
+                      size: 18,
+                      color: Colors.white,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Confirm Selection',
+                      style: TextStyle(
+                        fontFamily: FtText.fontFamily,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -165,90 +165,102 @@ class AccountContactSection extends StatelessWidget {
               const SizedBox(height: 6),
 
               // Country Code + Phone Input Well
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                decoration: BoxDecoration(
-                  color: isDark
+              // Country Code + Phone Input Field (Full Card)
+              TextField(
+                controller: phoneController,
+                onChanged: onPhoneChanged,
+                keyboardType: TextInputType.phone,
+                style: TextStyle(
+                  fontFamily: FtText.fontFamily,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: ink,
+                ),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: isDark
                       ? Colors.white.withValues(alpha: 0.05)
                       : Colors.white.withValues(alpha: 0.70),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.12)
-                        : const Color(0xFFE2E8F0),
+                  hintText: '77 123 4567',
+                  hintStyle: TextStyle(
+                    fontFamily: FtText.fontFamily,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: muted.withValues(alpha: 0.5),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    // Country Code Pill
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.08)
-                            : Colors.white.withValues(alpha: 0.90),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('🇱🇰', style: TextStyle(fontSize: 14)),
-                          const SizedBox(width: 4),
-                          Text(
-                            '+94',
-                            style: TextStyle(
-                              fontFamily: FtText.fontFamily,
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w800,
-                              color: ink,
-                            ),
+                  prefixIconConstraints:
+                      const BoxConstraints(minWidth: 0, minHeight: 0),
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.only(left: 10, right: 10),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.08)
+                                : Colors.white.withValues(alpha: 0.90),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          const SizedBox(width: 2),
-                          Icon(
-                            Icons.expand_more_rounded,
-                            size: 15,
-                            color: muted,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('🇱🇰', style: TextStyle(fontSize: 14)),
+                              const SizedBox(width: 4),
+                              Text(
+                                '+94',
+                                style: TextStyle(
+                                  fontFamily: FtText.fontFamily,
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: ink,
+                                ),
+                              ),
+                              const SizedBox(width: 2),
+                              Icon(
+                                Icons.expand_more_rounded,
+                                size: 15,
+                                color: muted,
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 1,
-                      height: 20,
-                      color: isDark ? Colors.white24 : Colors.black12,
-                    ),
-                    const SizedBox(width: 8),
-
-                    // Phone textfield
-                    Expanded(
-                      child: TextField(
-                        controller: phoneController,
-                        onChanged: onPhoneChanged,
-                        keyboardType: TextInputType.phone,
-                        style: TextStyle(
-                          fontFamily: FtText.fontFamily,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: ink,
                         ),
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: '77 123 4567',
-                          hintStyle: TextStyle(
-                            fontFamily: FtText.fontFamily,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: muted.withValues(alpha: 0.5),
-                          ),
-                          isDense: true,
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 12),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 1,
+                          height: 20,
+                          color: isDark ? Colors.white24 : Colors.black12,
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.12)
+                          : const Color(0xFFE2E8F0),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.12)
+                          : const Color(0xFFE2E8F0),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: primary,
+                      width: 1.5,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 5),
@@ -291,52 +303,57 @@ class AccountContactSection extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-                decoration: BoxDecoration(
-                  color: isDark
+              TextField(
+                controller: addressController,
+                onChanged: onAddressChanged,
+                style: TextStyle(
+                  fontFamily: FtText.fontFamily,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: ink,
+                ),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: isDark
                       ? Colors.white.withValues(alpha: 0.05)
                       : Colors.white.withValues(alpha: 0.70),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.12)
-                        : const Color(0xFFE2E8F0),
+                  hintText: 'Enter your residential address',
+                  hintStyle: TextStyle(
+                    fontFamily: FtText.fontFamily,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: muted.withValues(alpha: 0.5),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: addressController,
-                        onChanged: onAddressChanged,
-                        style: TextStyle(
-                          fontFamily: FtText.fontFamily,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: ink,
-                        ),
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: 'Enter your residential address',
-                          hintStyle: TextStyle(
-                            fontFamily: FtText.fontFamily,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: muted.withValues(alpha: 0.5),
-                          ),
-                          isDense: true,
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
+                  suffixIcon: Icon(
+                    Icons.location_on_rounded,
+                    size: 20,
+                    color: primary,
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.12)
+                          : const Color(0xFFE2E8F0),
                     ),
-                    Icon(
-                      Icons.location_on_rounded,
-                      size: 20,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.12)
+                          : const Color(0xFFE2E8F0),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
                       color: primary,
+                      width: 1.5,
                     ),
-                  ],
+                  ),
                 ),
               ),
               const SizedBox(height: 5),

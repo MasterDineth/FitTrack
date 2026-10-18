@@ -283,12 +283,12 @@ void main() {
       // After save, action dock hides
       expect(find.text('Save changes'), findsNothing);
 
-      // Verify notification was pushed
+      // Verify field-specific notification was pushed
       final container = ProviderScope.containerOf(
         tester.element(find.byType(ProfileScreen)),
       );
       final feed = container.read(notificationFeedProvider);
-      expect(feed.any((n) => n.title.contains('Profile Updated:')), isTrue);
+      expect(feed.any((n) => n.title.contains('Experience updated:')), isTrue);
     });
   });
 
@@ -393,12 +393,12 @@ void main() {
       // Action dock hides
       expect(find.text('Save changes'), findsNothing);
 
-      // Notification pushed
+      // Field-specific notification pushed
       final container = ProviderScope.containerOf(
         tester.element(find.byType(AccountDetailsScreen)),
       );
       final feed = container.read(notificationFeedProvider);
-      expect(feed.any((n) => n.title.contains('Account Synced:')), isTrue);
+      expect(feed.any((n) => n.title.contains('Full Name updated:')), isTrue);
     });
 
     testWidgets('Tapping Verify mobile number updates status and pushes notification',

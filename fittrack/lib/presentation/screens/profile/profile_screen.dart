@@ -47,21 +47,90 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     });
   }
 
-  Future<void> _saveChanges() async {
+  Future<void> _handleEditPhoto(UserProfile baseProfile) async {
+    final newPath =
+        await ref.read(userProfileProvider.notifier).pickDraftProfileImage();
+    if (newPath == null) return;
+
+    final currentDraft = _draftProfile ?? baseProfile;
+    setState(() {
+      _draftProfile = currentDraft.copyWith(profileImagePath: newPath);
+      _isDirty = true;
+    });
+
+    ref.read(notificationFeedProvider.notifier).pushNotification(
+          type: FtNotificationType.habit,
+          title: 'Profile Photo Selected:',
+          body: 'New image chosen. Tap Save changes to apply.',
+        );
+  }
+
+  Future<void> _saveChanges(UserProfile baseProfile) async {
     if (_draftProfile == null) return;
+    final draft = _draftProfile!;
+
+    final List<String> changeDetails = [];
+    String singleTitle = 'Profile Updated:';
+    String singleBody = 'Your athlete preferences have been saved.';
+
+    if (draft.profileImagePath != baseProfile.profileImagePath) {
+      changeDetails.add('Profile photo updated');
+      singleTitle = 'Profile Photo updated:';
+      singleBody = 'New profile avatar image saved.';
+    }
+    if (draft.weightKg != baseProfile.weightKg) {
+      changeDetails.add('Weight: ${draft.weightKg} kg');
+      singleTitle = 'Weight updated:';
+      singleBody = 'Bodyweight updated to ${draft.weightKg} kg.';
+    }
+    if (draft.heightCm != baseProfile.heightCm) {
+      changeDetails.add('Height: ${draft.heightCm} cm');
+      singleTitle = 'Height updated:';
+      singleBody = 'Height updated to ${draft.heightCm} cm.';
+    }
+    if (draft.experienceLevel != baseProfile.experienceLevel) {
+      changeDetails.add('Experience: ${draft.experienceLevel}');
+      singleTitle = 'Experience updated:';
+      singleBody = 'Lifting tier updated to ${draft.experienceLevel}.';
+    }
+    if (draft.primaryGoal != baseProfile.primaryGoal) {
+      changeDetails.add('Goal: ${draft.primaryGoal}');
+      singleTitle = 'Primary Goal updated:';
+      singleBody = 'Goal set to ${draft.primaryGoal}.';
+    }
+    if (draft.weeklyTargetDays != baseProfile.weeklyTargetDays) {
+      changeDetails.add('Target: ${draft.weeklyTargetDays} days/week');
+      singleTitle = 'Weekly Target updated:';
+      singleBody = 'Target set to ${draft.weeklyTargetDays} days / week.';
+    }
+
+    final String notificationTitle;
+    final String notificationBody;
+
+    if (changeDetails.length == 1) {
+      notificationTitle = singleTitle;
+      notificationBody = singleBody;
+    } else if (changeDetails.isNotEmpty) {
+      notificationTitle = 'Profile Updated:';
+      notificationBody = changeDetails.join(' · ');
+    } else {
+      notificationTitle = 'Profile Updated:';
+      notificationBody = 'Your athlete preferences have been saved.';
+    }
 
     await ref.read(userProfileProvider.notifier).updateField(
-          weightKg: _draftProfile!.weightKg,
-          heightCm: _draftProfile!.heightCm,
-          experienceLevel: _draftProfile!.experienceLevel,
-          primaryGoal: _draftProfile!.primaryGoal,
-          weeklyTargetDays: _draftProfile!.weeklyTargetDays,
+          weightKg: draft.weightKg,
+          heightCm: draft.heightCm,
+          experienceLevel: draft.experienceLevel,
+          primaryGoal: draft.primaryGoal,
+          weeklyTargetDays: draft.weeklyTargetDays,
+          profileImagePath: draft.profileImagePath,
         );
 
     ref.read(notificationFeedProvider.notifier).pushNotification(
           type: FtNotificationType.habit,
-          title: 'Profile Updated:',
-          body: 'Your athlete preferences have been saved.',
+          title: notificationTitle,
+          body: notificationBody,
         );
 
     if (!mounted) return;
@@ -165,11 +234,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               // 2. Athlete Hero Portrait & Badges
                               ProfileHeroSection(
                                 profile: activeProfile,
-                                onEditPhoto: () {
-                                  ref
-                                      .read(userProfileProvider.notifier)
-                                      .updateProfileImage();
-                                },
+                                onEditPhoto: () => _handleEditPhoto(baseProfile),
                               ),
                               const SizedBox(height: 20),
 
@@ -213,7 +278,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     constraints: const BoxConstraints(maxWidth: 393),
                     child: ProfileActionDock(
                       isVisible: _isDirty,
-                      onSave: _saveChanges,
+                      onSave: () => _saveChanges(baseProfile),
                       onDiscard: () async {
                         await _confirmDiscard();
                       },

@@ -342,7 +342,7 @@ class ProfilePersonalInfoSection extends StatelessWidget {
                     Flexible(
                       child: Text(
                         value,
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.end,
                         style: TextStyle(
@@ -350,6 +350,7 @@ class ProfilePersonalInfoSection extends StatelessWidget {
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: ink,
+                          height: 1.25,
                         ),
                       ),
                     ),

@@ -15,13 +15,13 @@ import 'package:fittrack/presentation/theme/ft_glass.dart';
 class AccountHeroCard extends StatelessWidget {
   final UserProfile profile;
   final bool isDirty;
-  final VoidCallback onEditPhoto;
+  final VoidCallback? onNavigateToProfile;
 
   const AccountHeroCard({
     super.key,
     required this.profile,
     required this.isDirty,
-    required this.onEditPhoto,
+    this.onNavigateToProfile,
   });
 
   @override
@@ -45,8 +45,16 @@ class AccountHeroCard extends StatelessWidget {
         isDirty ? const Color(0x25F59E0B) : const Color(0x2010B981);
     final syncLabel = isDirty ? 'Unsaved' : 'Synced';
 
+    void navigateToProfile() {
+      if (onNavigateToProfile != null) {
+        onNavigateToProfile!();
+      } else {
+        context.push('/settings/profile');
+      }
+    }
+
     return FtPressable(
-      onTap: () => context.push('/settings/profile'),
+      onTap: navigateToProfile,
       pressedScale: 0.985,
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -237,29 +245,32 @@ class AccountHeroCard extends StatelessWidget {
               ),
             ),
 
-            // ── Camera Update Icon Button ──────────────────────────────
-            FtPressable(
-              onTap: onEditPhoto,
-              pressedScale: 0.88,
-              child: Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.08)
-                      : Colors.white.withValues(alpha: 0.75),
-                  shape: BoxShape.circle,
-                  border: Border.all(
+            // ── Camera Update Icon Button (Redirects to Profile) ───────
+            Tooltip(
+              message: 'Update profile photo in Profile',
+              child: FtPressable(
+                onTap: navigateToProfile,
+                pressedScale: 0.88,
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
                     color: isDark
-                        ? Colors.white.withValues(alpha: 0.15)
-                        : Colors.white,
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : Colors.white.withValues(alpha: 0.75),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.15)
+                          : Colors.white,
+                    ),
                   ),
-                ),
-                alignment: Alignment.center,
-                child: Icon(
-                  Icons.photo_camera_rounded,
-                  size: 18,
-                  color: primary,
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.photo_camera_rounded,
+                    size: 18,
+                    color: primary,
+                  ),
                 ),
               ),
             ),

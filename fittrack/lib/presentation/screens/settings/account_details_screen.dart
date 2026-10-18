@@ -143,10 +143,54 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
           isPhoneVerified: _isPhoneVerified,
         );
 
+    final List<String> changeDetails = [];
+    String singleTitle = 'Account Updated:';
+    String singleBody = 'Your personal information has been saved.';
+
+    if (name != _initialName) {
+      changeDetails.add('Full Name: $name');
+      singleTitle = 'Full Name updated:';
+      singleBody = 'Name changed to $name.';
+    }
+    if (dob != _initialDob) {
+      changeDetails.add('DOB: $dob');
+      singleTitle = 'Date of Birth updated:';
+      singleBody = 'Birth date changed to $dob.';
+    }
+    if (phone != _initialPhone) {
+      changeDetails.add('Mobile: $phone');
+      singleTitle = 'Mobile Number updated:';
+      singleBody = 'Mobile number changed to +94 $phone.';
+    }
+    if (address != _initialAddress) {
+      changeDetails.add('Address: $address');
+      singleTitle = 'Address updated:';
+      singleBody = 'Address changed to $address.';
+    }
+    if (_isPhoneVerified != _initialPhoneVerified) {
+      changeDetails.add('Security: Phone verified');
+      singleTitle = 'Phone Verification updated:';
+      singleBody = 'Mobile number security status updated.';
+    }
+
+    final String notificationTitle;
+    final String notificationBody;
+
+    if (changeDetails.length == 1) {
+      notificationTitle = singleTitle;
+      notificationBody = singleBody;
+    } else if (changeDetails.isNotEmpty) {
+      notificationTitle = 'Account Updated:';
+      notificationBody = changeDetails.join(', ');
+    } else {
+      notificationTitle = 'Account Updated:';
+      notificationBody = 'Your personal information has been saved.';
+    }
+
     ref.read(notificationFeedProvider.notifier).pushNotification(
           type: FtNotificationType.habit,
-          title: 'Account Synced:',
-          body: 'Your personal information has been saved.',
+          title: notificationTitle,
+          body: notificationBody,
         );
 
     if (!mounted) return;
@@ -252,14 +296,12 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
                               ),
                               const SizedBox(height: 10),
 
-                              // 2. Profile Identity Hero Card (Navigates to Profile on tap)
+                              // 2. Profile Identity Hero Card (Redirects to Profile on tap)
                               AccountHeroCard(
                                 profile: profile,
                                 isDirty: _isDirty,
-                                onEditPhoto: () {
-                                  ref
-                                      .read(userProfileProvider.notifier)
-                                      .updateProfileImage();
+                                onNavigateToProfile: () {
+                                  context.push('/settings/profile');
                                 },
                               ),
                               const SizedBox(height: 18),
