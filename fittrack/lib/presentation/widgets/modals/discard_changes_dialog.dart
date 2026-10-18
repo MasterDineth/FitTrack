@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../theme/ft_glass.dart';
+import '../glass_surface.dart';
 import '../../screens/dashboard/widgets/ft_pressable.dart';
 
 /// Reusable Frosted Glass Discard Confirmation Dialog with blurred backdrop.
@@ -97,23 +98,15 @@ class DiscardChangesDialog extends StatelessWidget {
     return Center(
       child: Material(
         color: Colors.transparent,
-        child: Container(
-          width: 330,
-          margin: const EdgeInsets.symmetric(horizontal: 24),
-          padding: const EdgeInsets.all(24),
-          decoration: FtGlassTheme.cardDecoration(
-            context,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: GlassSurface(
+            tier: FtGlassTier.glass1,
             radius: 28,
-            settings: settings,
-            customShadows: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.12),
-                blurRadius: 32,
-                offset: const Offset(0, 12),
-              ),
-            ],
-          ),
-          child: Column(
+            backdrop: GlassBackdrop.flat,
+            width: 330,
+            padding: const EdgeInsets.all(24),
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               // ── Warning Icon Badge ─────────────────────────────────────
@@ -243,6 +236,7 @@ class DiscardChangesDialog extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

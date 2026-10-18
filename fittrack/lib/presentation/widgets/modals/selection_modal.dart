@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fittrack/presentation/screens/dashboard/widgets/ft_pressable.dart';
 import 'package:fittrack/presentation/theme/ft_glass.dart';
+import 'package:fittrack/presentation/widgets/glass_surface.dart';
 import 'package:fittrack/presentation/widgets/modals/modal_backdrop_helper.dart';
 
 /// Modern reusable selection modal with frosted-glass backdrop,
@@ -62,50 +63,41 @@ class _SelectionModalState extends State<SelectionModal> {
     final muted = context.ftMuted;
     final primary = context.ftPrimary;
     final settings = FtGlassTheme.resolveThemeSettings(context);
+    final enableTransparency = settings?.enableGlassTransparency ?? true;
+    final blurIntensity = settings?.blurIntensity ?? 16.0;
     final bottomInset = MediaQuery.paddingOf(context).bottom;
 
-    final modalFill = isDark
-        ? const Color(0xEB1D1735)
-        : Colors.white.withValues(alpha: 0.90);
+    final double t = enableTransparency
+        ? ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0)
+        : 1.0;
 
-    return Container(
-      width: double.infinity,
-      constraints: BoxConstraints(
-        maxWidth: 420,
-        maxHeight: MediaQuery.sizeOf(context).height * 0.82,
-      ),
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      padding: EdgeInsets.fromLTRB(20, 16, 20, bottomInset + 16),
-      decoration: FtGlassTheme.cardDecoration(
-        context,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: GlassSurface(
+        tier: FtGlassTier.glass1,
         radius: 32,
-        settings: settings,
-        customShadows: [
-          BoxShadow(
-            color: primary.withValues(alpha: 0.18),
-            blurRadius: 32,
-            offset: const Offset(0, 12),
+        backdrop: GlassBackdrop.live,
+        padding: EdgeInsets.fromLTRB(20, 16, 20, bottomInset + 16),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 420,
+            maxHeight: MediaQuery.sizeOf(context).height * 0.82,
           ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.50 : 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ).copyWith(color: modalFill),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // ── Top Drag Handle ──────────────────────────────────────────
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white24 : Colors.black12,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 14),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // ── Top Drag Handle ──────────────────────────────────────────
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: !enableTransparency
+                      ? (isDark ? Colors.white38 : Colors.black26)
+                      : (isDark ? Colors.white24 : Colors.black12),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 14),
 
           // ── Header Row ───────────────────────────────────────────────
           Row(
@@ -188,17 +180,31 @@ class _SelectionModalState extends State<SelectionModal> {
                         horizontal: 16, vertical: 14),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? primary.withValues(alpha: isDark ? 0.28 : 0.12)
-                          : (isDark
-                              ? Colors.white.withValues(alpha: 0.06)
-                              : Colors.white.withValues(alpha: 0.70)),
+                          ? primary.withValues(
+                              alpha: isDark ? (0.20 + 0.12 * t) : (0.10 + 0.08 * t),
+                            )
+                          : (!enableTransparency
+                              ? (isDark
+                                  ? const Color(0xFF241D3B)
+                                  : const Color(0xFFF1F5F9))
+                              : (isDark
+                                  ? Colors.white.withValues(
+                                      alpha: (0.04 + 0.04 * t).clamp(0.03, 0.10),
+                                    )
+                                  : Colors.white.withValues(
+                                      alpha: (0.45 + 0.35 * t).clamp(0.40, 0.85),
+                                    ))),
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(
                         color: isSelected
                             ? primary
-                            : (isDark
-                                ? Colors.white.withValues(alpha: 0.12)
-                                : const Color(0xFFE2E8F0)),
+                            : (!enableTransparency
+                                ? (isDark ? Colors.white24 : const Color(0xFFE2E8F0))
+                                : (isDark
+                                    ? Colors.white.withValues(
+                                        alpha: (0.08 + 0.08 * t).clamp(0.06, 0.18),
+                                      )
+                                    : const Color(0xFFE2E8F0))),
                         width: isSelected ? 1.5 : 1,
                       ),
                       boxShadow: isSelected
@@ -322,6 +328,8 @@ class _SelectionModalState extends State<SelectionModal> {
           ),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 }

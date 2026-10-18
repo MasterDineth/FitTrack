@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../theme/ft_glass.dart';
 import '../../screens/dashboard/widgets/ft_pressable.dart';
+import '../glass_surface.dart';
 import 'modal_backdrop_helper.dart';
 
 /// Custom Frosted Date Roller / Cylinder Picker Modal for Date of Birth.
@@ -204,91 +205,93 @@ class _DobPickerModalState extends State<DobPickerModal> {
     final ink = context.ftInk;
     final muted = context.ftMuted;
     final primary = context.ftPrimary;
-    final settings = FtGlassTheme.resolveThemeSettings(context);
-
     final totalYears = (widget.maxYear - widget.minYear) + 1;
     final maxDays = _getDaysInMonth(_selectedYear, _selectedMonth);
     final bottomInset = MediaQuery.paddingOf(context).bottom;
 
-    final modalFill = isDark
-        ? const Color(0xEB1D1735)
-        : Colors.white.withValues(alpha: 0.88);
+    final settings = FtGlassTheme.resolveThemeSettings(context);
+    final enableTransparency = settings?.enableGlassTransparency ?? true;
+    final blurIntensity = settings?.blurIntensity ?? 16.0;
+    final double t = enableTransparency
+        ? ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0)
+        : 1.0;
 
-    return Container(
-      width: double.infinity,
-      constraints: const BoxConstraints(maxWidth: 420),
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      padding: EdgeInsets.fromLTRB(20, 16, 20, bottomInset + 16),
-      decoration: FtGlassTheme.cardDecoration(
-        context,
+    final vignetteColor = !enableTransparency
+        ? (isDark ? const Color(0xFF241D3B) : const Color(0xFFF8FAFC))
+        : (isDark
+            ? const Color(0xFF161226).withValues(alpha: (0.60 + 0.20 * t).clamp(0.40, 0.90))
+            : Colors.white.withValues(alpha: (0.60 + 0.25 * t).clamp(0.45, 0.90)));
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: GlassSurface(
+        tier: FtGlassTier.glass1,
         radius: 32,
-        settings: settings,
-        customShadows: [
-          BoxShadow(
-            color: primary.withValues(alpha: 0.18),
-            blurRadius: 32,
-            offset: const Offset(0, 12),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.50 : 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ).copyWith(color: modalFill),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // ── Drag Handle ──────────────────────────────────────────────
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white24 : Colors.black12,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          // ── Header Title & Subtitle ──────────────────────────────────
-          Text(
-            'Select Date of Birth',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: FtText.fontFamily,
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.4,
-              color: ink,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Used to calculate personalized fitness metrics & HR zones.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: FtText.fontFamily,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: muted,
-            ),
-          ),
-          const SizedBox(height: 18),
-
-          // ── 3-Column Roller Cylinder Container ───────────────────────
-          Container(
-            height: 200,
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.04)
-                  : Colors.black.withValues(alpha: 0.03),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : Colors.black.withValues(alpha: 0.06),
+        backdrop: GlassBackdrop.live,
+        padding: EdgeInsets.fromLTRB(20, 16, 20, bottomInset + 16),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // ── Drag Handle ──────────────────────────────────────────────
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: !enableTransparency
+                      ? (isDark ? Colors.white38 : Colors.black26)
+                      : (isDark ? Colors.white24 : Colors.black12),
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
+              const SizedBox(height: 14),
+
+              // ── Header Title & Subtitle ──────────────────────────────────
+              Text(
+                'Select Date of Birth',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: FtText.fontFamily,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.4,
+                  color: ink,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Used to calculate personalized fitness metrics & HR zones.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: FtText.fontFamily,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: muted,
+                ),
+              ),
+              const SizedBox(height: 18),
+
+              // ── 3-Column Roller Cylinder Container ───────────────────────
+              Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  color: !enableTransparency
+                      ? (isDark ? const Color(0xFF241D3B) : const Color(0xFFF8FAFC))
+                      : (isDark
+                          ? Colors.white.withValues(
+                              alpha: (0.04 + 0.04 * t).clamp(0.03, 0.10))
+                          : Colors.black.withValues(
+                              alpha: (0.03 + 0.03 * t).clamp(0.02, 0.08))),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: !enableTransparency
+                        ? (isDark ? Colors.white12 : const Color(0xFFE2E8F0))
+                        : (isDark
+                            ? Colors.white.withValues(alpha: 0.08)
+                            : Colors.black.withValues(alpha: 0.06)),
+                  ),
+                ),
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -425,8 +428,8 @@ class _DobPickerModalState extends State<DobPickerModal> {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            modalFill,
-                            modalFill.withValues(alpha: 0.0),
+                            vignetteColor,
+                            vignetteColor.withValues(alpha: 0.0),
                           ],
                         ),
                       ),
@@ -450,8 +453,8 @@ class _DobPickerModalState extends State<DobPickerModal> {
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                           colors: [
-                            modalFill,
-                            modalFill.withValues(alpha: 0.0),
+                            vignetteColor,
+                            vignetteColor.withValues(alpha: 0.0),
                           ],
                         ),
                       ),
@@ -529,6 +532,8 @@ class _DobPickerModalState extends State<DobPickerModal> {
           ),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 }
