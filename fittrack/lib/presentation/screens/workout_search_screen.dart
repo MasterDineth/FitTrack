@@ -1,14 +1,12 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../providers/dashboard_providers.dart';
 import '../providers/schedules_provider.dart';
-import '../providers/user_profile_provider.dart';
 import '../theme/ft_glass.dart';
 import '../widgets/ft_background_painter.dart';
 import '../widgets/glass_surface.dart';
+import '../widgets/header/header.dart';
 import 'dashboard/widgets/ft_pressable.dart';
 
 /// Completely redesigned FitTrack Workout Library Search Results screen adhering
@@ -603,183 +601,69 @@ class _WorkoutSearchScreenState extends ConsumerState<WorkoutSearchScreen> {
 }
 
 // ── Header Widget with Back Button ──────────────────────────────────────────
-class _SearchHeader extends ConsumerWidget {
+class _SearchHeader extends StatelessWidget {
   final VoidCallback onBackTap;
 
   const _SearchHeader({required this.onBackTap});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final unreadCount = ref.watch(unreadNotificationCountProvider);
-    final profileAsync = ref.watch(userProfileProvider);
-    final profile = profileAsync.value;
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 12.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
+  Widget build(BuildContext context) {
+    return FtDynamicHeader(
+      leftChild: Row(
         children: [
-          // Left: Back button + Title & Subtitle
+          FtPressable(
+            onTap: onBackTap,
+            pressedScale: 0.90,
+            child: GlassSurface(
+              tier: FtGlassTier.glass2,
+              radius: 18,
+              width: 40,
+              height: 40,
+              shadow: false,
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.arrow_back_rounded,
+                size: 20,
+                color: context.ftInk,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
           Expanded(
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                FtPressable(
-                  onTap: onBackTap,
-                  pressedScale: 0.90,
-                  child: GlassSurface(
-                    tier: FtGlassTier.glass2,
-                    radius: 18,
-                    width: 40,
-                    height: 40,
-                    shadow: false,
-                    alignment: Alignment.center,
-                    child: Icon(
-                      Icons.arrow_back_rounded,
-                      size: 20,
-                      color: context.ftInk,
-                    ),
+                Text(
+                  'Search Workouts',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: FtText.fontFamily,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.4,
+                    color: context.ftInk,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Search Workouts',
-                        style: TextStyle(
-                          fontFamily: FtText.fontFamily,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.4,
-                          color: context.ftInk,
-                        ),
-                      ),
-                      const SizedBox(height: 1),
-                      Text(
-                        'Explore splits, routines & programs',
-                        style: TextStyle(
-                          fontFamily: FtText.fontFamily,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: context.ftMuted,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                const SizedBox(height: 1),
+                Text(
+                  'Explore splits, routines & programs',
+                  style: TextStyle(
+                    fontFamily: FtText.fontFamily,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: context.ftMuted,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
-
-          // Right: Notification Bell (40x40) + Avatar (36x36)
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FtPressable(
-                onTap: () {},
-                pressedScale: 0.95,
-                child: SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      GlassSurface(
-                        tier: FtGlassTier.glass2,
-                        radius: 20,
-                        width: 40,
-                        height: 40,
-                        shadow: false,
-                        alignment: Alignment.center,
-                        child: Icon(
-                          Icons.notifications_outlined,
-                          size: 20,
-                          color: context.ftInk,
-                        ),
-                      ),
-                      if (unreadCount > 0)
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF43F5E),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              FtPressable(
-                onTap: () => context.push('/settings/profile'),
-                pressedScale: 0.95,
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white,
-                      width: 2,
-                    ),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x1A000000),
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: ClipOval(
-                    child: _buildAvatarImage(
-                      profile?.profileImagePath,
-                      profile?.name,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
-    );
-  }
-
-  Widget _buildAvatarImage(String? path, String? name) {
-    if (path != null && path.isNotEmpty) {
-      return Image.file(
-        File(path),
-        width: 36,
-        height: 36,
-        fit: BoxFit.cover,
-        cacheWidth: 72,
-        errorBuilder: (context, error, stackTrace) => _buildFallbackAvatar(),
-      );
-    }
-    return _buildFallbackAvatar();
-  }
-
-  Widget _buildFallbackAvatar() {
-    return Image.asset(
-      'assets/images/dashboard/sample_avatar.webp',
-      width: 36,
-      height: 36,
-      fit: BoxFit.cover,
-      cacheWidth: 72,
+      trailing: const FtHeaderAvatar(),
     );
   }
 }

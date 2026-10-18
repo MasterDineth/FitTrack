@@ -125,21 +125,28 @@ class DashboardGreeting extends ConsumerWidget {
 }
 
 /// 8px ping dot with 1s loop: scale 1->2, opacity .75->0, cubic-bezier(0,0,.2,1).
-class _PingDot extends StatefulWidget {
+class _PingDot extends ConsumerStatefulWidget {
   const _PingDot();
 
   @override
-  State<_PingDot> createState() => _PingDotState();
+  ConsumerState<_PingDot> createState() => _PingDotState();
 }
 
-class _PingDotState extends State<_PingDot> with SingleTickerProviderStateMixin {
+class _PingDotState extends ConsumerState<_PingDot>
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final AnimationController _controller;
   late final Animation<double> _scaleAnimation;
   late final Animation<double> _opacityAnimation;
+  AppLifecycleState _lifecycleState = AppLifecycleState.resumed;
+
+  bool _isShadeOpen = false;
+  bool _tickerActive = true;
+  bool _disableMotion = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
@@ -152,64 +159,92 @@ class _PingDotState extends State<_PingDot> with SingleTickerProviderStateMixin 
     _opacityAnimation = Tween<double>(begin: 0.75, end: 0.0).animate(
       CurvedAnimation(parent: _controller, curve: curve),
     );
+  }
 
-    _controller.repeat();
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _lifecycleState = state;
+    _syncController();
+  }
+
+  void _syncController() {
+    final isResumed = _lifecycleState == AppLifecycleState.resumed;
+    final canAnimate =
+        isResumed && _tickerActive && !_disableMotion && !_isShadeOpen;
+
+    if (canAnimate) {
+      if (!_controller.isAnimating) {
+        _controller.repeat();
+      }
+    } else {
+      if (_controller.isAnimating) {
+        _controller.stop();
+      }
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final disableMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    final tickerActive = TickerMode.valuesOf(context).enabled && !disableMotion;
-    if (!tickerActive && _controller.isAnimating) {
-      _controller.stop();
-    } else if (tickerActive && !_controller.isAnimating) {
-      _controller.repeat();
-    }
+    _disableMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    _tickerActive = TickerMode.valuesOf(context).enabled;
 
-    return SizedBox(
-      width: 10,
-      height: 10,
-      child: Center(
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Pinging radar ring
-            AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                return Opacity(
-                  opacity: _opacityAnimation.value,
-                  child: Transform.scale(
-                    scale: _scaleAnimation.value,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: FtGlassTheme.teal,
-                        shape: BoxShape.circle,
+    bool isShadeOpen = false;
+    try {
+      isShadeOpen = ref.watch(
+        notificationShadeProvider.select((s) => s.isOpen),
+      );
+    } catch (_) {}
+    _isShadeOpen = isShadeOpen;
+
+    _syncController();
+
+    return RepaintBoundary(
+      child: SizedBox(
+        width: 10,
+        height: 10,
+        child: Center(
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Pinging radar ring
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  return Opacity(
+                    opacity: _opacityAnimation.value,
+                    child: Transform.scale(
+                      scale: _scaleAnimation.value,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: FtGlassTheme.teal,
+                          shape: BoxShape.circle,
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
-
-            // Solid 8px core dot
-            Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: FtGlassTheme.teal,
-                shape: BoxShape.circle,
+                  );
+                },
               ),
-            ),
-          ],
+
+              // Solid 8px core dot
+              Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: FtGlassTheme.teal,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

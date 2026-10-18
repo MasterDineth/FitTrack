@@ -3,12 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/ft_constants.dart';
 import '../../providers/dashboard_providers.dart';
+import '../../providers/notifications_provider.dart';
+import '../../providers/notification_settings_provider.dart';
 import '../../theme/ft_glass.dart';
 import '../../widgets/ft_background_painter.dart';
 import '../../widgets/glass_surface.dart';
 import 'widgets/dashboard_header.dart';
 import 'widgets/dashboard_greeting.dart';
-import 'widgets/notification_shade_overlay.dart';
 import 'widgets/telemetry_stack.dart';
 import 'widgets/featured_workout_card.dart';
 import 'widgets/habits_recovery_section.dart';
@@ -55,7 +56,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
   @override
   Widget build(BuildContext context) {
     final isShadeOpen = ref.watch(
-      dashboardNotificationsProvider.select((s) => s.isShadeOpen),
+      notificationShadeProvider.select((s) => s.isOpen),
     );
 
     final bottomPadding = (MediaQuery.paddingOf(context).bottom > 0)
@@ -78,8 +79,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
         if (isShadeOpen) {
-          HapticFeedback.lightImpact();
-          ref.read(dashboardNotificationsProvider.notifier).closeShade();
+          bool haptics = true;
+          try {
+            haptics = ref.read(notificationSettingsProvider).hapticsEnabled;
+          } catch (_) {}
+          if (haptics) {
+            HapticFeedback.lightImpact();
+          }
+          ref.read(notificationShadeProvider.notifier).close();
         }
       },
       child: Scaffold(
@@ -132,11 +139,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                 ),
               ),
             ),
-
-            // 3. Full-Height Frosted Notification Shade Overlay
-            const Positioned.fill(
-              child: NotificationShadeOverlay(),
-            ),
           ],
         ),
       ),
@@ -178,7 +180,7 @@ class _NotificationTestStrip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(dashboardNotificationsProvider.notifier);
+    final notifier = ref.read(notificationFeedProvider.notifier);
 
     return Padding(
       padding: const EdgeInsets.only(top: 6.0),
@@ -229,8 +231,16 @@ class _NotificationTestStrip extends ConsumerWidget {
                     label: 'Reset',
                     isAccent: true,
                     onTap: () {
-                      HapticFeedback.lightImpact();
-                      notifier.resetDemoItems();
+                      bool haptics = true;
+                      try {
+                        haptics = ref
+                            .read(notificationSettingsProvider)
+                            .hapticsEnabled;
+                      } catch (_) {}
+                      if (haptics) {
+                        HapticFeedback.lightImpact();
+                      }
+                      notifier.resetDemo();
                     },
                   ),
                 ],

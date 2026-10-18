@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/theme_provider.dart';
 import '../theme/ft_glass.dart';
+import 'glass/glass_backdrop.dart';
+
+export 'glass/glass_backdrop.dart';
 
 /// Translucent, high-performance frosted glass surface matching the Stitch design system.
 /// Uses calibrated fills, real-time backdrop blur, 1px borders, subtle drop shadows,
@@ -19,6 +22,7 @@ class GlassSurface extends ConsumerWidget {
   final AlignmentGeometry? alignment;
   final VoidCallback? onTap;
   final bool enableBlur;
+  final GlassBackdrop backdrop;
   final double? customBlurSigma;
 
   const GlassSurface({
@@ -34,6 +38,7 @@ class GlassSurface extends ConsumerWidget {
     this.alignment,
     this.onTap,
     this.enableBlur = true,
+    this.backdrop = GlassBackdrop.auto,
     this.customBlurSigma,
   });
 
@@ -42,9 +47,13 @@ class GlassSurface extends ConsumerWidget {
     bool enableTransparency = true;
     double blurIntensity = 16.0;
     try {
-      final themeSettings = ref.watch(themeNotifierProvider);
-      enableTransparency = themeSettings.enableGlassTransparency;
-      blurIntensity = themeSettings.blurIntensity;
+      final (transparency, intensity) = ref.watch(
+        themeNotifierProvider.select(
+          (s) => (s.enableGlassTransparency, s.blurIntensity),
+        ),
+      );
+      enableTransparency = transparency;
+      blurIntensity = intensity;
     } catch (_) {
       // Smooth fallback in isolated unit/widget tests without ProviderScope
     }
@@ -59,6 +68,22 @@ class GlassSurface extends ConsumerWidget {
       content = Padding(padding: padding!, child: content);
     }
 
+    // Resolve whether this surface creates a real live BackdropFilter.
+    // enableBlur: false forces flat for backward compatibility; enableBlur: true defers to backdrop.
+    final bool isLive;
+    if (!enableTransparency || !enableBlur) {
+      isLive = false;
+    } else {
+      switch (backdrop) {
+        case GlassBackdrop.flat:
+          isLive = false;
+        case GlassBackdrop.live:
+          isLive = true;
+        case GlassBackdrop.auto:
+          isLive = tier == FtGlassTier.glassFloating;
+      }
+    }
+
     // Normalized intensity factor t: 0.0 (4px Subtle) -> 0.42857 (16px Default) -> 1.0 (32px Intense)
     final double t = ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0);
 
@@ -68,7 +93,7 @@ class GlassSurface extends ConsumerWidget {
     // At Intense (32px): heavy milky diffusion up to 36-48px sigma
     final double baseSigma = customBlurSigma ?? spec.blurSigma;
     final double effectiveBlur;
-    if (!enableTransparency || !enableBlur) {
+    if (!enableTransparency || !isLive) {
       effectiveBlur = 0.0;
     } else if (t <= 0.42857) {
       final double progress = t / 0.42857;
@@ -106,8 +131,17 @@ class GlassSurface extends ConsumerWidget {
             alpha: (spec.highlight.a * (0.65 + 0.65 * t)).clamp(0.0, 1.0),
           );
 
-    // Inner surface container with border, fill, and top specular highlight
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color sheenColor = isDark
+        ? const Color(0xFF5F3BDC).withValues(alpha: 0.08 * (0.65 + 0.65 * t))
+        : Colors.white.withValues(alpha: 0.22 * (0.65 + 0.65 * t));
+
+    // Inner surface container with border, fill, directional specular sheen, and top specular highlight
     Widget innerBox = CustomPaint(
+      painter: _SpecularSheenPainter(
+        sheenColor: sheenColor,
+        radius: effectiveRadius,
+      ),
       foregroundPainter: _TopHighlightPainter(
         highlightColor: effectiveHighlight,
         radius: effectiveRadius,
@@ -128,9 +162,9 @@ class GlassSurface extends ConsumerWidget {
       ),
     );
 
-    // Apply BackdropFilter blur inside ClipRRect when enabled
+    // Apply BackdropFilter blur inside ClipRRect when live
     Widget surface;
-    if (effectiveBlur > 0) {
+    if (isLive && effectiveBlur > 0) {
       surface = ClipRRect(
         borderRadius: borderRadius,
         child: BackdropFilter(
@@ -209,3 +243,47 @@ class _TopHighlightPainter extends CustomPainter {
     return oldDelegate.highlightColor != highlightColor || oldDelegate.radius != radius;
   }
 }
+
+/// Paints an inset directional specular gradient sheen from top-left across the glass surface.
+/// This simulates translucent light scattering across frosted acrylic over ambient gradient meshes
+/// without requiring an offscreen GPU blur pass.
+class _SpecularSheenPainter extends CustomPainter {
+  final Color sheenColor;
+  final double radius;
+
+  const _SpecularSheenPainter({
+    required this.sheenColor,
+    required this.radius,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.width <= 0 || size.height <= 0 || sheenColor.a <= 0) return;
+
+    final rrect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(radius),
+    );
+    canvas.clipRRect(rrect);
+
+    final paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          sheenColor,
+          sheenColor.withValues(alpha: (sheenColor.a * 0.35).clamp(0.0, 1.0)),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.40, 0.85],
+      ).createShader(Offset.zero & size);
+
+    canvas.drawRRect(rrect, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _SpecularSheenPainter oldDelegate) {
+    return oldDelegate.sheenColor != sheenColor || oldDelegate.radius != radius;
+  }
+}
+

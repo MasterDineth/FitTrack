@@ -7,6 +7,7 @@ import 'presentation/providers/shared_preferences_provider.dart';
 import 'presentation/providers/theme_provider.dart';
 import 'presentation/router/app_router.dart';
 import 'presentation/theme/app_theme.dart';
+import 'presentation/widgets/notifications/global_notification_shade_host.dart';
 
 import 'core/debug/ft_provider_observer.dart';
 
@@ -64,6 +65,11 @@ class FitTrackApp extends ConsumerWidget {
           darkTheme: buildDarkTheme(themeSettings, darkScheme),
           themeMode: themeSettings.themeMode,
           routerConfig: router,
+          builder: (context, child) {
+            return GlobalNotificationShadeHost(
+              child: child ?? const SizedBox.shrink(),
+            );
+          },
         );
       },
     );

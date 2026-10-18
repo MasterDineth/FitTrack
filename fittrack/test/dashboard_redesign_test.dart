@@ -78,6 +78,7 @@ void main() {
           home: Scaffold(
             body: FrostedGlassBox(
               tier: GlassTier.surface,
+              backdrop: GlassBackdrop.live,
               child: Text('Glass Card'),
             ),
           ),

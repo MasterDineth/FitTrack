@@ -302,25 +302,24 @@ class _TelemetryStackState extends ConsumerState<TelemetryStack> {
     final dragOffset = offset == 0 ? _dragDx : 0.0;
     final rotationAngle = offset == 0 ? (_dragDx / 600.0).clamp(-0.08, 0.08) : 0.0;
 
-    // Inner content rendering:
-    // Offset 0: active card, content always 1.0
-    // Offset 1: smoothly fade in as front card drags away or during tab transition
-    // Offset 2: empty (it only peeks 8px at the bottom edge as a glass layered rim)
+    // Stacked Deck Content Strategy:
+    // Offset 0 (Active Front Card): Always renders active cardWidget.
+    // Offset 1 (Card 1 behind): Rendered ONLY during active horizontal drag proportional
+    //   to drag progress, so it gets revealed as the front card slides away.
+    //   When at rest or during transition, it is SizedBox.shrink() so NO text or icons ever
+    //   bleed through or flash for a brief moment.
+    // Offset 2 (Card 2 behind): Always SizedBox.shrink() (only its bottom 8px rim peeks out).
     final Widget contentWidget;
-    if (offset == 2) {
-      contentWidget = const SizedBox.shrink();
-    } else if (offset == 1) {
-      if (_isTransitioning) {
-        contentWidget = cardWidget;
-      } else {
-        final dragProgress = (_dragDx.abs() / 100.0).clamp(0.0, 1.0);
-        contentWidget = Opacity(
-          opacity: dragProgress,
-          child: cardWidget,
-        );
-      }
-    } else {
+    if (offset == 0) {
       contentWidget = cardWidget;
+    } else if (offset == 1 && _dragDx != 0.0 && !_isTransitioning) {
+      final dragProgress = (_dragDx.abs() / 100.0).clamp(0.0, 1.0);
+      contentWidget = Opacity(
+        opacity: dragProgress,
+        child: cardWidget,
+      );
+    } else {
+      contentWidget = const SizedBox.shrink();
     }
 
     return AnimatedPositioned(
@@ -350,20 +349,31 @@ class _TelemetryStackState extends ConsumerState<TelemetryStack> {
                       ? Colors.white.withValues(alpha: 0.12 * borderAlpha)
                       : Colors.white.withValues(alpha: borderAlpha);
 
-                  return Container(
+                  Widget cardBox = Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(FtGlassTheme.radiusStackCards),
                       boxShadow: shadows,
                     ),
                     child: GlassSurface(
-                      tier: FtGlassTier.glass1,
+                      tier: FtGlassTier.glassFloating,
                       radius: FtGlassTheme.radiusStackCards,
                       borderTint: cardBorder,
                       padding: const EdgeInsets.all(16.0),
                       shadow: false,
+                      backdrop: GlassBackdrop.live,
                       child: contentWidget,
                     ),
                   );
+
+                  // Only non-obstructed bottom rim of background cards is rendered when resting
+                  if (offset > 0 && _dragDx == 0.0 && !_isTransitioning) {
+                    cardBox = ClipRect(
+                      clipper: const _DeckBottomRimClipper(nonObstructedTop: 204.0),
+                      child: cardBox,
+                    );
+                  }
+
+                  return cardBox;
                 },
               ),
             ),
@@ -1280,3 +1290,21 @@ class _WeeklyLoadCard extends ConsumerWidget {
     );
   }
 }
+
+/// Clips covered background cards so only their non-obstructed bottom peeking rims are painted.
+class _DeckBottomRimClipper extends CustomClipper<Rect> {
+  final double nonObstructedTop;
+
+  const _DeckBottomRimClipper({required this.nonObstructedTop});
+
+  @override
+  Rect getClip(Size size) {
+    return Rect.fromLTRB(-30.0, nonObstructedTop, size.width + 30.0, size.height + 30.0);
+  }
+
+  @override
+  bool shouldReclip(covariant _DeckBottomRimClipper oldClipper) {
+    return oldClipper.nonObstructedTop != nonObstructedTop;
+  }
+}
+

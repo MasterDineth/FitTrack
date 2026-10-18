@@ -193,7 +193,7 @@ final class WeeklyMomentumProvider
   }
 }
 
-String _$weeklyMomentumHash() => r'8480408ceed7fe08f8884b544dda773c006cb17b';
+String _$weeklyMomentumHash() => r'0e379542f1723f4e1fe9b2e8efed5f1158c24dc6';
 
 /// Aggregates weekly tonnage load and strain status.
 
@@ -237,51 +237,4 @@ final class WeeklyLoadProvider
   }
 }
 
-String _$weeklyLoadHash() => r'f36aabf237934927e7b08531a6595b8cfe113815';
-
-/// Unread notification count for the header bell badge.
-
-@ProviderFor(unreadNotificationCount)
-final unreadNotificationCountProvider = UnreadNotificationCountProvider._();
-
-/// Unread notification count for the header bell badge.
-
-final class UnreadNotificationCountProvider
-    extends $FunctionalProvider<int, int, int>
-    with $Provider<int> {
-  /// Unread notification count for the header bell badge.
-  UnreadNotificationCountProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'unreadNotificationCountProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$unreadNotificationCountHash();
-
-  @$internal
-  @override
-  $ProviderElement<int> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  int create(Ref ref) {
-    return unreadNotificationCount(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(int value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<int>(value),
-    );
-  }
-}
-
-String _$unreadNotificationCountHash() =>
-    r'37355ec703f2392ebf6610e5bf1b7b808f7a6038';
+String _$weeklyLoadHash() => r'ec9d5a37a38cb2411afc5ff0908534d32f689ee0';
