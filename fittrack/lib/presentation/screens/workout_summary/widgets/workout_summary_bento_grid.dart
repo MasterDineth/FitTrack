@@ -4,8 +4,15 @@ import 'package:intl/intl.dart';
 import '../../../theme/ft_glass.dart';
 import '../../../widgets/glass_surface.dart';
 
-/// 2x2 Bento Grid displaying key session telemetry: Duration, Total Volume,
-/// Total Sets, and Active Energy.
+/// Combined Telemetry Bento Card matching the Profile Stats Bento layout
+/// with 4 quadrants separated by subtle hairline cross dividers.
+///
+/// Features:
+/// - Single unified `GlassSurface` card.
+/// - Top-Left: Duration with Optimal Pace badge.
+/// - Top-Right: Total Volume with trend badge.
+/// - Bottom-Left: Total Sets with Completed status.
+/// - Bottom-Right: Active Energy with Zone 4 badge.
 class WorkoutSummaryBentoGrid extends StatelessWidget {
   const WorkoutSummaryBentoGrid({
     super.key,
@@ -46,6 +53,7 @@ class WorkoutSummaryBentoGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final primary = context.ftPrimary;
     final muted = context.ftMuted;
+    final isDark = context.isDark;
 
     final durationValue = _formatDuration(elapsedSeconds);
     final durationUnit = _durationUnit(elapsedSeconds);
@@ -56,271 +64,326 @@ class WorkoutSummaryBentoGrid extends StatelessWidget {
     final displaySets = completedSetsCount > 0 ? completedSetsCount : 18;
     final displayCalories = calories > 0 ? calories : 380;
 
-    return GridView.count(
-      crossAxisCount: 2,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.25,
-      children: [
-        // ── Duration Tile ───────────────────────────────────────────────────
-        _BentoTile(
-          title: 'DURATION',
-          icon: Icons.timer_outlined,
-          iconColor: const Color(0xFF0D9488), // Teal
-          iconBgColor: const Color(0xFF0D9488).withValues(alpha: 0.15),
-          mainValue: durationValue,
-          unit: durationUnit,
-          badgeChild: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 5,
-                height: 5,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF10B981),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 4),
-              const Text(
-                'Optimal pace',
-                maxLines: 1,
-                style: TextStyle(
-                  fontFamily: FtText.fontFamily,
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF059669),
-                ),
-              ),
-            ],
-          ),
-          badgeBgColor: const Color(0xFF10B981).withValues(alpha: 0.12),
-        ),
-
-        // ── Total Volume Tile ───────────────────────────────────────────────
-        _BentoTile(
-          title: 'VOLUME',
-          icon: Icons.fitness_center_rounded,
-          iconColor: primary,
-          iconBgColor: primary.withValues(alpha: 0.15),
-          mainValue: volumeString,
-          unit: 'kg',
-          badgeChild: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.trending_up_rounded,
-                size: 13,
-                color: primary,
-              ),
-              const SizedBox(width: 3),
-              Text(
-                '+320 kg vs last',
-                maxLines: 1,
-                style: TextStyle(
-                  fontFamily: FtText.fontFamily,
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w700,
-                  color: primary,
-                ),
-              ),
-            ],
-          ),
-          badgeBgColor: primary.withValues(alpha: 0.12),
-        ),
-
-        // ── Total Sets Tile ─────────────────────────────────────────────────
-        _BentoTile(
-          title: 'TOTAL SETS',
-          icon: Icons.layers_outlined,
-          iconColor: primary,
-          iconBgColor: primary.withValues(alpha: 0.15),
-          mainValue: '$displaySets',
-          unit: 'sets',
-          badgeChild: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.done_rounded,
-                size: 13,
-                color: Color(0xFF10B981),
-              ),
-              const SizedBox(width: 3),
-              Text(
-                'Completed',
-                maxLines: 1,
-                style: TextStyle(
-                  fontFamily: FtText.fontFamily,
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w700,
-                  color: muted,
-                ),
-              ),
-            ],
-          ),
-          badgeBgColor: context.isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : Colors.black.withValues(alpha: 0.04),
-        ),
-
-        // ── Active Energy Tile ──────────────────────────────────────────────
-        _BentoTile(
-          title: 'ENERGY',
-          icon: Icons.local_fire_department_rounded,
-          iconColor: const Color(0xFFF59E0B), // Amber
-          iconBgColor: const Color(0xFFF59E0B).withValues(alpha: 0.15),
-          mainValue: '$displayCalories',
-          unit: 'kcal',
-          badgeChild: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: const [
-              Icon(
-                Icons.favorite_rounded,
-                size: 12,
-                color: Color(0xFFD97706),
-              ),
-              SizedBox(width: 3),
-              Text(
-                'Zone 4',
-                maxLines: 1,
-                style: TextStyle(
-                  fontFamily: FtText.fontFamily,
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFFB45309),
-                ),
-              ),
-            ],
-          ),
-          badgeBgColor: const Color(0xFFF59E0B).withValues(alpha: 0.12),
-        ),
-      ],
-    );
-  }
-}
-
-class _BentoTile extends StatelessWidget {
-  const _BentoTile({
-    required this.title,
-    required this.icon,
-    required this.iconColor,
-    required this.iconBgColor,
-    required this.mainValue,
-    required this.unit,
-    required this.badgeChild,
-    required this.badgeBgColor,
-  });
-
-  final String title;
-  final IconData icon;
-  final Color iconColor;
-  final Color iconBgColor;
-  final String mainValue;
-  final String unit;
-  final Widget badgeChild;
-  final Color badgeBgColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final ink = context.ftInk;
-    final muted = context.ftMuted;
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.10)
+        : const Color(0xFFE2E8F0).withValues(alpha: 0.75);
 
     return GlassSurface(
       tier: FtGlassTier.glass1,
       radius: 24,
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.zero,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Header Row with Title and Circular Icon
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontFamily: FtText.fontFamily,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.6,
-                  color: muted,
+          // ── Row 1: Duration & Volume ────────────────────────────────────────
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Top-Left: Duration
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        right: BorderSide(color: borderColor, width: 1),
+                        bottom: BorderSide(color: borderColor, width: 1),
+                      ),
+                    ),
+                    child: _buildBentoTileContent(
+                      context: context,
+                      title: 'DURATION',
+                      icon: Icons.timer_outlined,
+                      iconColor: const Color(0xFF0D9488), // Teal
+                      iconBgColor: const Color(0xFF0D9488).withValues(alpha: 0.15),
+                      mainValue: durationValue,
+                      unit: durationUnit,
+                      badgeChild: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 5,
+                            height: 5,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF10B981),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Text(
+                            'Optimal pace',
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontFamily: FtText.fontFamily,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF059669),
+                            ),
+                          ),
+                        ],
+                      ),
+                      badgeBgColor: const Color(0xFF10B981).withValues(alpha: 0.12),
+                    ),
+                  ),
                 ),
-              ),
-              Container(
-                width: 30,
-                height: 30,
-                decoration: BoxDecoration(
-                  color: iconBgColor,
-                  shape: BoxShape.circle,
+
+                // Top-Right: Volume
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: borderColor, width: 1),
+                      ),
+                    ),
+                    child: _buildBentoTileContent(
+                      context: context,
+                      title: 'VOLUME',
+                      icon: Icons.fitness_center_rounded,
+                      iconColor: primary,
+                      iconBgColor: primary.withValues(alpha: 0.15),
+                      mainValue: volumeString,
+                      unit: 'kg',
+                      badgeChild: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.trending_up_rounded,
+                            size: 13,
+                            color: primary,
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            '+320 kg vs last',
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontFamily: FtText.fontFamily,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              color: primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      badgeBgColor: primary.withValues(alpha: 0.12),
+                    ),
+                  ),
                 ),
-                child: Icon(
-                  icon,
-                  size: 16,
-                  color: iconColor,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
 
-          // Value and Sub-Badge Stack (Guaranteed Single-Line with FittedBox)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Text(
-                      mainValue,
-                      style: TextStyle(
-                        fontFamily: FtText.fontFamily,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                        color: ink,
+          // ── Row 2: Total Sets & Active Energy ───────────────────────────────
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Bottom-Left: Total Sets
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        right: BorderSide(color: borderColor, width: 1),
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      unit,
-                      style: TextStyle(
-                        fontFamily: FtText.fontFamily,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: muted,
+                    child: _buildBentoTileContent(
+                      context: context,
+                      title: 'TOTAL SETS',
+                      icon: Icons.layers_outlined,
+                      iconColor: primary,
+                      iconBgColor: primary.withValues(alpha: 0.15),
+                      mainValue: '$displaySets',
+                      unit: 'sets',
+                      badgeChild: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.done_rounded,
+                            size: 13,
+                            color: Color(0xFF10B981),
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            'Completed',
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontFamily: FtText.fontFamily,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              color: muted,
+                            ),
+                          ),
+                        ],
                       ),
+                      badgeBgColor: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : Colors.black.withValues(alpha: 0.04),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 5),
-
-              // Sub-Badge Pill
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: badgeBgColor,
-                    borderRadius: BorderRadius.circular(20),
                   ),
-                  child: badgeChild,
                 ),
-              ),
-            ],
+
+                // Bottom-Right: Energy
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 14,
+                    ),
+                    child: _buildBentoTileContent(
+                      context: context,
+                      title: 'ENERGY',
+                      icon: Icons.local_fire_department_rounded,
+                      iconColor: const Color(0xFFF59E0B), // Amber
+                      iconBgColor: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                      mainValue: '$displayCalories',
+                      unit: 'kcal',
+                      badgeChild: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(
+                            Icons.favorite_rounded,
+                            size: 12,
+                            color: Color(0xFFD97706),
+                          ),
+                          SizedBox(width: 3),
+                          Text(
+                            'Zone 4',
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontFamily: FtText.fontFamily,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFB45309),
+                            ),
+                          ),
+                        ],
+                      ),
+                      badgeBgColor: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBentoTileContent({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBgColor,
+    required String mainValue,
+    required String unit,
+    required Widget badgeChild,
+    required Color badgeBgColor,
+  }) {
+    final ink = context.ftInk;
+    final muted = context.ftMuted;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // Header Row with Title and Circular Icon
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: FtText.fontFamily,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.6,
+                color: muted,
+              ),
+            ),
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: iconBgColor,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 16,
+                color: iconColor,
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 10),
+
+        // Value and Sub-Badge Stack (Guaranteed Single-Line with FittedBox)
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    mainValue,
+                    style: TextStyle(
+                      fontFamily: FtText.fontFamily,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                      color: ink,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    unit,
+                    style: TextStyle(
+                      fontFamily: FtText.fontFamily,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: muted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 5),
+
+            // Sub-Badge Pill
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: badgeBgColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: badgeChild,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

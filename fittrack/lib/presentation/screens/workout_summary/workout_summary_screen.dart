@@ -1,9 +1,11 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../providers/active_workout_provider.dart';
+import '../../theme/ft_glass.dart';
 import '../../widgets/ft_background_painter.dart';
 import '../../widgets/modals/leave_without_saving_modal.dart';
 import 'widgets/workout_summary_bento_grid.dart';
@@ -19,13 +21,14 @@ import 'widgets/workout_summary_rpe_card.dart';
 ///
 /// Features:
 /// - Dynamic mesh gradient background (`FtMeshBackground`) adapting to Appearance settings.
-/// - Dynamic in-header notifications island header (`WorkoutSummaryHeader`).
+/// - In-flow scrollable header (`WorkoutSummaryHeader`) matching other screens.
 /// - Cinematic Hero card with routine cover image, date chips, and completion progress.
 /// - 2x2 Telemetry Bento Grid (Duration, Volume, Total Sets, Active Energy).
 /// - Dynamic Muscle Volume Breakdown with segmented linear distribution track.
 /// - 5-Grade Perceived Exertion (RPE 6 - 10) scale with athletic wave bars.
 /// - Lifter reflection journal with live character count.
 /// - Floating sticky bottom dock CTA with smooth save feedback and session persistence.
+/// - Pinned frosted glass status bar protection scrim and theme-adaptive SystemUiOverlayStyle.
 class WorkoutSummaryScreen extends ConsumerStatefulWidget {
   const WorkoutSummaryScreen({super.key});
 
@@ -127,119 +130,168 @@ class _WorkoutSummaryScreenState extends ConsumerState<WorkoutSummaryScreen> {
     final totalVolumeKg = workoutState.completedSets
         .fold(0.0, (sum, s) => sum + s.actualWeightKg * s.actualReps);
 
+    final isDark = context.isDark;
+    final topPadding = MediaQuery.paddingOf(context).top;
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    final isKeyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) return;
-        _handleBackPress();
-      },
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Stack(
-          children: [
-            const Positioned.fill(child: FtMeshBackground()),
-            SafeArea(
-              bottom: false,
-              child: Stack(
-                children: [
-                // ── Scrollable Content Area ─────────────────────────────────
-                Positioned.fill(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: EdgeInsets.fromLTRB(
-                      16,
-                      60, // Clear header space
-                      16,
-                      bottomPadding + 110, // Clear floating CTA dock
+    final overlayStyle = SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+    );
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: overlayStyle,
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (didPop) return;
+          _handleBackPress();
+        },
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Stack(
+            children: [
+              // 1. Dynamic Mesh Background
+              const Positioned.fill(child: FtMeshBackground()),
+
+              // 2. Full-Height Scrollable Content Viewport
+              Positioned.fill(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    topPadding + 8, // Clean initial clearance below status bar
+                    16,
+                    bottomPadding + 110, // Clear floating CTA dock
+                  ),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 440),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // 0. Scrollable Top Header
+                          WorkoutSummaryHeader(
+                            onBackTap: _handleBackPress,
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // 1. Cinematic Hero Card
+                          WorkoutSummaryHeroCard(
+                            schedule: schedule,
+                            completedExercisesCount: completedExercisesCount,
+                            totalExercisesCount: totalExercisesCount,
+                          ),
+
+                          const SizedBox(height: 14),
+
+                          // 2. 2x2 Telemetry Bento Grid
+                          WorkoutSummaryBentoGrid(
+                            elapsedSeconds: workoutState.elapsedSeconds,
+                            totalVolumeKg: totalVolumeKg,
+                            completedSetsCount: workoutState.completedSetCount,
+                            calories: workoutState.estimatedCalories,
+                          ),
+
+                          const SizedBox(height: 14),
+
+                          // 3. Muscle Volume Breakdown Card
+                          WorkoutSummaryMuscleBreakdown(
+                            completedSets: workoutState.completedSets,
+                            entries: workoutState.entries,
+                          ),
+
+                          const SizedBox(height: 14),
+
+                          // 4. Perceived Exertion (RPE)
+                          WorkoutSummaryRpeCard(
+                            selectedRpe: _selectedRpe,
+                            onRpeChanged: (rpe) {
+                              setState(() => _selectedRpe = rpe);
+                            },
+                          ),
+
+                          const SizedBox(height: 14),
+
+                          // 5. Lifter Reflection & Notes
+                          WorkoutSummaryNotesCard(
+                            controller: _notesController,
+                          ),
+
+                          const SizedBox(height: 16),
+                        ],
+                      ),
                     ),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 440),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            const SizedBox(height: 8),
+                  ),
+                ),
+              ),
 
-                            // 1. Cinematic Hero Card
-                            WorkoutSummaryHeroCard(
-                              schedule: schedule,
-                              completedExercisesCount: completedExercisesCount,
-                              totalExercisesCount: totalExercisesCount,
-                            ),
-
-                            const SizedBox(height: 14),
-
-                            // 2. 2x2 Telemetry Bento Grid
-                            WorkoutSummaryBentoGrid(
-                              elapsedSeconds: workoutState.elapsedSeconds,
-                              totalVolumeKg: totalVolumeKg,
-                              completedSetsCount: workoutState.completedSetCount,
-                              calories: workoutState.estimatedCalories,
-                            ),
-
-                            const SizedBox(height: 14),
-
-                            // 3. Muscle Volume Breakdown Card
-                            WorkoutSummaryMuscleBreakdown(
-                              completedSets: workoutState.completedSets,
-                              entries: workoutState.entries,
-                            ),
-
-                            const SizedBox(height: 14),
-
-                            // 4. Perceived Exertion (RPE)
-                            WorkoutSummaryRpeCard(
-                              selectedRpe: _selectedRpe,
-                              onRpeChanged: (rpe) {
-                                setState(() => _selectedRpe = rpe);
-                              },
-                            ),
-
-                            const SizedBox(height: 14),
-
-                            // 5. Lifter Reflection & Notes
-                            WorkoutSummaryNotesCard(
-                              controller: _notesController,
-                            ),
-
-                            const SizedBox(height: 16),
-                          ],
+              // 3. Smooth Gradient Status Bar Blur (Continuous fade from full blur at top to zero at bottom)
+              if (topPadding > 0)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: topPadding,
+                  child: IgnorePointer(
+                    child: ShaderMask(
+                      shaderCallback: (Rect bounds) {
+                        return const LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.black, Colors.transparent],
+                          stops: [0.0, 1.0],
+                        ).createShader(bounds);
+                      },
+                      blendMode: BlendMode.dstIn,
+                      child: ClipRect(
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                          child: Container(
+                            color: isDark
+                                ? Colors.black.withValues(alpha: 0.35)
+                                : Colors.white.withValues(alpha: 0.40),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
 
-                // ── Universal In-Header Dynamic Island Header ───────────────
-                Positioned(
-                  top: 0,
-                  left: 16,
-                  right: 16,
-                  child: WorkoutSummaryHeader(
-                    onBackTap: _handleBackPress,
+              // 4. Sticky Floating Bottom Dock (hidden when typing)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: AnimatedSlide(
+                  offset: isKeyboardOpen ? const Offset(0, 1.4) : Offset.zero,
+                  duration: const Duration(milliseconds: 240),
+                  curve: Curves.easeInOutCubic,
+                  child: AnimatedOpacity(
+                    opacity: isKeyboardOpen ? 0.0 : 1.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: IgnorePointer(
+                      ignoring: isKeyboardOpen,
+                      child: WorkoutSummaryBottomDock(
+                        isSaving: _isSaving,
+                        isSaved: _isSaved,
+                        onCompleteTap: _handleSaveAndComplete,
+                        bottomOffset: bottomPadding,
+                      ),
+                    ),
                   ),
                 ),
-
-                // ── Sticky Floating Bottom Dock ─────────────────────────────
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: WorkoutSummaryBottomDock(
-                    isSaving: _isSaving,
-                    isSaved: _isSaved,
-                    onCompleteTap: _handleSaveAndComplete,
-                    bottomOffset: bottomPadding,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
-}
+

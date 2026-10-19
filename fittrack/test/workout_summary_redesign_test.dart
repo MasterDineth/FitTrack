@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -168,10 +169,10 @@ void main() {
       expect(find.byType(WorkoutSummaryRpeCard), findsOneWidget);
       expect(find.text('Perceived Exertion (RPE)'), findsOneWidget);
       expect(find.text('MODERATE'), findsOneWidget);
-      expect(find.text('BRISK'), findsOneWidget);
+      expect(find.text('NORMAL'), findsOneWidget);
       expect(find.text('HARD'), findsOneWidget);
-      expect(find.text('1 IN TANK'), findsOneWidget);
-      expect(find.text('MAX OUT'), findsOneWidget);
+      expect(find.text('INTENSE'), findsOneWidget);
+      expect(find.text('EXTREME'), findsOneWidget);
 
       // 6. Notes Card
       expect(find.byType(WorkoutSummaryNotesCard), findsOneWidget);
@@ -203,7 +204,7 @@ void main() {
       expect(find.text('RPE 9.0'), findsOneWidget);
       expect(find.text('Intense'), findsOneWidget);
 
-      // Tap RPE 7 (Brisk)
+      // Tap RPE 7 (Normal)
       final rpe7Finder = find.descendant(
         of: find.byType(WorkoutSummaryRpeCard),
         matching: find.text('7'),
@@ -217,9 +218,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('RPE 7.0'), findsOneWidget);
-      expect(find.text('Moderate'), findsOneWidget);
+      expect(find.text('Normal'), findsOneWidget);
 
-      // Tap RPE 10 (Max Out)
+      // Tap RPE 10 (Extreme)
       final rpe10Finder = find.descendant(
         of: find.byType(WorkoutSummaryRpeCard),
         matching: find.text('10'),
@@ -235,5 +236,32 @@ void main() {
       expect(find.text('RPE 10.0'), findsOneWidget);
       expect(find.text('Extreme'), findsOneWidget);
     });
+
+    testWidgets('renders frosted status bar protection scrim when topPadding > 0',
+        (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            activeWorkoutProvider.overrideWith(
+              () => _TestWorkoutNotifier(testState),
+            ),
+          ],
+          child: const MaterialApp(
+            home: MediaQuery(
+              data: MediaQueryData(padding: EdgeInsets.only(top: 44.0)),
+              child: WorkoutSummaryScreen(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Check AnnotatedRegion<SystemUiOverlayStyle> is present
+      expect(find.byType(AnnotatedRegion<SystemUiOverlayStyle>), findsOneWidget);
+
+      // Check BackdropFilter for the frosted status bar scrim is present
+      expect(find.byType(BackdropFilter), findsWidgets);
+    });
   });
 }
+

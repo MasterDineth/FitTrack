@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -103,65 +104,88 @@ class ActiveSetLoggingCard extends StatelessWidget {
                         Wrap(
                           spacing: 6,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: context.isDark
-                                    ? Colors.black.withValues(alpha: 0.65)
-                                    : Colors.white.withValues(alpha: 0.9),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                entry.exercise.movementClassification.name.toUpperCase(),
-                                style: TextStyle(
-                                  fontFamily: FtText.fontFamily,
-                                  fontSize: 9.5,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 0.5,
-                                  color: context.isDark ? Colors.white : context.ftInk,
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.35),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.22),
+                                      width: 1.0,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    entry.exercise.movementClassification.name.toUpperCase(),
+                                    style: const TextStyle(
+                                      fontFamily: FtText.fontFamily,
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.5,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: context.isDark
-                                    ? Colors.black.withValues(alpha: 0.65)
-                                    : Colors.white.withValues(alpha: 0.9),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                entry.exercise.equipment.name.toUpperCase(),
-                                style: TextStyle(
-                                  fontFamily: FtText.fontFamily,
-                                  fontSize: 9.5,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 0.5,
-                                  color: context.isDark ? Colors.white : context.ftInk,
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.35),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.22),
+                                      width: 1.0,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    entry.exercise.equipment.name.toUpperCase(),
+                                    style: const TextStyle(
+                                      fontFamily: FtText.fontFamily,
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.5,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           ],
                         ),
-                        // Tutorial / Guide Info button
+                        // Tutorial / Guide Info button (Frosted Transparent)
                         FtPressable(
                           onTap: () {
                             context.push('/workouts/guide/${entry.exercise.id}');
                           },
                           pressedScale: 0.92,
-                          child: Container(
-                            width: 30,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              color: context.isDark
-                                  ? Colors.black.withValues(alpha: 0.65)
-                                  : Colors.white.withValues(alpha: 0.85),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.info_outline_rounded,
-                              size: 16,
-                              color: context.isDark ? Colors.white : context.ftInk,
+                          child: ClipOval(
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                              child: Container(
+                                width: 30,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.35),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.22),
+                                    width: 1.0,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.info_outline_rounded,
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                           ),
                         ),

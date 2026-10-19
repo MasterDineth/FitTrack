@@ -3,18 +3,15 @@ import 'package:flutter/services.dart';
 
 import '../../../theme/ft_glass.dart';
 import '../../../widgets/glass_surface.dart';
-import '../../../widgets/header/ft_dynamic_header.dart';
-import '../../../widgets/header/ft_header_avatar.dart';
 import '../../dashboard/widgets/ft_pressable.dart';
 
-/// Top header for Workout Summary Screen adhering strictly to
-/// MODULAR_HEADER_AND_NOTIFICATIONS_GUIDE.md and Stitch specifications.
+/// Top header for Workout Summary Screen.
 ///
 /// Features:
-/// - Universal in-header dynamic island notifications morphing with `FtDynamicHeader`.
 /// - 40x40 circular frosted glass back button.
-/// - Prominent title "Workout Summary" and subtitle "Review completed sets, volume & records".
-/// - Integrated share action button and profile avatar.
+/// - Unclipped title "Workout Summary" and subtitle "Review completed sets, volume & records".
+/// - Integrated share action button.
+/// - In-flow scrollable header with no notification bell or profile avatar.
 class WorkoutSummaryHeader extends StatelessWidget {
   const WorkoutSummaryHeader({
     super.key,
@@ -49,10 +46,9 @@ class WorkoutSummaryHeader extends StatelessWidget {
     final ink = context.ftInk;
     final muted = context.ftMuted;
 
-    return FtDynamicHeader(
-      padding: const EdgeInsets.only(top: 10.0, bottom: 4.0),
-      trailing: const FtHeaderAvatar(),
-      leftChild: Row(
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
+      child: Row(
         children: [
           // Circular Glass Back Button
           FtPressable(
@@ -109,8 +105,9 @@ class WorkoutSummaryHeader extends StatelessWidget {
             ),
           ),
 
-          // Share Action Button
           const SizedBox(width: 8),
+
+          // Share Action Button
           FtPressable(
             onTap: onShareTap ?? () => _defaultShare(context),
             pressedScale: 0.90,

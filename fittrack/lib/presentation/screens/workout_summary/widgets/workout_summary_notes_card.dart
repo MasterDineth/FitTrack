@@ -39,7 +39,6 @@ class _WorkoutSummaryNotesCardState extends State<WorkoutSummaryNotesCard> {
     final primary = context.ftPrimary;
     final ink = context.ftInk;
     final muted = context.ftMuted;
-    final isDark = context.isDark;
 
     final charCount = widget.controller.text.length;
 
@@ -77,50 +76,34 @@ class _WorkoutSummaryNotesCardState extends State<WorkoutSummaryNotesCard> {
         GlassSurface(
           tier: FtGlassTier.glass1,
           radius: 24,
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Text Area Container
-              Container(
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.05)
-                      : Colors.white.withValues(alpha: 0.55),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.08)
-                        : Colors.white.withValues(alpha: 0.8),
-                    width: 1,
-                  ),
+              TextField(
+                controller: widget.controller,
+                maxLines: 5,
+                minLines: 4,
+                style: TextStyle(
+                  fontFamily: FtText.fontFamily,
+                  fontSize: 13.5,
+                  height: 1.45,
+                  fontWeight: FontWeight.w500,
+                  color: ink,
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                child: TextField(
-                  controller: widget.controller,
-                  maxLines: 4,
-                  minLines: 3,
-                  style: TextStyle(
+                decoration: InputDecoration(
+                  hintText:
+                      'Felt strong today — smooth bar path on bench press. Increase bench to 105 kg on next cycle...',
+                  hintStyle: TextStyle(
                     fontFamily: FtText.fontFamily,
-                    fontSize: 13.5,
+                    fontSize: 13,
                     height: 1.45,
-                    fontWeight: FontWeight.w500,
-                    color: ink,
+                    fontWeight: FontWeight.w400,
+                    color: muted.withValues(alpha: 0.6),
                   ),
-                  decoration: InputDecoration(
-                    hintText:
-                        'Felt strong today — smooth bar path on bench press. Increase bench to 105 kg on next cycle...',
-                    hintStyle: TextStyle(
-                      fontFamily: FtText.fontFamily,
-                      fontSize: 13,
-                      height: 1.45,
-                      fontWeight: FontWeight.w400,
-                      color: muted.withValues(alpha: 0.6),
-                    ),
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                  ),
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
                 ),
               ),
 
