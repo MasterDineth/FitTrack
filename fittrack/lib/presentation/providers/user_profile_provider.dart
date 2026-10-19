@@ -64,6 +64,7 @@ class UserProfileNotifier extends _$UserProfileNotifier {
     String? dob,
     String? email,
     String? username,
+    String? profileImagePath,
   }) async {
     UserProfile? current = state.hasValue ? state.value : null;
     if (current == null) {
@@ -96,6 +97,7 @@ class UserProfileNotifier extends _$UserProfileNotifier {
       dob: dob ?? current.dob,
       email: email ?? current.email,
       username: username ?? current.username,
+      profileImagePath: profileImagePath ?? current.profileImagePath,
     );
 
     state = AsyncData(updated);
@@ -160,6 +162,28 @@ class UserProfileNotifier extends _$UserProfileNotifier {
     state = AsyncData(updated);
     final userRepo = ref.read(userRepositoryProvider);
     await userRepo.saveUserProfile(updated);
+  }
+
+  /// Picks a gallery image, copies to documents directory, and returns the path
+  /// WITHOUT updating database state immediately, allowing draft preview & staging.
+  Future<String?> pickDraftProfileImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 800,
+      maxHeight: 800,
+      imageQuality: 85,
+    );
+
+    if (pickedFile == null) return null;
+
+    final appDir = await getApplicationDocumentsDirectory();
+    final extension = p.extension(pickedFile.path);
+    final fileName =
+        'profile_avatar_${DateTime.now().millisecondsSinceEpoch}$extension';
+    final savedImage =
+        await File(pickedFile.path).copy(p.join(appDir.path, fileName));
+    return savedImage.path;
   }
 
   /// Compatibility helper for onboarding telemetry setup screen.

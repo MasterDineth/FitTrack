@@ -1,14 +1,25 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../theme/ft_glass.dart';
 
 /// Presents a bottom sheet modal where the backdrop blur and dark scrim fade in smoothly
 /// across the entire screen, while only the bottom sheet card slides up from the bottom.
+/// Strictly follows global glass transparency (on/off) and blur intensity from Appearance settings.
 Future<T?> showBlurBottomSheet<T>({
   required BuildContext context,
   required Widget child,
   bool barrierDismissible = true,
   Duration duration = const Duration(milliseconds: 300),
 }) {
+  final settings = FtGlassTheme.resolveThemeSettings(context);
+  final enableTransparency = settings?.enableGlassTransparency ?? true;
+  final blurIntensity = settings?.blurIntensity ?? 16.0;
+
+  final double t = enableTransparency
+      ? ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0)
+      : 0.0;
+  final double effectiveSigma = enableTransparency ? (3.0 + 17.0 * t) : 0.0;
+
   return showGeneralDialog<T>(
     context: context,
     barrierDismissible: barrierDismissible,
@@ -23,6 +34,12 @@ Future<T?> showBlurBottomSheet<T>({
         reverseCurve: Curves.easeInCubic,
       );
 
+      final scrim = Container(
+        color: Colors.black.withValues(
+          alpha: enableTransparency ? (0.35 + 0.15 * t) : 0.55,
+        ),
+      );
+
       return Stack(
         children: [
           // ── 1. Full-screen backdrop blur & dimmed scrim FADES in/out (no sliding) ──
@@ -32,12 +49,15 @@ Future<T?> showBlurBottomSheet<T>({
               child: GestureDetector(
                 onTap: barrierDismissible ? () => Navigator.of(ctx).pop() : null,
                 behavior: HitTestBehavior.opaque,
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                  child: Container(
-                    color: Colors.black.withValues(alpha: 0.5),
-                  ),
-                ),
+                child: effectiveSigma > 0
+                    ? BackdropFilter(
+                        filter: ImageFilter.blur(
+                          sigmaX: effectiveSigma,
+                          sigmaY: effectiveSigma,
+                        ),
+                        child: scrim,
+                      )
+                    : scrim,
               ),
             ),
           ),
@@ -74,12 +94,22 @@ Future<T?> showBlurBottomSheet<T>({
 
 /// Presents a centered modal popup where the backdrop blur and dark scrim fade in smoothly
 /// across the entire screen, while the modal card smoothly scales and fades in.
+/// Strictly follows global glass transparency (on/off) and blur intensity from Appearance settings.
 Future<T?> showBlurModal<T>({
   required BuildContext context,
   required Widget child,
   bool barrierDismissible = true,
   Duration duration = const Duration(milliseconds: 280),
 }) {
+  final settings = FtGlassTheme.resolveThemeSettings(context);
+  final enableTransparency = settings?.enableGlassTransparency ?? true;
+  final blurIntensity = settings?.blurIntensity ?? 16.0;
+
+  final double t = enableTransparency
+      ? ((blurIntensity - 4.0) / (32.0 - 4.0)).clamp(0.0, 1.0)
+      : 0.0;
+  final double effectiveSigma = enableTransparency ? (3.0 + 17.0 * t) : 0.0;
+
   return showGeneralDialog<T>(
     context: context,
     barrierDismissible: barrierDismissible,
@@ -94,6 +124,12 @@ Future<T?> showBlurModal<T>({
         reverseCurve: Curves.easeInCubic,
       );
 
+      final scrim = Container(
+        color: Colors.black.withValues(
+          alpha: enableTransparency ? (0.40 + 0.15 * t) : 0.60,
+        ),
+      );
+
       return Stack(
         children: [
           // ── 1. Full-screen backdrop blur & dimmed scrim FADES in/out ──
@@ -103,12 +139,15 @@ Future<T?> showBlurModal<T>({
               child: GestureDetector(
                 onTap: barrierDismissible ? () => Navigator.of(ctx).pop() : null,
                 behavior: HitTestBehavior.opaque,
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    color: Colors.black.withValues(alpha: 0.55),
-                  ),
-                ),
+                child: effectiveSigma > 0
+                    ? BackdropFilter(
+                        filter: ImageFilter.blur(
+                          sigmaX: effectiveSigma,
+                          sigmaY: effectiveSigma,
+                        ),
+                        child: scrim,
+                      )
+                    : scrim,
               ),
             ),
           ),
