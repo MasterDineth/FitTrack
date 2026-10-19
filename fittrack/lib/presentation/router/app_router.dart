@@ -166,7 +166,36 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/workouts/summary',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const WorkoutSummaryScreen(),
+        pageBuilder: (context, state) {
+          final disableAnimations = MediaQuery.disableAnimationsOf(context);
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: const WorkoutSummaryScreen(),
+            transitionDuration: disableAnimations
+                ? Duration.zero
+                : const Duration(milliseconds: 380),
+            reverseTransitionDuration: disableAnimations
+                ? Duration.zero
+                : const Duration(milliseconds: 280),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              if (disableAnimations) return child;
+              final curved = CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              );
+              return FadeTransition(
+                opacity: curved,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0.0, 0.06),
+                    end: Offset.zero,
+                  ).animate(curved),
+                  child: child,
+                ),
+              );
+            },
+          );
+        },
       ),
       GoRoute(
         path: '/history/detail/:sessionId',
