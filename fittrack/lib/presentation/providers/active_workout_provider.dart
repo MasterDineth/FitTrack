@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../domain/entities/live_workout_snapshot.dart';
 import '../../domain/entities/schedule.dart';
 import '../../domain/entities/exercise.dart';
 import '../../domain/entities/exercise_catalog.dart';
@@ -103,6 +104,12 @@ class ActiveWorkoutState {
     required this.completedSets,
     this.skippedExerciseIds = const {},
     this.errorMessage,
+    // ── Phase 2 additions ────────────────────────────────────────────────────
+    this.lastSavedSessionId,
+    this.sessionStartedAt,
+    this.pausedAccumulatedSeconds = 0,
+    this.pausedAt,
+    this.restEndsAt,
   });
 
   final WorkoutPhase phase;
@@ -115,6 +122,24 @@ class ActiveWorkoutState {
   final List<CompletedSetEntry> completedSets;
   final Set<String> skippedExerciseIds;
   final String? errorMessage;
+
+  // ── Phase 2 fields ─────────────────────────────────────────────────────────
+
+  /// Session UUID, populated only after the DB write succeeds.
+  final String? lastSavedSessionId;
+
+  /// Wall-clock time the session started (not null while a session is live).
+  final DateTime? sessionStartedAt;
+
+  /// Seconds of paused time already accumulated (excluding the current pause
+  /// segment if currently paused).
+  final int pausedAccumulatedSeconds;
+
+  /// When the current pause segment started (null if not paused).
+  final DateTime? pausedAt;
+
+  /// Absolute time the rest period ends (null when not resting).
+  final DateTime? restEndsAt;
 
   // ── Computed ───────────────────────────────────────────────────────────────
 
@@ -172,6 +197,12 @@ class ActiveWorkoutState {
     List<CompletedSetEntry>? completedSets,
     Set<String>? skippedExerciseIds,
     String? errorMessage,
+    // Phase 2
+    Object? lastSavedSessionId = _sentinel,
+    Object? sessionStartedAt = _sentinel,
+    int? pausedAccumulatedSeconds,
+    Object? pausedAt = _sentinel,
+    Object? restEndsAt = _sentinel,
   }) => ActiveWorkoutState(
     phase: phase ?? this.phase,
     schedule: schedule ?? this.schedule,
@@ -183,8 +214,23 @@ class ActiveWorkoutState {
     completedSets: completedSets ?? this.completedSets,
     skippedExerciseIds: skippedExerciseIds ?? this.skippedExerciseIds,
     errorMessage: errorMessage ?? this.errorMessage,
+    lastSavedSessionId: lastSavedSessionId == _sentinel
+        ? this.lastSavedSessionId
+        : lastSavedSessionId as String?,
+    sessionStartedAt: sessionStartedAt == _sentinel
+        ? this.sessionStartedAt
+        : sessionStartedAt as DateTime?,
+    pausedAccumulatedSeconds:
+        pausedAccumulatedSeconds ?? this.pausedAccumulatedSeconds,
+    pausedAt: pausedAt == _sentinel ? this.pausedAt : pausedAt as DateTime?,
+    restEndsAt:
+        restEndsAt == _sentinel ? this.restEndsAt : restEndsAt as DateTime?,
   );
 }
+
+/// Sentinel used in [ActiveWorkoutState.copyWith] to distinguish null from
+/// "keep existing value" for nullable fields.
+const Object _sentinel = Object();
 
 // ── Notifier ──────────────────────────────────────────────────────────────────
 
@@ -223,6 +269,67 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
 
   Future<void> startWorkout(String scheduleId, {List<ScheduleExercise>? customExercises}) =>
       startSession(scheduleId, customExercises: customExercises);
+
+  /// Restores an ongoing session from a persisted [LiveWorkoutSnapshot]
+  /// after app cold restart.
+  Future<void> restoreFromSnapshot(LiveWorkoutSnapshot snapshot) async {
+    await startSession(snapshot.scheduleId);
+
+    final now = DateTime.now();
+    WorkoutPhase restoredPhase;
+    switch (snapshot.phase) {
+      case 'resting':
+        restoredPhase = WorkoutPhase.resting;
+      case 'paused':
+        restoredPhase = WorkoutPhase.paused;
+      default:
+        restoredPhase = WorkoutPhase.active;
+    }
+
+    DateTime? effectiveRestEndsAt = snapshot.restEndsAt;
+    int remainingRest = 0;
+    if (restoredPhase == WorkoutPhase.resting && effectiveRestEndsAt != null) {
+      if (effectiveRestEndsAt.isBefore(now)) {
+        // Rest period finished while backgrounded -> advance to active
+        restoredPhase = WorkoutPhase.active;
+        effectiveRestEndsAt = null;
+        remainingRest = 0;
+      } else {
+        remainingRest =
+            effectiveRestEndsAt.difference(now).inSeconds.clamp(0, 600);
+      }
+    }
+
+    final targetExerciseIndex = snapshot.finishedExercises.clamp(
+      0,
+      state.entries.isEmpty ? 0 : state.entries.length - 1,
+    );
+    final targetSetIndex = (snapshot.setNumber - 1).clamp(
+      0,
+      state.entries.isEmpty || targetExerciseIndex >= state.entries.length
+          ? 0
+          : (state.entries[targetExerciseIndex].totalSets - 1).clamp(0, 99),
+    );
+
+    state = state.copyWith(
+      phase: restoredPhase,
+      currentExerciseIndex: targetExerciseIndex,
+      currentSetIndex: targetSetIndex,
+      elapsedSeconds: snapshot.elapsedSecondsAt(now),
+      restRemainingSeconds: remainingRest,
+      restEndsAt: effectiveRestEndsAt,
+      sessionStartedAt: snapshot.sessionStartedAt,
+      pausedAccumulatedSeconds: snapshot.pausedAccumulatedSeconds,
+      pausedAt: snapshot.pausedAt,
+    );
+
+    if (restoredPhase == WorkoutPhase.resting) {
+      _startRestTimer();
+    }
+    if (restoredPhase != WorkoutPhase.paused) {
+      _startStopwatch();
+    }
+  }
 
   Future<void> startSession(String scheduleId, {List<ScheduleExercise>? customExercises}) async {
     try {
@@ -292,7 +399,8 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
         ));
       }
 
-      _sessionStartTime = DateTime.now();
+      final startTime = DateTime.now();
+      _sessionStartTime = startTime;
 
       state = ActiveWorkoutState(
         phase: WorkoutPhase.active,
@@ -303,6 +411,8 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
         elapsedSeconds: 0,
         restRemainingSeconds: 0,
         completedSets: const [],
+        sessionStartedAt: startTime,
+        pausedAccumulatedSeconds: 0,
       );
 
       _startStopwatch();
@@ -372,20 +482,26 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
     _stopwatchTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (state.phase == WorkoutPhase.active ||
           state.phase == WorkoutPhase.resting) {
-        state =
-            state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
+        // Derive elapsed from timestamps to avoid drift when backgrounded.
+        final startedAt = state.sessionStartedAt;
+        if (startedAt != null) {
+          final raw = DateTime.now().difference(startedAt).inSeconds;
+          final elapsed =
+              (raw - state.pausedAccumulatedSeconds).clamp(0, 86400);
+          state = state.copyWith(elapsedSeconds: elapsed);
+        } else {
+          state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
+        }
       }
     });
   }
 
   void togglePause() {
     if (state.phase == WorkoutPhase.paused) {
-      state = state.copyWith(phase: WorkoutPhase.active);
-      _startStopwatch();
+      resumeSession();
     } else if (state.phase == WorkoutPhase.active ||
         state.phase == WorkoutPhase.resting) {
-      _cancelTimers();
-      state = state.copyWith(phase: WorkoutPhase.paused);
+      pauseSession();
     }
   }
 
@@ -467,11 +583,14 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
       return;
     }
 
-    // Start rest timer
+    // Start rest timer — compute restEndsAt from absolute time.
+    final restDuration = entry.restDurationSeconds;
+    final restEndsAt = DateTime.now().add(Duration(seconds: restDuration));
     state = state.copyWith(
       phase: WorkoutPhase.resting,
-      restRemainingSeconds: entry.restDurationSeconds,
+      restRemainingSeconds: restDuration,
       completedSets: updatedSets,
+      restEndsAt: restEndsAt,
     );
 
     _startRestTimer();
@@ -484,20 +603,45 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
         _restTimer?.cancel();
         return;
       }
-      final remaining = state.restRemainingSeconds - 1;
-      if (remaining <= 0) {
-        _restTimer?.cancel();
-        _advanceAfterRest();
+      // Derive remaining from restEndsAt to avoid drift.
+      final restEndsAt = state.restEndsAt;
+      if (restEndsAt != null) {
+        final remaining = restEndsAt.difference(DateTime.now()).inSeconds;
+        if (remaining <= 0) {
+          _restTimer?.cancel();
+          _advanceAfterRest();
+        } else {
+          state = state.copyWith(restRemainingSeconds: remaining);
+        }
       } else {
-        state = state.copyWith(restRemainingSeconds: remaining);
+        final remaining = state.restRemainingSeconds - 1;
+        if (remaining <= 0) {
+          _restTimer?.cancel();
+          _advanceAfterRest();
+        } else {
+          state = state.copyWith(restRemainingSeconds: remaining);
+        }
       }
     });
   }
 
   void adjustRestTime(int deltaSeconds) {
-    final newVal =
-        (state.restRemainingSeconds + deltaSeconds).clamp(0, 600);
-    state = state.copyWith(restRemainingSeconds: newVal);
+    // Move restEndsAt by delta (clamp remaining to 0–600 s from now).
+    final now = DateTime.now();
+    final restEndsAt = state.restEndsAt ?? now;
+    final newEnd = restEndsAt.add(Duration(seconds: deltaSeconds));
+    final minEnd = now;
+    final maxEnd = now.add(const Duration(seconds: 600));
+    final clamped = newEnd.isBefore(minEnd)
+        ? minEnd
+        : newEnd.isAfter(maxEnd)
+            ? maxEnd
+            : newEnd;
+    final newRemaining = clamped.difference(now).inSeconds.clamp(0, 600);
+    state = state.copyWith(
+      restRemainingSeconds: newRemaining,
+      restEndsAt: clamped,
+    );
   }
 
   void skipRest() {
@@ -532,6 +676,7 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
         currentExerciseIndex: nextExerciseIndex,
         currentSetIndex: 0,
         restRemainingSeconds: 0,
+        restEndsAt: null,
         entries: List.from(state.entries),
       );
     } else {
@@ -547,6 +692,7 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
         phase: WorkoutPhase.active,
         currentSetIndex: nextSet,
         restRemainingSeconds: 0,
+        restEndsAt: null,
         entries: List.from(state.entries),
       );
     }
@@ -594,17 +740,42 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
     if (state.phase == WorkoutPhase.active ||
         state.phase == WorkoutPhase.resting) {
       _cancelTimers();
-      state = state.copyWith(phase: WorkoutPhase.paused);
+      state = state.copyWith(
+        phase: WorkoutPhase.paused,
+        pausedAt: DateTime.now(),
+      );
     }
   }
 
   void resumeSession() {
     if (state.phase == WorkoutPhase.paused) {
-      if (state.isResting) {
-        state = state.copyWith(phase: WorkoutPhase.resting);
+      final now = DateTime.now();
+      final pausedAt = state.pausedAt;
+      final additionalPausedSecs =
+          pausedAt != null ? now.difference(pausedAt).inSeconds : 0;
+      final newAccumulated =
+          (state.pausedAccumulatedSeconds + additionalPausedSecs).clamp(0, 86400);
+
+      // Shift restEndsAt forward by the paused duration so the countdown is accurate.
+      DateTime? newRestEndsAt = state.restEndsAt;
+      if (newRestEndsAt != null && pausedAt != null) {
+        newRestEndsAt =
+            newRestEndsAt.add(Duration(seconds: now.difference(pausedAt).inSeconds));
+      }
+
+      // Determine which phase to restore
+      final wasResting = newRestEndsAt != null &&
+          newRestEndsAt.isAfter(now);
+
+      state = state.copyWith(
+        phase: wasResting ? WorkoutPhase.resting : WorkoutPhase.active,
+        pausedAccumulatedSeconds: newAccumulated,
+        pausedAt: null,
+        restEndsAt: newRestEndsAt,
+      );
+
+      if (wasResting) {
         _startRestTimer();
-      } else {
-        state = state.copyWith(phase: WorkoutPhase.active);
       }
       _startStopwatch();
     }
@@ -707,8 +878,9 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
       final repo = ref.read(workoutSessionRepositoryProvider);
       final sessionId = _uuid.v4();
       final endTime = DateTime.now();
+      final startTime = _sessionStartTime ?? endTime;
       final duration = endTime
-          .difference(_sessionStartTime ?? endTime)
+          .difference(startTime)
           .inSeconds;
 
       // Compute aggregate stats
@@ -719,7 +891,7 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
       final session = WorkoutSession(
         id: sessionId,
         scheduleId: state.schedule.id,
-        startTime: _sessionStartTime ?? endTime,
+        startTime: startTime,
         endTime: endTime,
         durationSeconds: duration,
         totalCalories: state.estimatedCalories,
@@ -788,6 +960,10 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
           ref.read(schedulesProvider.notifier).loadFromDatabase();
         } catch (_) {}
       }
+
+      // Store the session ID in state so the completion notification can
+      // deep-link to the correct history detail screen (§2.3 of the spec).
+      state = state.copyWith(lastSavedSessionId: sessionId);
 
       ref.read(sessionsRevisionProvider.notifier).bump();
     } catch (_) {

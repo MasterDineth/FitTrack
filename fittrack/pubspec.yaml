@@ -49,6 +49,11 @@ dependencies:
   image_picker: ^1.1.2
   local_auth: ^3.0.2
   dynamic_color: ^1.7.0
+  # Phase 2 — device notifications (verify versions against pub.dev before shipping)
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.9.4
+  flutter_timezone: ^3.0.0
+  app_settings: ^9.0.1
 
 dev_dependencies:
   flutter_test:

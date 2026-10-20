@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fittrack/domain/entities/notification_payload.dart';
+import '../../../../providers/notification_service_provider.dart';
 import '../../../../providers/notification_settings_provider.dart';
 import '../../../../providers/notifications_provider.dart';
 import '../../../../theme/ft_glass.dart';
@@ -54,6 +56,15 @@ class QuietHoursAndSoundSection extends ConsumerWidget {
               title: 'New bench PR · 85 kg',
               body: 'Test notification triggered from notifications screen',
               timestamp: DateTime.now(),
+            ),
+          );
+      ref.read(notificationServiceProvider).show(
+            id: 9999,
+            title: 'New bench PR · 85 kg',
+            body: 'Test notification triggered from notifications screen',
+            channelId: 'achievements',
+            payload: const NotificationPayload(
+              type: NotificationPayloadType.pr,
             ),
           );
     } catch (_) {}
@@ -313,7 +324,9 @@ class QuietHoursAndSoundSection extends ConsumerWidget {
         // 3. BOTTOM ACTIONS
         NotificationsBottomActions(
           onSendTestNotification: () => _sendTestNotification(ref),
-          onOpenSystemSettings: () {},
+          onOpenSystemSettings: () {
+            ref.read(notificationServiceProvider).openSystemSettings();
+          },
         ),
       ],
     );

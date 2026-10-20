@@ -1,3 +1,4 @@
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../providers/notification_settings_provider.dart';
@@ -113,6 +114,59 @@ class _DeviceNotificationsSectionState
               title: 'Show details on lock screen',
               value: notifState.showLockScreenDetails,
               onChanged: (val) => notifier.toggleShowLockScreenDetails(val),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: InkWell(
+                onTap: () {
+                  AppSettings.openAppSettings(type: AppSettingsType.batteryOptimization);
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.battery_saver_rounded,
+                        size: 20,
+                        color: FtGlassTheme.teal,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Keep live workouts running',
+                              style: TextStyle(
+                                fontFamily: FtText.fontFamily,
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w600,
+                                color: context.ftInk,
+                              ),
+                            ),
+                            Text(
+                              'Prevent battery saver from killing active sessions (Xiaomi, Samsung)',
+                              style: TextStyle(
+                                fontFamily: FtText.fontFamily,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w500,
+                                color: context.ftMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.open_in_new_rounded,
+                        size: 16,
+                        color: context.ftMuted,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ],
         ),

@@ -680,6 +680,36 @@ class _SwipeableToastNotificationTileState
           size: 16,
           color: FtGlassTheme.teal,
         );
+      case FtNotificationType.workoutComplete:
+        return const Icon(
+          Icons.flag_rounded,
+          size: 16,
+          color: FtGlassTheme.teal,
+        );
+      case FtNotificationType.restOver:
+        return const Icon(
+          Icons.timer_rounded,
+          size: 16,
+          color: FtGlassTheme.orange,
+        );
+      case FtNotificationType.reminder:
+        return const Icon(
+          Icons.notifications_rounded,
+          size: 16,
+          color: Color(0xFF818CF8),
+        );
+      case FtNotificationType.summary:
+        return const Icon(
+          Icons.bar_chart_rounded,
+          size: 16,
+          color: Color(0xFF34D399),
+        );
+      case FtNotificationType.system:
+        return const Icon(
+          Icons.info_outline_rounded,
+          size: 16,
+          color: Colors.white54,
+        );
     }
   }
 }

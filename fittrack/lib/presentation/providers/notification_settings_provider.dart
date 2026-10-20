@@ -20,6 +20,7 @@ abstract class NotificationSettingsState with _$NotificationSettingsState {
     @Default(true) bool showSetProgress,
     @Default(true) bool showRestTimerControls,
     @Default(true) bool showLockScreenDetails,
+    @Default(false) bool allowCompleteSetFromNotification,
 
     // In-app Dynamic Island Banners
     @Default(true) bool inAppBanners,
@@ -99,6 +100,7 @@ class NotificationSettingsNotifier extends _$NotificationSettingsNotifier {
         showSetProgress: prefs.getBool('${_keyPrefix}showSetProgress') ?? true,
         showRestTimerControls: prefs.getBool('${_keyPrefix}showRestTimerControls') ?? true,
         showLockScreenDetails: prefs.getBool('${_keyPrefix}showLockScreenDetails') ?? true,
+        allowCompleteSetFromNotification: prefs.getBool('${_keyPrefix}allowCompleteSetFromNotification') ?? false,
         inAppBanners: prefs.getBool('${_keyPrefix}inAppBanners') ?? true,
         bannerDurationSeconds: prefs.getInt('${_keyPrefix}bannerDurationSeconds') ?? 2,
         keepLiveWorkoutPill: prefs.getBool('${_keyPrefix}keepLiveWorkoutPill') ?? true,
@@ -165,6 +167,11 @@ class NotificationSettingsNotifier extends _$NotificationSettingsNotifier {
   Future<void> toggleShowLockScreenDetails(bool value) async {
     state = state.copyWith(showLockScreenDetails: value);
     await _prefs?.setBool('${_keyPrefix}showLockScreenDetails', value);
+  }
+
+  Future<void> toggleAllowCompleteSetFromNotification(bool value) async {
+    state = state.copyWith(allowCompleteSetFromNotification: value);
+    await _prefs?.setBool('${_keyPrefix}allowCompleteSetFromNotification', value);
   }
 
   Future<void> toggleInAppBanners(bool value) async {

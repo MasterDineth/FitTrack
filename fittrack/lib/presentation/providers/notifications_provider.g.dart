@@ -231,7 +231,7 @@ final class NotificationFeedProvider
   }
 }
 
-String _$notificationFeedHash() => r'898a3a4feeaa9606ce25c19ed6d72bb5a55b6a15';
+String _$notificationFeedHash() => r'856f78310ab91da80baa3cd4d06f5733441f1ead';
 
 /// Holds all active notification items.
 /// Methods: push(...), dismiss(id), clearAll(), resetDemo().

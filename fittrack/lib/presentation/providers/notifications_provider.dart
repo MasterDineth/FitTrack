@@ -11,6 +11,12 @@ enum FtNotificationType {
   pr,
   strain,
   habit,
+  // Phase 2 additions
+  workoutComplete,
+  restOver,
+  reminder,
+  summary,
+  system,
 }
 
 /// Immutable notification model representing an in-app alert or feed entry.
@@ -294,6 +300,33 @@ class NotificationFeed extends _$NotificationFeed {
           title: 'Habit Reminder:',
           body: 'Post-workout 35g Whey + 5g Creatine due',
         );
+      case FtNotificationType.workoutComplete:
+        pushNotification(
+          type: FtNotificationType.workoutComplete,
+          title: 'Workout complete',
+          body: 'Tap to view your session summary',
+        );
+      case FtNotificationType.restOver:
+        pushNotification(
+          type: FtNotificationType.restOver,
+          title: 'Rest over',
+          body: 'Time for your next set',
+        );
+      case FtNotificationType.reminder:
+        pushNotification(
+          type: FtNotificationType.reminder,
+          title: 'Workout reminder',
+          body: "Time to train 💪",
+        );
+      case FtNotificationType.summary:
+        pushNotification(
+          type: FtNotificationType.summary,
+          title: 'Weekly recap',
+          body: "Here's your week at a glance",
+        );
+      case FtNotificationType.system:
+        // System notifications are informational; no in-app feed entry.
+        break;
     }
   }
 
