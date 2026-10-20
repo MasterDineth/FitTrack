@@ -83,11 +83,15 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
 
   void _onDiscard(BuildContext context, ActiveWorkoutNotifier notifier) {
     notifier.discardSession();
-    if (context.canPop()) {
-      context.pop();
-    } else {
-      context.go('/workouts');
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.mounted) {
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/workouts');
+        }
+      }
+    });
   }
 
   void _onSkipExercise(BuildContext context, ActiveWorkoutState state, ActiveWorkoutNotifier notifier) {
@@ -102,6 +106,19 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(activeWorkoutProvider);
     final notifier = ref.read(activeWorkoutProvider.notifier);
+
+    // Listen for session discard to navigate back cleanly
+    ref.listen<ActiveWorkoutState>(activeWorkoutProvider, (previous, next) {
+      if (next.phase == WorkoutPhase.discarded) {
+        if (mounted) {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/workouts');
+          }
+        }
+      }
+    });
 
     // ── Phase 1: Loading ────────────────────────────────────────────────────
     if (state.phase == WorkoutPhase.loading) {
@@ -146,11 +163,37 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       );
     }
 
-    final entry = state.currentEntry;
-    if (entry == null) {
+    // ── Phase 4: Discarded ──────────────────────────────────────────────────
+    if (state.phase == WorkoutPhase.discarded) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/workouts');
+          }
+        }
+      });
       return const Scaffold(
         backgroundColor: Colors.transparent,
-        body: Center(child: CircularProgressIndicator()),
+        body: SizedBox.shrink(),
+      );
+    }
+
+    final entry = state.currentEntry;
+    if (entry == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/workouts');
+          }
+        }
+      });
+      return const Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SizedBox.shrink(),
       );
     }
 

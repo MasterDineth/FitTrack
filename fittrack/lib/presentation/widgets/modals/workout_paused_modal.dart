@@ -34,6 +34,7 @@ Future<void> showWorkoutPausedModal(
     context: context,
     barrierDismissible: false,
     child: _WorkoutPausedModalCard(
+      parentContext: context,
       state: state,
       notifier: notifier,
       onEndWorkout: onEndWorkout,
@@ -43,11 +44,13 @@ Future<void> showWorkoutPausedModal(
 
 class _WorkoutPausedModalCard extends StatefulWidget {
   const _WorkoutPausedModalCard({
+    required this.parentContext,
     required this.state,
     required this.notifier,
     required this.onEndWorkout,
   });
 
+  final BuildContext parentContext;
   final ActiveWorkoutState state;
   final ActiveWorkoutNotifier notifier;
   final VoidCallback onEndWorkout;
@@ -109,7 +112,7 @@ class _WorkoutPausedModalCardState extends State<_WorkoutPausedModalCard>
     // Dismiss the paused modal, then launch the Discard Workout Warning modal
     Navigator.of(context).pop();
     showDiscardWorkoutModal(
-      context,
+      widget.parentContext,
       state: widget.state,
       onDiscard: widget.onEndWorkout,
     );

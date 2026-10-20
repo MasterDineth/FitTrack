@@ -135,8 +135,8 @@ class LiveNotificationFormatter {
         : 'Workout';
 
     final title = isPaused
-        ? '$workoutName · Paused ($pct%)'
-        : '$workoutName · ${snapshot.finishedExercises} of ${snapshot.totalExercises} exercises · $pct%';
+        ? 'Paused ($pct%)'
+        : '${snapshot.finishedExercises} of ${snapshot.totalExercises} exercises · $pct%';
 
     final body = showSetProgress
         ? '${snapshot.exerciseName} · Set ${snapshot.setNumber} of ${snapshot.totalSets}'

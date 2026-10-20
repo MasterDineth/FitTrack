@@ -73,6 +73,8 @@ class LiveWorkoutService : Service() {
         createNotificationChannel()
     }
 
+    private var isForeground = false
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent == null || intent.action == ACTION_STOP) {
             stopForegroundService()
@@ -82,7 +84,13 @@ class LiveWorkoutService : Service() {
         when (intent.action) {
             ACTION_START, ACTION_UPDATE -> {
                 val notification = buildNotification(intent)
-                startForegroundWithProperType(notification)
+                if (!isForeground) {
+                    startForegroundWithProperType(notification)
+                    isForeground = true
+                } else {
+                    val manager = getSystemService(NotificationManager::class.java)
+                    manager?.notify(NOTIFICATION_ID, notification)
+                }
             }
         }
 
@@ -114,6 +122,7 @@ class LiveWorkoutService : Service() {
     }
 
     private fun stopForegroundService() {
+        isForeground = false
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)
         } else {
@@ -125,17 +134,22 @@ class LiveWorkoutService : Service() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val manager = getSystemService(NotificationManager::class.java)
+            val existing = manager?.getNotificationChannel(CHANNEL_ID)
+            if (existing != null && existing.importance < NotificationManager.IMPORTANCE_HIGH) {
+                manager.deleteNotificationChannel(CHANNEL_ID)
+            }
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_HIGH
             ).apply {
                 description = "Ongoing live workout progress notification"
                 setShowBadge(false)
                 setSound(null, null)
                 enableVibration(false)
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
             }
-            val manager = getSystemService(NotificationManager::class.java)
             manager?.createNotificationChannel(channel)
         }
     }
@@ -155,19 +169,17 @@ class LiveWorkoutService : Service() {
 
         val isRest = mode == "rest"
 
-        // Build RemoteViews
+        // Build RemoteViews: compact view fits inside 64dp collapsed container; expanded view contains full controls
         val viewsCompact = RemoteViews(packageName, R.layout.notification_live_workout)
         val viewsExpanded = RemoteViews(packageName, R.layout.notification_live_workout_expanded)
 
         val viewsList = listOf(viewsCompact, viewsExpanded)
-
         for (views in viewsList) {
-            views.setTextViewText(R.id.notif_schedule_name, "FitTrack · $scheduleName")
+            views.setTextViewText(R.id.notif_schedule_name, scheduleName)
             views.setTextViewText(R.id.notif_title, title)
             views.setTextViewText(R.id.notif_subtitle, subtitle)
             views.setProgressBar(R.id.notif_progress_workout, 100, workoutProgress.coerceIn(0, 100), false)
 
-            // Setup chronometer
             if (chronometerBase > 0) {
                 if (isCountDown) {
                     val remainingMs = chronometerBase - System.currentTimeMillis()
@@ -240,10 +252,10 @@ class LiveWorkoutService : Service() {
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_fittrack)
             .setColor(0xFF5F3BDC.toInt())
-            .setContentTitle(title)
-            .setContentText(subtitle)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
+            .setShowWhen(false)
+            .setSortKey("1")
             .setCategory(NotificationCompat.CATEGORY_WORKOUT)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setCustomContentView(viewsCompact)
@@ -251,10 +263,95 @@ class LiveWorkoutService : Service() {
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .setContentIntent(pendingOpen)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setTicker(title)
 
+        // Title and Subtitle in extras for accessibility / system parsing without DecoratedCustomViewStyle injecting duplicate title TextView
+        builder.extras.putString(NotificationCompat.EXTRA_TITLE, title)
+        builder.extras.putString(NotificationCompat.EXTRA_TEXT, subtitle)
+
+        // Ongoing Live Updates
         builder.extras.putBoolean("android.requestPromotedOngoing", true)
         builder.extras.putBoolean("android.liveUpdates", true)
+        builder.extras.putBoolean("show_when_locked", true)
+
+        // Xiaomi HyperOS Dynamic Island / Super Island (Focus Notification)
+        builder.extras.putBoolean("miui.focus.enable", true)
+        builder.extras.putString("miui.focus.type", "sport")
+
+        // Attach icon bitmap for HyperOS small island capsule
+        try {
+            val drawable = androidx.core.content.ContextCompat.getDrawable(this, R.drawable.ic_stat_fittrack)
+            if (drawable != null) {
+                val bitmap = if (drawable is android.graphics.drawable.BitmapDrawable) {
+                    drawable.bitmap
+                } else {
+                    val bmp = android.graphics.Bitmap.createBitmap(
+                        drawable.intrinsicWidth.coerceAtLeast(48),
+                        drawable.intrinsicHeight.coerceAtLeast(48),
+                        android.graphics.Bitmap.Config.ARGB_8888
+                    )
+                    val canvas = android.graphics.Canvas(bmp)
+                    drawable.setBounds(0, 0, canvas.width, canvas.height)
+                    drawable.draw(canvas)
+                    bmp
+                }
+                builder.extras.putParcelable("miui.focus.pic_icon", bitmap)
+            }
+        } catch (_: Exception) {}
+
+        try {
+            val islandJson = org.json.JSONObject().apply {
+                val paramV2 = org.json.JSONObject().apply {
+                    put("protocol", 1)
+                    put("business", "sport")
+                    put("enableFloat", true)
+                    put("updatable", true)
+                    put("smallWindowTarget", "com.example.fittrack.MainActivity")
+                    val paramIsland = org.json.JSONObject().apply {
+                        put("islandProperty", 1)
+                        val bigArea = org.json.JSONObject().apply {
+                            val picInfo = org.json.JSONObject().apply {
+                                put("type", 1)
+                                put("pic", "miui.focus.pic_icon")
+                            }
+                            put("picInfo", picInfo)
+                            val textInfo = org.json.JSONObject().apply {
+                                put("title", title)
+                                put("content", subtitle)
+                                put("frontTitle", scheduleName)
+                            }
+                            put("textInfo", textInfo)
+                        }
+                        put("bigIslandArea", bigArea)
+                        val smallArea = org.json.JSONObject().apply {
+                            val picInfo = org.json.JSONObject().apply {
+                                put("type", 1)
+                                put("pic", "miui.focus.pic_icon")
+                            }
+                            put("picInfo", picInfo)
+                            val textInfo = org.json.JSONObject().apply {
+                                put("title", "FitTrack")
+                                put("content", title)
+                            }
+                            put("textInfo", textInfo)
+                        }
+                        put("smallIslandArea", smallArea)
+                    }
+                    put("param_island", paramIsland)
+                    val baseInfo = org.json.JSONObject().apply {
+                        put("title", title)
+                        put("content", subtitle)
+                        put("colorTitle", "#5F3BDC")
+                        put("pictureKey", "miui.focus.pic_icon")
+                        put("type", 2)
+                    }
+                    put("baseInfo", baseInfo)
+                }
+                put("param_v2", paramV2)
+            }
+            builder.extras.putString("miui.focus.param", islandJson.toString())
+        } catch (_: Exception) {}
 
         return builder.build()
     }

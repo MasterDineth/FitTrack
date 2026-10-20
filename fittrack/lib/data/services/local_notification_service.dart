@@ -145,7 +145,7 @@ class LocalNotificationService implements NotificationService {
       _kChannelLiveWorkout,
       'Live Workout',
       description: 'Ongoing workout progress and live timer',
-      importance: Importance.defaultImportance,
+      importance: Importance.high,
       playSound: false,
       enableVibration: false,
       enableLights: false,

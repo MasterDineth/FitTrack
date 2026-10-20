@@ -41,6 +41,24 @@ class NotificationCoordinator extends _$NotificationCoordinator {
 
   ReceivePort? _port;
   Timer? _snapshotDebounce;
+  LiveNotificationSpec? _lastShownSpec;
+
+  bool _hasSpecContentChanged(
+      LiveNotificationSpec? prev, LiveNotificationSpec next) {
+    if (prev == null) return true;
+    if (prev.mode != next.mode) return true;
+    if (prev.title != next.title) return true;
+    if (prev.body != next.body) return true;
+    if (prev.progressFraction != next.progressFraction) return true;
+    if (prev.scheduleName != next.scheduleName) return true;
+    if (prev.scheduleId != next.scheduleId) return true;
+    if (prev.sessionId != next.sessionId) return true;
+    if (prev.chronometer != next.chronometer) return true;
+    if (prev.countdownEndsAt != next.countdownEndsAt) return true;
+    if (prev.showProgressBar != next.showProgressBar) return true;
+    if (prev.actions.length != next.actions.length) return true;
+    return false;
+  }
 
   @override
   void build() {
@@ -140,6 +158,7 @@ class NotificationCoordinator extends _$NotificationCoordinator {
 
     // Master switch check.
     if (!settings.systemNotifications || !settings.liveWorkoutStatus) {
+      _lastShownSpec = null;
       _svc.clearLive();
       return;
     }
@@ -148,6 +167,7 @@ class NotificationCoordinator extends _$NotificationCoordinator {
     if (next.phase == WorkoutPhase.finished) {
       _snapshotDebounce?.cancel();
       ref.read(liveSnapshotStoreProvider).clear();
+      _lastShownSpec = null;
       _svc.clearLive();
       if (next.lastSavedSessionId != null &&
           (prev?.lastSavedSessionId != next.lastSavedSessionId ||
@@ -161,6 +181,7 @@ class NotificationCoordinator extends _$NotificationCoordinator {
         next.phase == WorkoutPhase.error) {
       _snapshotDebounce?.cancel();
       ref.read(liveSnapshotStoreProvider).clear();
+      _lastShownSpec = null;
       _svc.clearLive();
       return;
     }
@@ -175,6 +196,7 @@ class NotificationCoordinator extends _$NotificationCoordinator {
               prev.phase == WorkoutPhase.resting ||
               prev.phase == WorkoutPhase.paused)) {
         // Session ended — clear live notification.
+        _lastShownSpec = null;
         _svc.clearLive();
       }
       return;
@@ -194,29 +216,36 @@ class NotificationCoordinator extends _$NotificationCoordinator {
       allowCompleteSetFromNotification: settings.allowCompleteSetFromNotification,
     );
 
-    switch (spec.mode) {
-      case LiveNotificationMode.workout:
-        _svc.cancelRestEndAlert();
-        _svc.showLive(spec);
-      case LiveNotificationMode.rest:
-        _svc.showLive(spec);
-        if (snapshot.restEndsAt != null) {
-          final workoutSpec = _formatter.build(
-            snapshot: snapshot.copyWith(phase: 'active'),
-            showScheduleProgress: settings.showScheduleProgress,
-            showSetProgress: settings.showSetProgress,
-            showRestTimerControls: settings.showRestTimerControls,
-            allowCompleteSetFromNotification: settings.allowCompleteSetFromNotification,
-          );
-          _svc.scheduleRestEndAlert(
-            snapshot: snapshot,
-            workoutSpec: workoutSpec,
-            scheduledAt: snapshot.restEndsAt!,
-          );
-        }
-      case LiveNotificationMode.complete:
-        _svc.clearLive();
-        _showCompletionNotification(next);
+    // Only dispatch showLive when the visible notification content has actually changed.
+    // The native Android Chronometer runs autonomously; refreshing every second causes
+    // notification jitter and ranking repositioning.
+    if (_hasSpecContentChanged(_lastShownSpec, spec)) {
+      _lastShownSpec = spec;
+      switch (spec.mode) {
+        case LiveNotificationMode.workout:
+          _svc.cancelRestEndAlert();
+          _svc.showLive(spec);
+        case LiveNotificationMode.rest:
+          _svc.showLive(spec);
+          if (snapshot.restEndsAt != null) {
+            final workoutSpec = _formatter.build(
+              snapshot: snapshot.copyWith(phase: 'active'),
+              showScheduleProgress: settings.showScheduleProgress,
+              showSetProgress: settings.showSetProgress,
+              showRestTimerControls: settings.showRestTimerControls,
+              allowCompleteSetFromNotification: settings.allowCompleteSetFromNotification,
+            );
+            _svc.scheduleRestEndAlert(
+              snapshot: snapshot,
+              workoutSpec: workoutSpec,
+              scheduledAt: snapshot.restEndsAt!,
+            );
+          }
+        case LiveNotificationMode.complete:
+          _lastShownSpec = null;
+          _svc.clearLive();
+          _showCompletionNotification(next);
+      }
     }
   }
 
