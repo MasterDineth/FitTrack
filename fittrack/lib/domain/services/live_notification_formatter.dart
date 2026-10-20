@@ -15,6 +15,11 @@ class LiveNotificationSpec {
     this.countdownEndsAt,
     this.actions = const [],
     this.showProgressBar = true,
+    this.sessionId,
+    this.scheduleId,
+    this.scheduleName,
+    this.restRemainingSeconds,
+    this.restTotalSeconds,
   });
 
   final LiveNotificationMode mode;
@@ -25,7 +30,7 @@ class LiveNotificationSpec {
   final double progressFraction;
 
   /// For workout mode: when the chronometer started (counts up).
-  /// Null when counting up is not applicable.
+  /// Null when counting up is not applicable (e.g. paused).
   final DateTime? chronometer;
 
   /// For rest mode: when the countdown reaches zero.
@@ -35,6 +40,12 @@ class LiveNotificationSpec {
 
   /// Whether to render the progress bar (controlled by [showScheduleProgress]).
   final bool showProgressBar;
+
+  final String? sessionId;
+  final String? scheduleId;
+  final String? scheduleName;
+  final int? restRemainingSeconds;
+  final int? restTotalSeconds;
 }
 
 enum LiveNotificationMode { workout, rest, complete }
@@ -89,17 +100,23 @@ class LiveNotificationFormatter {
       case LiveNotificationMode.rest:
         return _buildRest(
           snapshot: snapshot,
+          now: effectiveNow,
           showScheduleProgress: showScheduleProgress,
           showSetProgress: showSetProgress,
           showRestTimerControls: showRestTimerControls,
         );
       case LiveNotificationMode.complete:
-        return const LiveNotificationSpec(
+        return LiveNotificationSpec(
           mode: LiveNotificationMode.complete,
           title: 'Workout complete',
           body: '',
           progressFraction: 1,
           showProgressBar: false,
+          sessionId: snapshot.sessionId,
+          scheduleId: snapshot.scheduleId,
+          scheduleName: snapshot.scheduleName.isNotEmpty
+              ? snapshot.scheduleName
+              : 'Workout',
         );
     }
   }
@@ -112,15 +129,26 @@ class LiveNotificationFormatter {
     required bool allowCompleteSetFromNotification,
   }) {
     final pct = (snapshot.progressFraction * 100).round();
-    final title =
-        '${snapshot.finishedExercises} of ${snapshot.totalExercises} exercises · $pct%';
+    final isPaused = snapshot.phase == 'paused';
+    final workoutName = snapshot.scheduleName.isNotEmpty
+        ? snapshot.scheduleName
+        : 'Workout';
+
+    final title = isPaused
+        ? '$workoutName · Paused ($pct%)'
+        : '$workoutName · ${snapshot.finishedExercises} of ${snapshot.totalExercises} exercises · $pct%';
+
     final body = showSetProgress
         ? '${snapshot.exerciseName} · Set ${snapshot.setNumber} of ${snapshot.totalSets}'
         : snapshot.exerciseName;
 
     final actions = <LiveNotificationAction>[
-      const LiveNotificationAction(
-          id: LiveNotificationActionId.pause, label: 'Pause'),
+      LiveNotificationAction(
+        id: isPaused
+            ? LiveNotificationActionId.resume
+            : LiveNotificationActionId.pause,
+        label: isPaused ? 'Resume' : 'Pause',
+      ),
       const LiveNotificationAction(
           id: LiveNotificationActionId.open, label: 'Open'),
       if (allowCompleteSetFromNotification)
@@ -133,15 +161,21 @@ class LiveNotificationFormatter {
       title: title,
       body: body,
       progressFraction: snapshot.progressFraction,
-      chronometer: snapshot.sessionStartedAt.add(
-          Duration(seconds: snapshot.pausedAccumulatedSeconds)),
+      chronometer: isPaused
+          ? null
+          : snapshot.sessionStartedAt.add(
+              Duration(seconds: snapshot.pausedAccumulatedSeconds)),
       actions: actions,
       showProgressBar: showScheduleProgress,
+      sessionId: snapshot.sessionId,
+      scheduleId: snapshot.scheduleId,
+      scheduleName: workoutName,
     );
   }
 
   LiveNotificationSpec _buildRest({
     required LiveWorkoutSnapshot snapshot,
+    required DateTime now,
     required bool showScheduleProgress,
     required bool showSetProgress,
     required bool showRestTimerControls,
@@ -163,6 +197,13 @@ class LiveNotificationFormatter {
       ],
     ];
 
+    final remainingRest = snapshot.restEndsAt != null
+        ? snapshot.restEndsAt!.difference(now).inSeconds.clamp(0, 600)
+        : snapshot.restDurationSeconds;
+    final totalRest = snapshot.restDurationSeconds > 0
+        ? snapshot.restDurationSeconds
+        : (remainingRest > 0 ? remainingRest : 45);
+
     return LiveNotificationSpec(
       mode: LiveNotificationMode.rest,
       title: title,
@@ -171,6 +212,13 @@ class LiveNotificationFormatter {
       countdownEndsAt: snapshot.restEndsAt,
       actions: actions,
       showProgressBar: showScheduleProgress,
+      sessionId: snapshot.sessionId,
+      scheduleId: snapshot.scheduleId,
+      scheduleName: snapshot.scheduleName.isNotEmpty
+          ? snapshot.scheduleName
+          : 'Workout',
+      restRemainingSeconds: remainingRest,
+      restTotalSeconds: totalRest,
     );
   }
 

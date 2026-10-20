@@ -66,6 +66,7 @@ class FitTrackApp extends ConsumerStatefulWidget {
 class _FitTrackAppState extends ConsumerState<FitTrackApp>
     with WidgetsBindingObserver {
   bool _notificationServiceInitialised = false;
+  bool _recoveryModalShown = false;
 
   @override
   void initState() {
@@ -124,11 +125,6 @@ class _FitTrackAppState extends ConsumerState<FitTrackApp>
         ref.read(pendingNotificationRouteProvider.notifier).set(launchPayload);
       }
 
-      // Check snapshot recovery if splash already finished
-      if (ref.read(splashDoneProvider)) {
-        _checkWorkoutRecovery();
-      }
-
       _notificationServiceInitialised = true;
     } catch (_) {
       // Notification service init is non-fatal; the app works without it.
@@ -136,6 +132,8 @@ class _FitTrackAppState extends ConsumerState<FitTrackApp>
   }
 
   void _checkWorkoutRecovery() {
+    if (_recoveryModalShown) return;
+
     final snapshot = ref.read(liveSnapshotStoreProvider).load();
     if (snapshot == null) return;
 
@@ -148,6 +146,7 @@ class _FitTrackAppState extends ConsumerState<FitTrackApp>
 
     final context = rootNavigatorKey.currentContext;
     if (context != null && context.mounted) {
+      _recoveryModalShown = true;
       showResumeWorkoutRecoveryModal(
         context,
         snapshot: snapshot,

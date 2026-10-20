@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../theme/ft_glass.dart';
 import '../../../../widgets/glass_surface.dart';
@@ -10,13 +11,13 @@ import 'notification_segmented_control.dart';
 /// Also provides an interactive segmented simulator switch between "Allowed" and "Blocked".
 class NotificationsStatusCard extends StatelessWidget {
   final bool isBlocked;
-  final ValueChanged<bool> onPermissionSimulationChanged;
+  final ValueChanged<bool>? onPermissionSimulationChanged;
   final VoidCallback onEnableTap;
 
   const NotificationsStatusCard({
     super.key,
     required this.isBlocked,
-    required this.onPermissionSimulationChanged,
+    this.onPermissionSimulationChanged,
     required this.onEnableTap,
   });
 
@@ -160,40 +161,41 @@ class NotificationsStatusCard extends StatelessWidget {
           ),
         ),
       ),
-        const SizedBox(height: 10),
-
         // 2. Simulation Toggle Bar
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Design simulation: system permission',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: FtText.fontFamily,
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w600,
-                    color: context.ftMuted,
+        if (kDebugMode && onPermissionSimulationChanged != null) ...[
+          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Design simulation: system permission',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: FtText.fontFamily,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: context.ftMuted,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              NotificationSegmentedControl<String>(
-                selected: isBlocked ? 'blocked' : 'allowed',
-                options: const {
-                  'allowed': 'Allowed',
-                  'blocked': 'Blocked',
-                },
-                onSelected: (val) {
-                  onPermissionSimulationChanged(val == 'blocked');
-                },
-              ),
-            ],
+                const SizedBox(width: 8),
+                NotificationSegmentedControl<String>(
+                  selected: isBlocked ? 'blocked' : 'allowed',
+                  options: const {
+                    'allowed': 'Allowed',
+                    'blocked': 'Blocked',
+                  },
+                  onSelected: (val) {
+                    onPermissionSimulationChanged?.call(val == 'blocked');
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../router/app_router.dart';
 
+import 'notification_settings_provider.dart';
+
 part 'notifications_provider.g.dart';
 
 /// Notification category types across FitTrack.
@@ -89,8 +91,8 @@ class NotificationShadeState {
 }
 
 /// Manages the active notification item for the in-header Dynamic Island morph.
-/// Drives the 2.0s auto-collapse countdown (Timer). Cancel timer in ref.onDispose.
-/// Cleared on user dismissal or shade open.
+/// Drives auto-collapse countdown (Timer) based on user's bannerDurationSeconds setting (defaults to 2s).
+/// Cancel timer in ref.onDispose. Cleared on user dismissal or shade open.
 @Riverpod(keepAlive: true)
 class NotificationIsland extends _$NotificationIsland {
   Timer? _autoCollapseTimer;
@@ -106,7 +108,13 @@ class NotificationIsland extends _$NotificationIsland {
   void show(FtNotificationItem item) {
     _autoCollapseTimer?.cancel();
     state = item;
-    _autoCollapseTimer = Timer(const Duration(milliseconds: 2000), () {
+    int seconds = 2;
+    try {
+      final s = ref.read(notificationSettingsNotifierProvider);
+      seconds = s.bannerDurationSeconds;
+    } catch (_) {}
+    final durationMs = (seconds > 0 ? seconds : 2) * 1000;
+    _autoCollapseTimer = Timer(Duration(milliseconds: durationMs), () {
       collapse();
     });
   }
@@ -245,6 +253,15 @@ class NotificationFeed extends _$NotificationFeed {
 
     final isShadeOpen = ref.read(notificationShadeProvider).isOpen;
     if (isShadeOpen) {
+      return;
+    }
+
+    bool inAppBanners = true;
+    try {
+      inAppBanners =
+          ref.read(notificationSettingsNotifierProvider).inAppBanners;
+    } catch (_) {}
+    if (!inAppBanners) {
       return;
     }
 

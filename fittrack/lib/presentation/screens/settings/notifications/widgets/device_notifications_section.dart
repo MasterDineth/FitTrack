@@ -1,7 +1,10 @@
 import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fittrack/domain/entities/notification_payload.dart';
+import '../../../../providers/notification_service_provider.dart';
 import '../../../../providers/notification_settings_provider.dart';
+import '../../../../providers/notifications_provider.dart';
 import '../../../../theme/ft_glass.dart';
 import '../../widgets/ft_settings_card.dart';
 import 'device_notification_expandable_card.dart';
@@ -33,6 +36,30 @@ class _DeviceNotificationsSectionState
   bool _waterExpanded = false;
   bool _summariesExpanded = false;
   bool _achievementsExpanded = false;
+
+  void _notifyCategoryEnabled({
+    required String title,
+    required String body,
+    required String channelId,
+    required FtNotificationType type,
+    required String payloadType,
+  }) {
+    ref.read(notificationFeedProvider.notifier).pushNotification(
+          type: type,
+          title: title,
+          body: body,
+        );
+
+    try {
+      ref.read(notificationServiceProvider).show(
+            id: DateTime.now().millisecondsSinceEpoch % 100000 + 5000,
+            title: title,
+            body: body,
+            channelId: channelId,
+            payload: NotificationPayload(type: payloadType),
+          );
+    } catch (_) {}
+  }
 
   Future<void> _pickReminderTime(BuildContext context, String current) async {
     final parts = current.split(':');
@@ -93,7 +120,18 @@ class _DeviceNotificationsSectionState
           isExpanded: _liveExpanded,
           onHeaderTap: () => setState(() => _liveExpanded = !_liveExpanded),
           masterValue: notifState.liveWorkoutStatus,
-          onMasterChanged: (val) => notifier.toggleLiveWorkoutStatus(val),
+          onMasterChanged: (val) {
+            notifier.toggleLiveWorkoutStatus(val);
+            if (val) {
+              _notifyCategoryEnabled(
+                title: 'Live workout enabled',
+                body: 'Ongoing workout progress and rest timers will be displayed in your notification shade.',
+                channelId: 'live_workout',
+                type: FtNotificationType.system,
+                payloadType: NotificationPayloadType.liveWorkout,
+              );
+            }
+          },
           children: [
             DeviceNotificationSubItem(
               title: 'Exercise progress bar',
@@ -187,7 +225,21 @@ class _DeviceNotificationsSectionState
             () => _workoutRemindersExpanded = !_workoutRemindersExpanded,
           ),
           masterValue: notifState.routineWorkoutReminders,
-          onMasterChanged: (val) => notifier.toggleRoutineWorkoutReminders(val),
+          onMasterChanged: (val) {
+            notifier.toggleRoutineWorkoutReminders(val);
+            if (val) {
+              _notifyCategoryEnabled(
+                title: 'Workout reminders enabled',
+                body: _formatReminderSummary(
+                  notifState.reminderDays,
+                  notifState.reminderTime,
+                ),
+                channelId: 'reminders',
+                type: FtNotificationType.reminder,
+                payloadType: NotificationPayloadType.workoutReminder,
+              );
+            }
+          },
           children: [
             WorkoutReminderControls(
               selectedDays: notifState.reminderDays,
@@ -217,7 +269,18 @@ class _DeviceNotificationsSectionState
           isExpanded: _waterExpanded,
           onHeaderTap: () => setState(() => _waterExpanded = !_waterExpanded),
           masterValue: notifState.hydrationReminders,
-          onMasterChanged: (val) => notifier.toggleHydrationReminders(val),
+          onMasterChanged: (val) {
+            notifier.toggleHydrationReminders(val);
+            if (val) {
+              _notifyCategoryEnabled(
+                title: 'Water reminders enabled',
+                body: 'Hydration checks scheduled every ${notifState.hydrationInterval} (8 AM – 8 PM)',
+                channelId: 'hydration',
+                type: FtNotificationType.hydration,
+                payloadType: NotificationPayloadType.hydration,
+              );
+            }
+          },
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -263,7 +326,18 @@ class _DeviceNotificationsSectionState
             () => _summariesExpanded = !_summariesExpanded,
           ),
           masterValue: notifState.summariesEnabled,
-          onMasterChanged: (val) => notifier.toggleSummariesEnabled(val),
+          onMasterChanged: (val) {
+            notifier.toggleSummariesEnabled(val);
+            if (val) {
+              _notifyCategoryEnabled(
+                title: 'Workout summaries enabled',
+                body: 'Post-workout breakdowns and Sunday recaps are active.',
+                channelId: 'summaries',
+                type: FtNotificationType.summary,
+                payloadType: NotificationPayloadType.weeklySummary,
+              );
+            }
+          },
           children: [
             DeviceNotificationSubItem(
               title: 'Workout summary after session',
@@ -291,7 +365,18 @@ class _DeviceNotificationsSectionState
             () => _achievementsExpanded = !_achievementsExpanded,
           ),
           masterValue: notifState.achievementsEnabled,
-          onMasterChanged: (val) => notifier.toggleAchievementsEnabled(val),
+          onMasterChanged: (val) {
+            notifier.toggleAchievementsEnabled(val);
+            if (val) {
+              _notifyCategoryEnabled(
+                title: 'Achievements alerts enabled',
+                body: 'You\'ll be notified when you hit new personal records and milestones.',
+                channelId: 'achievements',
+                type: FtNotificationType.pr,
+                payloadType: NotificationPayloadType.pr,
+              );
+            }
+          },
           children: [
             DeviceNotificationSubItem(
               title: 'New personal records (PRs)',

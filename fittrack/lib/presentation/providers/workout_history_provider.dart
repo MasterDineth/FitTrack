@@ -303,6 +303,7 @@ class WorkoutHistoryNotifier extends _$WorkoutHistoryNotifier {
     try {
       final repo = ref.read(workoutSessionRepositoryProvider);
       final dbSessions = await repo.getAllSessions();
+      if (!ref.mounted) return;
       if (dbSessions.isNotEmpty) {
         final telemetry = MonthlyTelemetryData.compute(
           sessions: dbSessions,
@@ -314,7 +315,9 @@ class WorkoutHistoryNotifier extends _$WorkoutHistoryNotifier {
         );
       }
     } catch (e) {
-      debugPrint('[WorkoutHistoryNotifier] Error fetching db sessions: $e');
+      if (ref.mounted) {
+        debugPrint('[WorkoutHistoryNotifier] Error fetching db sessions: $e');
+      }
     }
   }
 

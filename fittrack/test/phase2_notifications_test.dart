@@ -264,6 +264,64 @@ void main() {
         now: now,
       );
       expect(spec.actions.isEmpty, isTrue);
+      expect(spec.sessionId, snapshot.sessionId);
+      expect(spec.scheduleId, snapshot.scheduleId);
+    });
+
+    test('paused state: flips action to Resume, pauses chronometer, and marks title', () {
+      final snapshot = _makeSnapshot(finished: 2, total: 10).copyWith(
+        phase: 'paused',
+        pausedAt: now,
+        exerciseName: 'Kettlebell Swing',
+        setNumber: 1,
+        totalSets: 4,
+      );
+      final spec = formatter.build(
+        snapshot: snapshot,
+        showScheduleProgress: true,
+        showSetProgress: true,
+        showRestTimerControls: true,
+        allowCompleteSetFromNotification: false,
+        now: now,
+      );
+
+      expect(spec.mode, LiveNotificationMode.workout);
+      expect(spec.title, contains('Paused'));
+      expect(spec.title, contains('20%'));
+      expect(spec.chronometer, isNull);
+      expect(spec.sessionId, snapshot.sessionId);
+      expect(spec.scheduleId, snapshot.scheduleId);
+
+      final actionIds = spec.actions.map((a) => a.id).toList();
+      expect(actionIds, contains(LiveNotificationActionId.resume));
+      expect(actionIds, isNot(contains(LiveNotificationActionId.pause)));
+      expect(actionIds, contains(LiveNotificationActionId.open));
+
+      final resumeAction = spec.actions.firstWhere(
+        (a) => a.id == LiveNotificationActionId.resume,
+      );
+      expect(resumeAction.label, 'Resume');
+    });
+
+    test('active state: has chronometer and Pause action', () {
+      final snapshot = _makeSnapshot(finished: 1, total: 4).copyWith(
+        phase: 'active',
+        exerciseName: 'Push Up',
+      );
+      final spec = formatter.build(
+        snapshot: snapshot,
+        showScheduleProgress: true,
+        showSetProgress: true,
+        showRestTimerControls: true,
+        allowCompleteSetFromNotification: false,
+        now: now,
+      );
+
+      expect(spec.chronometer, isNotNull);
+      final actionIds = spec.actions.map((a) => a.id).toList();
+      expect(actionIds, contains(LiveNotificationActionId.pause));
+      expect(actionIds, isNot(contains(LiveNotificationActionId.resume)));
+      expect(actionIds, contains(LiveNotificationActionId.open));
     });
   });
 

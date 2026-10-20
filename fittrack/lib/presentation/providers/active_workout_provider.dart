@@ -12,6 +12,7 @@ import '../../domain/entities/workout_session.dart';
 import 'repository_providers.dart';
 import 'schedules_provider.dart';
 import 'workout_logic_providers.dart';
+import 'notification_service_provider.dart';
 
 part 'active_workout_provider.g.dart';
 
@@ -792,6 +793,10 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
     _cancelTimers();
     _sessionStartTime = null;
     _skipReasons.clear();
+    try {
+      ref.read(liveSnapshotStoreProvider).clear();
+      ref.read(notificationServiceProvider).clearLive();
+    } catch (_) {}
     state = const ActiveWorkoutState(
       phase: WorkoutPhase.discarded,
       schedule: Schedule(
@@ -818,6 +823,10 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
     _cancelTimers();
     _sessionStartTime = null;
     _skipReasons.clear();
+    try {
+      ref.read(liveSnapshotStoreProvider).clear();
+      ref.read(notificationServiceProvider).clearLive();
+    } catch (_) {}
     state = const ActiveWorkoutState(
       phase: WorkoutPhase.discarded,
       schedule: Schedule(
@@ -840,6 +849,10 @@ class ActiveWorkoutNotifier extends _$ActiveWorkoutNotifier {
 
   Future<void> stopSession() async {
     _cancelTimers();
+    try {
+      ref.read(liveSnapshotStoreProvider).clear();
+      ref.read(notificationServiceProvider).clearLive();
+    } catch (_) {}
     state = state.copyWith(phase: WorkoutPhase.finished);
     await _persistSession(state.completedSets);
   }

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:app_settings/app_settings.dart';
@@ -68,6 +70,9 @@ class LocalNotificationService implements NotificationService {
   final StreamController<NotificationPayload> _payloadController;
   Future<void> Function(NotificationPayload)? _onTapCallback;
 
+  static const MethodChannel _liveChannel =
+      MethodChannel('com.example.fittrack/live_notification');
+
   @override
   Stream<NotificationPayload> get tapStream => _payloadController.stream;
 
@@ -79,6 +84,34 @@ class LocalNotificationService implements NotificationService {
 
     _tapStreamController ??= StreamController<NotificationResponse>.broadcast();
     _tapStreamController!.stream.listen(_routeResponse);
+
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      _liveChannel.setMethodCallHandler((call) async {
+        if (call.method == 'onAction') {
+          final action = call.arguments?['action'] as String?;
+          if (action != null) {
+            final port =
+                IsolateNameServer.lookupPortByName('ft_notification_actions');
+            if (port != null) {
+              port.send({'action': action});
+            }
+          }
+        } else if (call.method == 'onNavigate') {
+          final route = call.arguments?['route'] as String?;
+          if (route != null) {
+            final scheduleId = route.startsWith('/workouts/active/')
+                ? route.substring('/workouts/active/'.length)
+                : null;
+            final payload = NotificationPayload(
+              type: NotificationPayloadType.liveWorkout,
+              scheduleId: scheduleId,
+            );
+            _payloadController.add(payload);
+            _onTapCallback?.call(payload);
+          }
+        }
+      });
+    }
 
     const androidInit = AndroidInitializationSettings('@drawable/ic_stat_fittrack');
     const initSettings = InitializationSettings(android: androidInit);
@@ -111,8 +144,8 @@ class LocalNotificationService implements NotificationService {
     await androidPlugin.createNotificationChannel(const AndroidNotificationChannel(
       _kChannelLiveWorkout,
       'Live Workout',
-      description: 'Ongoing workout progress notification',
-      importance: Importance.low,
+      description: 'Ongoing workout progress and live timer',
+      importance: Importance.defaultImportance,
       playSound: false,
       enableVibration: false,
       enableLights: false,
@@ -208,6 +241,34 @@ class LocalNotificationService implements NotificationService {
 
   @override
   Future<void> showLive(LiveNotificationSpec spec) async {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      try {
+        final isRest = spec.mode == LiveNotificationMode.rest;
+        final isPaused = spec.chronometer == null && !isRest;
+
+        final data = <String, dynamic>{
+          'scheduleName': spec.scheduleName ?? 'Workout',
+          'scheduleId': spec.scheduleId ?? '',
+          'mode': isRest ? 'rest' : 'workout',
+          'title': spec.title,
+          'subtitle': spec.body,
+          'workoutProgress': (spec.progressFraction * 100).round(),
+          'restRemainingSeconds': spec.restRemainingSeconds ?? 0,
+          'restTotalSeconds': spec.restTotalSeconds ?? 45,
+          'chronometerBase': isRest
+              ? (spec.countdownEndsAt?.millisecondsSinceEpoch ?? 0)
+              : (spec.chronometer?.millisecondsSinceEpoch ?? 0),
+          'isCountDown': isRest,
+          'isPaused': isPaused,
+        };
+
+        await _liveChannel.invokeMethod('startLive', data);
+        return;
+      } catch (_) {
+        // Fallback to standard local notifications if native service fails
+      }
+    }
+
     try {
       final details = _buildLiveDetails(spec);
       await _plugin.show(
@@ -219,29 +280,43 @@ class LocalNotificationService implements NotificationService {
           type: spec.mode == LiveNotificationMode.rest
               ? NotificationPayloadType.restOver
               : NotificationPayloadType.liveWorkout,
+          scheduleId: spec.scheduleId,
+          sessionId: spec.sessionId,
         ).encode(),
       );
     } catch (_) {}
   }
 
   NotificationDetails _buildLiveDetails(LiveNotificationSpec spec) {
+    final isRest = spec.mode == LiveNotificationMode.rest;
+    final isPaused = spec.chronometer == null && !isRest;
+    final subText = isRest
+        ? 'Rest Timer'
+        : (isPaused ? 'Paused' : 'Live Workout');
+
     final androidActions = spec.actions
-        .map((a) => AndroidNotificationAction(a.id, a.label))
+        .map((a) => AndroidNotificationAction(
+              a.id,
+              a.label,
+              showsUserInterface: a.id == LiveNotificationActionId.open,
+            ))
         .toList();
 
     AndroidNotificationDetails androidDetails;
 
-    if (spec.mode == LiveNotificationMode.rest &&
-        spec.countdownEndsAt != null) {
+    if (isRest && spec.countdownEndsAt != null) {
       // Countdown chronometer
       androidDetails = AndroidNotificationDetails(
         _kChannelLiveWorkout,
         'Live Workout',
         channelDescription: 'Ongoing workout progress notification',
+        icon: 'ic_stat_fittrack',
+        color: const Color(0xFF5F3BDC),
         importance: Importance.low,
         priority: Priority.low,
         ongoing: true,
         onlyAlertOnce: true,
+        showWhen: true,
         usesChronometer: true,
         chronometerCountDown: true,
         when: spec.countdownEndsAt!.millisecondsSinceEpoch,
@@ -250,29 +325,47 @@ class LocalNotificationService implements NotificationService {
         maxProgress: 100,
         progress: (spec.progressFraction * 100).round(),
         indeterminate: false,
-        styleInformation: const BigTextStyleInformation(''),
+        subText: subText,
+        category: AndroidNotificationCategory.workout,
+        visibility: NotificationVisibility.public,
+        styleInformation: BigTextStyleInformation(
+          spec.body,
+          contentTitle: spec.title,
+          summaryText: subText,
+        ),
       );
     } else {
       // Count-up chronometer for workout mode
+      final hasChronometer = spec.chronometer != null;
       final chronometerBase = spec.chronometer?.millisecondsSinceEpoch ??
           DateTime.now().millisecondsSinceEpoch;
       androidDetails = AndroidNotificationDetails(
         _kChannelLiveWorkout,
         'Live Workout',
         channelDescription: 'Ongoing workout progress notification',
+        icon: 'ic_stat_fittrack',
+        color: const Color(0xFF5F3BDC),
         importance: Importance.low,
         priority: Priority.low,
         ongoing: true,
         onlyAlertOnce: true,
-        usesChronometer: true,
+        showWhen: hasChronometer,
+        usesChronometer: hasChronometer,
         chronometerCountDown: false,
-        when: chronometerBase,
+        when: hasChronometer ? chronometerBase : null,
         actions: androidActions,
         showProgress: spec.showProgressBar,
         maxProgress: 100,
         progress: (spec.progressFraction * 100).round(),
         indeterminate: false,
-        styleInformation: const BigTextStyleInformation(''),
+        subText: subText,
+        category: AndroidNotificationCategory.workout,
+        visibility: NotificationVisibility.public,
+        styleInformation: BigTextStyleInformation(
+          spec.body,
+          contentTitle: spec.title,
+          summaryText: subText,
+        ),
       );
     }
 
@@ -281,6 +374,11 @@ class LocalNotificationService implements NotificationService {
 
   @override
   Future<void> clearLive() async {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      try {
+        await _liveChannel.invokeMethod('stopLive');
+      } catch (_) {}
+    }
     try {
       await _plugin.cancel(_kLiveWorkoutId);
       await cancelRestEndAlert();
@@ -302,12 +400,22 @@ class LocalNotificationService implements NotificationService {
         _kChannelRestAlerts,
         'Rest Timer Alerts',
         channelDescription: 'Alerts when rest period ends',
+        icon: 'ic_stat_fittrack',
+        color: const Color(0xFF5F3BDC),
         importance: Importance.high,
         priority: Priority.high,
         ongoing: false,
         onlyAlertOnce: false,
         playSound: true,
         enableVibration: true,
+        subText: 'Rest Timer',
+        category: AndroidNotificationCategory.alarm,
+        visibility: NotificationVisibility.public,
+        styleInformation: BigTextStyleInformation(
+          workoutSpec.body,
+          contentTitle: workoutSpec.title,
+          summaryText: 'Rest Timer',
+        ),
       );
 
       await _plugin.zonedSchedule(
@@ -351,9 +459,15 @@ class LocalNotificationService implements NotificationService {
         android: AndroidNotificationDetails(
           channelId,
           channelId,
+          icon: 'ic_stat_fittrack',
+          color: const Color(0xFF5F3BDC),
           importance: Importance.defaultImportance,
           priority: Priority.defaultPriority,
           playSound: true,
+          styleInformation: BigTextStyleInformation(
+            body,
+            contentTitle: title,
+          ),
         ),
       );
       await _plugin.show(id, title, body, details, payload: payload.encode());
@@ -376,9 +490,15 @@ class LocalNotificationService implements NotificationService {
         android: AndroidNotificationDetails(
           channelId,
           channelId,
+          icon: 'ic_stat_fittrack',
+          color: const Color(0xFF5F3BDC),
           importance: Importance.defaultImportance,
           priority: Priority.defaultPriority,
           playSound: true,
+          styleInformation: BigTextStyleInformation(
+            body,
+            contentTitle: title,
+          ),
         ),
       );
       await _plugin.zonedSchedule(

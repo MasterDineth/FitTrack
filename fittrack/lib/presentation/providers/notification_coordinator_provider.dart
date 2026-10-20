@@ -115,6 +115,17 @@ class NotificationCoordinator extends _$NotificationCoordinator {
         notifier.adjustRestTime(15);
       case LiveNotificationActionId.completeSet:
         notifier.completeSet();
+      case LiveNotificationActionId.open:
+        final activeState = ref.read(activeWorkoutProvider);
+        final scheduleId = activeState.schedule.id;
+        if (scheduleId.isNotEmpty) {
+          final router = ref.read(routerProvider);
+          final currentLoc =
+              router.routerDelegate.currentConfiguration.uri.toString();
+          if (!currentLoc.contains('/workouts/active/$scheduleId')) {
+            router.push('/workouts/active/$scheduleId');
+          }
+        }
       default:
         // Unknown action; ignore.
         break;
@@ -135,6 +146,8 @@ class NotificationCoordinator extends _$NotificationCoordinator {
 
     // Handle session completion:
     if (next.phase == WorkoutPhase.finished) {
+      _snapshotDebounce?.cancel();
+      ref.read(liveSnapshotStoreProvider).clear();
       _svc.clearLive();
       if (next.lastSavedSessionId != null &&
           (prev?.lastSavedSessionId != next.lastSavedSessionId ||
@@ -144,9 +157,19 @@ class NotificationCoordinator extends _$NotificationCoordinator {
       return;
     }
 
+    if (next.phase == WorkoutPhase.discarded ||
+        next.phase == WorkoutPhase.error) {
+      _snapshotDebounce?.cancel();
+      ref.read(liveSnapshotStoreProvider).clear();
+      _svc.clearLive();
+      return;
+    }
+
     // Build snapshot from state.
     final snapshot = _snapshotFrom(next);
     if (snapshot == null) {
+      _snapshotDebounce?.cancel();
+      ref.read(liveSnapshotStoreProvider).clear();
       if (prev != null &&
           (prev.phase == WorkoutPhase.active ||
               prev.phase == WorkoutPhase.resting ||
@@ -429,10 +452,16 @@ class NotificationCoordinator extends _$NotificationCoordinator {
         final isActive = activeState.phase == WorkoutPhase.active ||
             activeState.phase == WorkoutPhase.resting ||
             activeState.phase == WorkoutPhase.paused;
-        if (isActive &&
-            payload.scheduleId != null &&
-            payload.scheduleId!.isNotEmpty) {
-          router.go('/workouts/active/${payload.scheduleId}');
+        final scheduleId = (payload.scheduleId != null &&
+                payload.scheduleId!.isNotEmpty)
+            ? payload.scheduleId!
+            : activeState.schedule.id;
+        if (isActive && scheduleId.isNotEmpty) {
+          final currentLoc =
+              router.routerDelegate.currentConfiguration.uri.toString();
+          if (!currentLoc.contains('/workouts/active/$scheduleId')) {
+            router.push('/workouts/active/$scheduleId');
+          }
         } else {
           router.go('/dashboard');
         }

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../domain/services/notification_service.dart';
+import '../../providers/notification_permission_provider.dart';
+import '../../providers/notification_service_provider.dart';
+import '../../providers/notification_settings_provider.dart';
 import '../../widgets/ambient_mesh_background.dart';
 import 'notifications/widgets/device_notifications_section.dart';
 import 'notifications/widgets/dynamic_island_preview_card.dart';
@@ -8,7 +12,6 @@ import 'notifications/widgets/live_notification_preview_card.dart';
 import 'notifications/widgets/notifications_header.dart';
 import 'notifications/widgets/notifications_status_card.dart';
 import 'notifications/widgets/quiet_hours_and_sound_section.dart';
-import '../../providers/notification_settings_provider.dart';
 
 /// Redesigned FitTrack Notifications & Alerts Screen.
 ///
@@ -31,9 +34,34 @@ class NotificationsSettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _NotificationsSettingsScreenState
-    extends ConsumerState<NotificationsSettingsScreen> {
-  bool _isPermissionBlocked = false;
+    extends ConsumerState<NotificationsSettingsScreen>
+    with WidgetsBindingObserver {
+  bool? _simulatedBlocked;
   final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(notificationPermissionProvider.notifier).refresh();
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.read(notificationPermissionProvider.notifier).refresh().then((_) {
+        if (mounted &&
+            ref.read(notificationPermissionProvider).value ==
+                NotificationPermissionStatus.granted) {
+          setState(() {
+            _simulatedBlocked = null;
+          });
+        }
+      });
+    }
+  }
 
   void _scrollToTop() {
     if (_scrollController.hasClients) {
@@ -45,8 +73,27 @@ class _NotificationsSettingsScreenState
     }
   }
 
+  Future<void> _handleEnablePermission() async {
+    final status =
+        await ref.read(notificationPermissionProvider.notifier).request();
+    if (status == NotificationPermissionStatus.granted ||
+        status == NotificationPermissionStatus.unknown) {
+      if (mounted) {
+        setState(() {
+          _simulatedBlocked = false;
+        });
+      }
+      ref
+          .read(notificationSettingsNotifierProvider.notifier)
+          .toggleSystemNotifications(true);
+    } else {
+      await ref.read(notificationServiceProvider).openSystemSettings();
+    }
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _scrollController.dispose();
     super.dispose();
   }
@@ -54,6 +101,12 @@ class _NotificationsSettingsScreenState
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.paddingOf(context).bottom + 32.0;
+    final permissionAsync = ref.watch(notificationPermissionProvider);
+    final status =
+        permissionAsync.value ?? NotificationPermissionStatus.unknown;
+    final isRealBlocked = status == NotificationPermissionStatus.denied ||
+        status == NotificationPermissionStatus.blocked;
+    final isBlocked = _simulatedBlocked ?? isRealBlocked;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -83,10 +136,10 @@ class _NotificationsSettingsScreenState
 
                         // 2. Permission Status Pill & Simulation Segmented Switch
                         NotificationsStatusCard(
-                          isBlocked: _isPermissionBlocked,
+                          isBlocked: isBlocked,
                           onPermissionSimulationChanged: (blocked) {
                             setState(() {
-                              _isPermissionBlocked = blocked;
+                              _simulatedBlocked = blocked;
                             });
                             ref
                                 .read(
@@ -94,26 +147,17 @@ class _NotificationsSettingsScreenState
                                 )
                                 .toggleSystemNotifications(!blocked);
                           },
-                          onEnableTap: () {
-                            setState(() {
-                              _isPermissionBlocked = false;
-                            });
-                            ref
-                                .read(
-                                  notificationSettingsNotifierProvider.notifier,
-                                )
-                                .toggleSystemNotifications(true);
-                          },
+                          onEnableTap: _handleEnablePermission,
                         ),
                         const SizedBox(height: 14),
 
                         // 3. Main Configuration Content (Dimmed and disabled if blocked)
                         IgnorePointer(
-                          ignoring: _isPermissionBlocked,
+                          ignoring: isBlocked,
                           child: AnimatedOpacity(
                             duration: const Duration(milliseconds: 300),
                             curve: Curves.easeOutCubic,
-                            opacity: _isPermissionBlocked ? 0.38 : 1.0,
+                            opacity: isBlocked ? 0.38 : 1.0,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
