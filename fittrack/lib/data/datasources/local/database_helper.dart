@@ -3,9 +3,11 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'seed/exercise_library_seeder.dart';
+
 class DatabaseHelper {
   static const _databaseName = "FitTrack.db";
-  static const _databaseVersion = 14;
+  static const _databaseVersion = 15;
 
   DatabaseHelper._privateConstructor();
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
@@ -342,6 +344,12 @@ class DatabaseHelper {
         await _seedVersion13Data(db);
       } catch (_) {}
     }
+
+    if (oldVersion < 15) {
+      try {
+        await _seedVersion15Data(db);
+      } catch (_) {}
+    }
   }
 
   Future _onCreate(Database db, int version) async {
@@ -521,6 +529,7 @@ class DatabaseHelper {
     ''');
 
     await _seedInitialData(db);
+    await _seedVersion15Data(db);
   }
 
   Future<void> _seedInitialData(Database db) async {
@@ -915,6 +924,16 @@ class DatabaseHelper {
         'createdAt': DateTime.now().toIso8601String(),
       }, conflictAlgorithm: ConflictAlgorithm.ignore);
     }
+  }
+
+  /// Seeds the library exercises with their full recorded detail: cover image,
+  /// YouTube guide, description, execution steps, form cues and muscle
+  /// activations.
+  ///
+  /// Only the exercises this app manages are touched � user-created exercises
+  /// and their child records are left untouched.
+  Future<void> _seedVersion15Data(Database db) async {
+    await db.transaction((txn) => ExerciseLibrarySeeder.seed(txn));
   }
 
   Future<void> _seedVersion12Data(Database db) async {

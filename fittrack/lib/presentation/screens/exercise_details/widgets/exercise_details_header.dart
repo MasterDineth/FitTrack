@@ -7,10 +7,11 @@ import '../../dashboard/widgets/ft_pressable.dart';
 
 /// Top navigation header for the Exercise Details screen.
 ///
-/// Category A screen (notification bell + avatar), so it is wrapped with
+/// Category A screen (notification bell), so it is wrapped with
 /// [FtDynamicHeader] exactly as described in
 /// `MODULAR_HEADER_AND_NOTIFICATIONS_GUIDE.md` (Pattern 2 — sub-flow header
-/// with a back button).
+/// with a back button). The bell anchors far right; no avatar is shown on a
+/// flow screen, matching `AppearanceHeader`.
 class ExerciseDetailsHeader extends StatelessWidget {
   const ExerciseDetailsHeader({
     super.key,
@@ -90,7 +91,6 @@ class ExerciseDetailsHeader extends StatelessWidget {
           ),
         ],
       ),
-      trailing: const FtHeaderAvatar(),
     );
   }
 }

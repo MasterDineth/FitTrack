@@ -10,6 +10,7 @@ import 'package:fittrack/domain/entities/muscle_activation.dart';
 import 'package:fittrack/domain/repositories/i_exercise_repository.dart';
 import 'package:fittrack/presentation/providers/repository_providers.dart';
 import 'package:fittrack/presentation/screens/exercise_details/exercise_details_screen.dart';
+import 'package:fittrack/presentation/widgets/header/header.dart';
 
 class _FakeExerciseRepository implements IExerciseRepository {
   _FakeExerciseRepository({
@@ -229,6 +230,18 @@ void main() {
       expect(find.text('Back to workout'), findsOneWidget);
       expect(find.text('Add to Workout'), findsNothing);
       expect(find.text('Edit'), findsNothing);
+    });
+
+    testWidgets('header shows the bell but no profile avatar', (tester) async {
+      final repo = _FakeExerciseRepository(exercise: _buildExercise());
+
+      await pumpScreen(tester, repo);
+
+      // Category A header: notification bell present, profile avatar absent.
+      expect(find.byType(FtNotificationBell), findsOneWidget);
+      expect(find.byType(FtHeaderAvatar), findsNothing);
+      // One back arrow in the header, one in the bottom dock.
+      expect(find.byIcon(Icons.arrow_back_rounded), findsNWidgets(2));
     });
 
     testWidgets('omits sections that have no recorded data', (tester) async {
