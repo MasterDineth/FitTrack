@@ -10,6 +10,7 @@ import 'package:fittrack/domain/entities/muscle_activation.dart';
 import 'package:fittrack/domain/repositories/i_exercise_repository.dart';
 import 'package:fittrack/presentation/providers/repository_providers.dart';
 import 'package:fittrack/presentation/screens/exercise_details/exercise_details_screen.dart';
+import 'package:fittrack/presentation/widgets/glass_surface.dart';
 import 'package:fittrack/presentation/widgets/header/header.dart';
 
 class _FakeExerciseRepository implements IExerciseRepository {
@@ -344,6 +345,30 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(_WorkoutStub), findsOneWidget);
+    });
+
+    testWidgets('the dock has no gradient scrim and no bottom band', (
+      tester,
+    ) async {
+      final repo = _FakeExerciseRepository(exercise: _buildExercise());
+
+      await pumpScreen(tester, repo);
+
+      final surfaces = tester
+          .widgetList<GlassSurface>(find.byType(GlassSurface))
+          .toList();
+
+      // No square band below the action card.
+      expect(surfaces.where((surface) => surface.radius == 0), isEmpty);
+
+      // Only the action button paints a gradient — there is no colour scrim
+      // fading the content above the button.
+      final gradients = tester
+          .widgetList<Container>(find.byType(Container))
+          .map((container) => container.decoration)
+          .whereType<BoxDecoration>()
+          .where((decoration) => decoration.gradient != null);
+      expect(gradients.length, 1);
     });
   });
 }

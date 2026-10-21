@@ -33,7 +33,8 @@ class ExerciseDetailsScreen extends ConsumerWidget {
     final details = detailsAsync.value;
 
     final bottomInset = MediaQuery.paddingOf(context).bottom;
-    final bottomPadding = 118.0 + bottomInset;
+    // Clears the floating action card.
+    final bottomPadding = 94.0 + bottomInset;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
