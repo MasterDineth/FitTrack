@@ -23,7 +23,7 @@ import '../../domain/entities/workout_schedule.dart';
 import '../../domain/entities/schedule_exercise.dart';
 import '../screens/create_custom_exercise_screen.dart';
 import '../screens/active_workout_screen.dart';
-import '../screens/exercise_guide_details_screen.dart';
+import '../screens/exercise_details/exercise_details_screen.dart';
 import '../screens/workout_summary_screen.dart';
 import '../screens/workout_history_screen.dart';
 import '../screens/workout_history_detail_screen.dart';
@@ -159,7 +159,7 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/workouts/guide/:exerciseId',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => ExerciseGuideDetailsScreen(
+        builder: (context, state) => ExerciseDetailsScreen(
           exerciseId: state.pathParameters['exerciseId']!,
         ),
       ),

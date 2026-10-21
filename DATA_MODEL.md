@@ -168,7 +168,7 @@ Computed via SQL join across `schedules`, `schedule_exercises`, `exercises`, `mu
 ---
 
 ## 6. Exercises & Biomechanical Anatomy (`exercises`, `muscle_activations`, `execution_steps`, `form_cues`)
-Used by `workout_search_screen.dart`, `create_custom_exercise_screen.dart`, `exercise_guide_details_screen.dart`, and `add_exercise_picker_sheet.dart`.
+Used by `workout_search_screen.dart`, `create_custom_exercise_screen.dart`, `exercise_details_screen.dart`, and `add_exercise_picker_sheet.dart`.
 
 ### `exercises` Table
 *   **id** `TEXT PRIMARY KEY`: Unique exercise UUID (e.g. `ex-bench-press`)
