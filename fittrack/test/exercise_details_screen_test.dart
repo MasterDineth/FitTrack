@@ -10,6 +10,7 @@ import 'package:fittrack/domain/entities/muscle_activation.dart';
 import 'package:fittrack/domain/repositories/i_exercise_repository.dart';
 import 'package:fittrack/presentation/providers/repository_providers.dart';
 import 'package:fittrack/presentation/screens/exercise_details/exercise_details_screen.dart';
+import 'package:fittrack/presentation/screens/exercise_details/widgets/execution_steps_section.dart';
 import 'package:fittrack/presentation/widgets/glass_surface.dart';
 import 'package:fittrack/presentation/widgets/header/header.dart';
 
@@ -345,6 +346,88 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(_WorkoutStub), findsOneWidget);
+    });
+
+    testWidgets('section headers pin the count chip to the card edge', (
+      tester,
+    ) async {
+      final repo = _FakeExerciseRepository(
+        exercise: _buildExercise(),
+        steps: const [
+          ExecutionStep(
+            id: 's1',
+            exerciseId: 'ex_test',
+            stepNumber: 1,
+            title: 'Stance & Grip',
+            instructions: 'Set the bench at 30 degrees and grip with neutral palms.',
+          ),
+        ],
+        cues: const [
+          FormCue(
+            id: 'c1',
+            exerciseId: 'ex_test',
+            isPositive: true,
+            description: 'Bend the weights inward to protect the shoulder.',
+          ),
+        ],
+        activations: const [
+          MuscleActivation(
+            id: 'm1',
+            exerciseId: 'ex_test',
+            muscleName: 'Chest',
+            role: MuscleRole.agonist,
+            intensityPercentage: 70,
+          ),
+        ],
+      );
+
+      await pumpScreen(tester, repo);
+
+      // The count chip must sit flush against the right edge of the card
+      // instead of floating inside a flex slot.
+      final section = find.byType(ExecutionStepsSection);
+      final chipContainer = find
+          .byWidgetPredicate(
+            (widget) =>
+                widget is Container &&
+                widget.padding ==
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          )
+          .first;
+
+      final card = tester.getRect(
+        find
+            .descendant(of: section, matching: find.byType(GlassSurface))
+            .first,
+      );
+      final chip = tester.getRect(chipContainer);
+
+      // The content inset is measured from the section icon tile, which is
+      // flush with the left edge of the card's content box.
+      final iconTile = tester.getRect(
+        find
+            .ancestor(
+              of: find.descendant(
+                of: section,
+                matching: find.byIcon(Icons.format_list_numbered_rounded),
+              ),
+              matching: find.byWidgetPredicate(
+                (widget) =>
+                    widget is Container &&
+                    widget.constraints?.minWidth == 36 &&
+                    widget.constraints?.minHeight == 36,
+              ),
+            )
+            .first,
+      );
+      final contentRight = card.right - (iconTile.left - card.left);
+
+      expect((contentRight - chip.right).abs(), lessThan(0.5));
+
+      // The title and subtitle column must get the space the chip no longer
+      // takes — measurably wider than the chip itself.
+      final titleWidth = tester.getSize(find.text('Muscles Worked')).width;
+      expect(titleWidth, greaterThan(chip.width));
     });
 
     testWidgets('the dock has no gradient scrim and no bottom band', (

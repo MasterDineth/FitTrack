@@ -76,7 +76,11 @@ class DetailsSectionHeader extends StatelessWidget {
         ),
         if (countLabel != null) ...[
           const SizedBox(width: 8),
-          Flexible(
+          // Deliberately not a flex child: the chip must take only its
+          // intrinsic width and sit flush against the right edge of the card,
+          // leaving the title and subtitle all of the remaining space.
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 120),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
