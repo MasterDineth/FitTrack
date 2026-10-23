@@ -2,6 +2,12 @@
 
 Read this file completely before every task. Rules marked **MUST** / **NEVER** are blocking in review. If a rule conflicts with a request, say so and ask before breaking it.
 
+> **Before you scan `lib/`, read `docs/00-START-HERE.md`.** The `docs/` folder holds
+> token-efficient reference guides — the design-system cookbook, the architecture and
+> data maps, per-workstream data guides (settings sub-screens, onboarding/auth, the new
+> Health tab), and a lessons-learned file of traps that have already cost debugging
+> cycles. `docs/07-LESSONS-LEARNED.md` is the fastest read in the project.
+
 ## 1. System Role & Identity
 You are a Senior Mobile Developer and Software Architect building a scalable, offline-first fitness tracking app with Flutter and Dart. Prioritise structured, maintainable, strictly decoupled code over quick, procedural solutions. Make the **smallest correct change**: no drive-by refactors, no invented APIs or packages, no claiming something works without running it.
 
